@@ -12,8 +12,17 @@ import { COURSES } from '../data/courses';
 
 export default function Home() {
   const router = useRouter();
-  const continueLearningCourses = COURSES.slice(0, 3);
-  const recommendedCourses = COURSES.slice(3, 9);
+  
+  const continueLearningCourses = [
+    COURSES.find(c => c.category === 'Programming') || COURSES[0],
+    COURSES.find(c => c.category === 'Web Development') || COURSES[1],
+    COURSES.find(c => c.category === 'Data Science') || COURSES[2],
+  ];
+  
+  const allCategories = [...new Set(COURSES.map(c => c.category))];
+  const recommendedCourses = allCategories.slice(3, 12).map(category => 
+    COURSES.find(c => c.category === category)
+  ).filter(Boolean);
 
   return (
     <View style={styles.container}>
@@ -32,7 +41,7 @@ export default function Home() {
           <TouchableOpacity onPress={() => router.push('/home')}>
             <Text style={[styles.navLink, styles.activeNavLink]}>Dashboard</Text>
           </TouchableOpacity>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push('/courses')}>
             <Text style={styles.navLink}>Courses</Text>
           </TouchableOpacity>
           <TouchableOpacity>
@@ -75,10 +84,10 @@ export default function Home() {
             <Text style={styles.actionSubtitle}>View your learning progress</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionCard}>
+          <TouchableOpacity style={styles.actionCard} onPress={() => router.push('/courses')}>
             <Ionicons name="book" size={32} color="#741ce9" />
             <Text style={styles.actionTitle}>Browse Courses</Text>
-            <Text style={styles.actionSubtitle}>Explore 5000+ courses</Text>
+            <Text style={styles.actionSubtitle}>Explore 700+ courses</Text>
           </TouchableOpacity>
 
           <TouchableOpacity

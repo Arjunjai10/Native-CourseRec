@@ -101,33 +101,33 @@ export default function CourseDetail() {
         <View style={styles.breadcrumb}>
           <Text style={styles.breadcrumbText}>Home</Text>
           <Ionicons name="chevron-forward" size={16} color="#666" />
-          <Text style={styles.breadcrumbText}>Data Science</Text>
+          <Text style={styles.breadcrumbText}>{course.category}</Text>
           <Ionicons name="chevron-forward" size={16} color="#666" />
-          <Text style={styles.breadcrumbText}>Machine Learning</Text>
+          <Text style={styles.breadcrumbText}>{course.title.substring(0, 20)}...</Text>
         </View>
 
         <View style={styles.mainSection}>
           <View style={styles.leftColumn}>
-            <Text style={styles.title}>{COURSE_DATA.title}</Text>
-            <Text style={styles.description}>{COURSE_DATA.description}</Text>
+            <Text style={styles.title}>{course.title}</Text>
+            <Text style={styles.description}>{course.description}</Text>
 
             <View style={styles.metaInfo}>
               <View style={styles.ratingContainer}>
-                <Text style={styles.ratingNumber}>{COURSE_DATA.rating}</Text>
+                <Text style={styles.ratingNumber}>{course.rating}</Text>
                 <View style={styles.stars}>
                   {[1, 2, 3, 4, 5].map((star) => (
                     <Ionicons key={star} name="star" size={16} color="#F59E0B" />
                   ))}
                 </View>
-                <Text style={styles.reviewCount}>({COURSE_DATA.reviewsCount} reviews)</Text>
+                <Text style={styles.reviewCount}>({course.reviewsCount.toLocaleString()} reviews)</Text>
               </View>
               <View style={styles.metaItem}>
                 <Ionicons name="people" size={16} color="#666" />
-                <Text style={styles.metaText}>{COURSE_DATA.studentsEnrolled.toLocaleString()} students enrolled</Text>
+                <Text style={styles.metaText}>{course.studentsEnrolled.toLocaleString()} students enrolled</Text>
               </View>
               <View style={styles.metaItem}>
                 <Ionicons name="calendar" size={16} color="#666" />
-                <Text style={styles.metaText}>Last updated {COURSE_DATA.lastUpdated}</Text>
+                <Text style={styles.metaText}>Last updated {course.lastUpdated}</Text>
               </View>
             </View>
 
@@ -140,80 +140,57 @@ export default function CourseDetail() {
 
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Course Overview</Text>
-              <Text style={styles.sectionText}>{COURSE_DATA.description}</Text>
+              <Text style={styles.sectionText}>{course.description}</Text>
               <Text style={styles.sectionText}>
-                You will learn how to design, train, and deploy large-scale machine learning models using industry-standard tools. The curriculum is built around hands-on projects including a sentiment analysis engine and a real-time object detection system.
+                This comprehensive course is designed to take you from beginner to advanced level. You'll work on real-world projects and gain practical skills that are in high demand in the industry.
               </Text>
-            </View>
-
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Course Content</Text>
-              <Text style={styles.contentSummary}>
-                8 sections • 42 lectures • 40h total length
-              </Text>
-              {COURSE_DATA.syllabus.map((module, index) => (
-                <View key={index} style={styles.moduleContainer}>
-                  <TouchableOpacity
-                    style={styles.moduleHeader}
-                    onPress={() => setExpandedModule(expandedModule === index ? -1 : index)}
-                  >
-                    <Ionicons
-                      name={expandedModule === index ? 'chevron-down' : 'chevron-forward'}
-                      size={20}
-                      color="#333"
-                    />
-                    <Text style={styles.moduleTitle}>{module.module}</Text>
-                    <Text style={styles.moduleMeta}>
-                      {module.lectures} lectures • {module.duration}
-                    </Text>
-                  </TouchableOpacity>
-                  {expandedModule === index && module.topics && (
-                    <View style={styles.topicsList}>
-                      {module.topics.map((topic, topicIndex) => (
-                        <View key={topicIndex} style={styles.topicItem}>
-                          <Ionicons
-                            name={topic.type === 'video' ? 'play-circle-outline' : 'document-text-outline'}
-                            size={16}
-                            color="#666"
-                          />
-                          <Text style={styles.topicTitle}>{topic.title}</Text>
-                          {topic.duration && <Text style={styles.topicDuration}>{topic.duration}</Text>}
-                          {topic.type === 'resource' && (
-                            <Text style={styles.topicType}>Resource</Text>
-                          )}
-                        </View>
-                      ))}
-                    </View>
-                  )}
+              <View style={styles.infoGrid}>
+                <View style={styles.infoBox}>
+                  <Ionicons name="bar-chart" size={24} color="#741ce9" />
+                  <Text style={styles.infoBoxLabel}>Level</Text>
+                  <Text style={styles.infoBoxValue}>{course.level}</Text>
                 </View>
-              ))}
+                <View style={styles.infoBox}>
+                  <Ionicons name="time" size={24} color="#741ce9" />
+                  <Text style={styles.infoBoxLabel}>Duration</Text>
+                  <Text style={styles.infoBoxValue}>{course.duration}</Text>
+                </View>
+                <View style={styles.infoBox}>
+                  <Ionicons name="book" size={24} color="#741ce9" />
+                  <Text style={styles.infoBoxLabel}>Lectures</Text>
+                  <Text style={styles.infoBoxValue}>{course.lectures}</Text>
+                </View>
+                <View style={styles.infoBox}>
+                  <Ionicons name="globe" size={24} color="#741ce9" />
+                  <Text style={styles.infoBoxLabel}>Language</Text>
+                  <Text style={styles.infoBoxValue}>{course.language}</Text>
+                </View>
+              </View>
             </View>
 
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Your Instructor</Text>
               <View style={styles.instructorCard}>
-                <Image
-                  source={{ uri: COURSE_DATA.instructor.avatar }}
-                  style={styles.instructorAvatar}
-                />
+                <View style={styles.instructorAvatarCircle}>
+                  <Ionicons name="person" size={40} color="#741ce9" />
+                </View>
                 <View style={styles.instructorInfo}>
-                  <Text style={styles.instructorName}>{COURSE_DATA.instructor.name}</Text>
-                  <Text style={styles.instructorTitle}>{COURSE_DATA.instructor.title}</Text>
+                  <Text style={styles.instructorName}>{course.instructor}</Text>
+                  <Text style={styles.instructorTitle}>Expert Instructor</Text>
                   <View style={styles.instructorStats}>
                     <View style={styles.instructorStat}>
                       <Ionicons name="star" size={16} color="#F59E0B" />
-                      <Text style={styles.instructorStatText}>{COURSE_DATA.instructor.rating} Instructor Rating</Text>
+                      <Text style={styles.instructorStatText}>{course.rating} Instructor Rating</Text>
                     </View>
                     <View style={styles.instructorStat}>
                       <Ionicons name="people" size={16} color="#666" />
-                      <Text style={styles.instructorStatText}>{COURSE_DATA.instructor.students.toLocaleString()} Students</Text>
-                    </View>
-                    <View style={styles.instructorStat}>
-                      <Ionicons name="book" size={16} color="#666" />
-                      <Text style={styles.instructorStatText}>{COURSE_DATA.instructor.courses} Courses</Text>
+                      <Text style={styles.instructorStatText}>{(course.studentsEnrolled / 1000).toFixed(0)}K+ Students</Text>
                     </View>
                   </View>
-                  <Text style={styles.instructorBio}>{COURSE_DATA.instructor.bio}</Text>
+                  <Text style={styles.instructorBio}>
+                    A highly-rated instructor with extensive industry experience and a passion for teaching. 
+                    Known for making complex topics accessible and engaging for students of all levels.
+                  </Text>
                 </View>
               </View>
             </View>
@@ -222,7 +199,7 @@ export default function CourseDetail() {
               <Text style={styles.sectionTitle}>Student Reviews</Text>
               <View style={styles.reviewsOverview}>
                 <View style={styles.ratingOverview}>
-                  <Text style={styles.ratingLarge}>{COURSE_DATA.rating}</Text>
+                  <Text style={styles.ratingLarge}>{course.rating}</Text>
                   <View style={styles.starsLarge}>
                     {[1, 2, 3, 4, 5].map((star) => (
                       <Ionicons key={star} name="star" size={20} color="#F59E0B" />
@@ -231,7 +208,7 @@ export default function CourseDetail() {
                   <Text style={styles.courseRatingLabel}>Course Rating</Text>
                 </View>
                 <View style={styles.ratingBars}>
-                  {COURSE_DATA.ratingDistribution.map((rating) => (
+                  {ratingDistribution.map((rating) => (
                     <View key={rating.stars} style={styles.ratingBar}>
                       <Text style={styles.starLabel}>{rating.stars} star</Text>
                       <View style={styles.barContainer}>
@@ -243,7 +220,7 @@ export default function CourseDetail() {
                 </View>
               </View>
 
-              {COURSE_DATA.reviews.map((review) => (
+              {sampleReviews.map((review) => (
                 <View key={review.id} style={styles.reviewCard}>
                   <View style={styles.reviewHeader}>
                     <View style={styles.reviewerAvatar}>
@@ -276,13 +253,20 @@ export default function CourseDetail() {
 
           <View style={styles.sidebar}>
             <View style={styles.courseCard}>
-              <TouchableOpacity style={styles.goCourseButton}>
-                <Ionicons name="play" size={20} color="white" />
-                <Text style={styles.goCourseButtonText}>Go to Course</Text>
+              <View style={styles.priceSection}>
+                <Text style={styles.priceLabel}>Course Access</Text>
+                <Text style={styles.priceValue}>{course.price}</Text>
+              </View>
+
+              <TouchableOpacity style={styles.goCourseButton} onPress={handleGoToCourse}>
+                <Ionicons name="open-outline" size={20} color="white" />
+                <Text style={styles.goCourseButtonText}>Start Learning Now</Text>
               </TouchableOpacity>
 
+              <Text style={styles.externalLinkText}>Opens in external platform</Text>
+
               <Text style={styles.cardSectionTitle}>This course includes:</Text>
-              {COURSE_DATA.includes.map((item, index) => (
+              {course.includes.map((item, index) => (
                 <View key={index} style={styles.includeItem}>
                   <Ionicons name={item.icon} size={16} color="#741ce9" />
                   <Text style={styles.includeText}>{item.text}</Text>
@@ -293,19 +277,19 @@ export default function CourseDetail() {
 
               <View style={styles.infoRow}>
                 <Text style={styles.infoLabel}>Skill Level</Text>
-                <Text style={styles.infoValue}>{COURSE_DATA.level}</Text>
+                <Text style={styles.infoValue}>{course.level}</Text>
               </View>
               <View style={styles.infoRow}>
                 <Text style={styles.infoLabel}>Language</Text>
-                <Text style={styles.infoValue}>{COURSE_DATA.language}</Text>
+                <Text style={styles.infoValue}>{course.language}</Text>
               </View>
               <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>Captions</Text>
-                <Text style={styles.infoValue}>{COURSE_DATA.captions}</Text>
+                <Text style={styles.infoLabel}>Duration</Text>
+                <Text style={styles.infoValue}>{course.duration}</Text>
               </View>
               <View style={styles.infoRow}>
                 <Text style={styles.infoLabel}>Lectures</Text>
-                <Text style={styles.infoValue}>{COURSE_DATA.lectures} Lectures</Text>
+                <Text style={styles.infoValue}>{course.lectures} Lectures</Text>
               </View>
 
               <View style={styles.certBanner}>
@@ -752,5 +736,58 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
     lineHeight: 16,
+  },
+  priceSection: {
+    marginBottom: 16,
+  },
+  priceLabel: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 4,
+  },
+  priceValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#741ce9',
+  },
+  externalLinkText: {
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 8,
+    marginBottom: 16,
+  },
+  infoGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 16,
+    marginTop: 16,
+  },
+  infoBox: {
+    flex: 1,
+    minWidth: 120,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 8,
+    padding: 16,
+    alignItems: 'center',
+  },
+  infoBoxLabel: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  infoBoxValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  instructorAvatarCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#F3E8FF',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
