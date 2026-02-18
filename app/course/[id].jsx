@@ -6,92 +6,70 @@ import {
   StyleSheet,
   ScrollView,
   Image,
+  Linking,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-
-const COURSE_DATA = {
-  title: 'Advanced Machine Learning with Python 2024',
-  description: 'Master state-of-the-art ML architectures, from Transformer models to production-grade deployment pipelines using PyTorch and Scikit-Learn.',
-  rating: 4.8,
-  reviewsCount: 1245,
-  studentsEnrolled: 12450,
-  lastUpdated: 'May 2024',
-  level: 'Intermediate',
-  language: 'English',
-  captions: 'Yes (8 languages)',
-  lectures: 42,
-  instructor: {
-    name: 'Dr. Elena Vance',
-    title: 'Senior ML Research Scientist at TechCorp Labs',
-    avatar: 'https://via.placeholder.com/80',
-    rating: 4.9,
-    students: 45000,
-    courses: 12,
-    bio: 'Dr. Vance has over 15 years of experience in the field of AI and Machine Learning. She led the research team for autonomous navigation at TechCorp and is a frequent speaker at NeurIPS and ICML conferences.',
-  },
-  includes: [
-    { icon: 'play-circle', text: '40 hours on-demand video' },
-    { icon: 'document-text', text: '25 coding exercises' },
-    { icon: 'download', text: '54 downloadable resources' },
-    { icon: 'infinite', text: 'Full lifetime access' },
-    { icon: 'phone-portrait', text: 'Access on mobile and TV' },
-    { icon: 'ribbon', text: 'Certificate of completion' },
-  ],
-  syllabus: [
-    {
-      module: 'Module 1: Deep Learning Foundations',
-      lectures: 4,
-      duration: '3h 20m',
-      expanded: true,
-      topics: [
-        { title: 'Introduction to PyTorch Tensors', duration: '15:09', type: 'video' },
-        { title: 'Backpropagation and Autograd', duration: '24:30', type: 'video' },
-        { title: 'Lab: Building your first Neural Network', type: 'resource' },
-      ],
-    },
-    {
-      module: 'Module 2: Advanced Computer Vision',
-      lectures: 6,
-      duration: '8h 15m',
-      expanded: false,
-    },
-    {
-      module: 'Module 3: Natural Language Processing',
-      lectures: 8,
-      duration: '10h 40m',
-      expanded: false,
-    },
-  ],
-  reviews: [
-    {
-      id: 1,
-      userName: 'Marcus Chen',
-      rating: 5,
-      date: '3 days ago',
-      comment: 'The production deployment module alone is worth the price of the entire course. Dr. Vance explains complex Docker concepts in a way that finally clicked for me.',
-    },
-    {
-      id: 2,
-      userName: 'Sarah Jenkins',
-      rating: 4,
-      date: '1 week ago',
-      comment: 'Excellent curriculum. It covers the latest research papers in Transformer architectures which is hard to find in other online courses.',
-    },
-  ],
-  ratingDistribution: [
-    { stars: 5, percentage: 78 },
-    { stars: 4, percentage: 15 },
-    { stars: 3, percentage: 4 },
-    { stars: 2, percentage: 2 },
-    { stars: 1, percentage: 1 },
-  ],
-};
+import { COURSES } from '../../data/courses';
 
 export default function CourseDetail() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const [expandedModule, setExpandedModule] = useState(0);
+
+  const course = COURSES.find(c => c.id === id);
+
+  if (!course) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={24} color="#333" />
+          </TouchableOpacity>
+          <Text style={styles.logoText}>Course Not Found</Text>
+        </View>
+      </View>
+    );
+  }
+
+  const handleGoToCourse = async () => {
+    try {
+      const supported = await Linking.canOpenURL(course.externalLink);
+      if (supported) {
+        await Linking.openURL(course.externalLink);
+      } else {
+        Alert.alert('Error', 'Cannot open this URL');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to open course link');
+    }
+  };
+
+  const ratingDistribution = [
+    { stars: 5, percentage: 78 },
+    { stars: 4, percentage: 15 },
+    { stars: 3, percentage: 4 },
+    { stars: 2, percentage: 2 },
+    { stars: 1, percentage: 1 },
+  ];
+
+  const sampleReviews = [
+    {
+      id: 1,
+      userName: 'Alex Johnson',
+      rating: 5,
+      date: '2 weeks ago',
+      comment: 'Excellent course! The instructor explains complex concepts in a clear and easy-to-understand way. Highly recommended!',
+    },
+    {
+      id: 2,
+      userName: 'Sarah Mitchell',
+      rating: 4,
+      date: '1 month ago',
+      comment: 'Great content and well-structured curriculum. Could use more hands-on projects, but overall very helpful.',
+    },
+  ];
 
   return (
     <View style={styles.container}>
@@ -100,7 +78,7 @@ export default function CourseDetail() {
           <Ionicons name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
         <View style={styles.logoContainer}>
-          <Ionicons name="school" size={24} color="#7C3AED" />
+          <Ionicons name="school" size={24} color="#741ce9" />
           <Text style={styles.logoText}>EduLearn</Text>
         </View>
         <View style={styles.headerRight}>
@@ -306,7 +284,7 @@ export default function CourseDetail() {
               <Text style={styles.cardSectionTitle}>This course includes:</Text>
               {COURSE_DATA.includes.map((item, index) => (
                 <View key={index} style={styles.includeItem}>
-                  <Ionicons name={item.icon} size={16} color="#7C3AED" />
+                  <Ionicons name={item.icon} size={16} color="#741ce9" />
                   <Text style={styles.includeText}>{item.text}</Text>
                 </View>
               ))}
@@ -331,7 +309,7 @@ export default function CourseDetail() {
               </View>
 
               <View style={styles.certBanner}>
-                <Ionicons name="ribbon" size={24} color="#7C3AED" />
+                <Ionicons name="ribbon" size={24} color="#741ce9" />
                 <View>
                   <Text style={styles.certTitle}>Professional Certification</Text>
                   <Text style={styles.certSubtitle}>
@@ -389,7 +367,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#7C3AED',
+    backgroundColor: '#741ce9',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -543,7 +521,7 @@ const styles = StyleSheet.create({
   },
   topicType: {
     fontSize: 12,
-    color: '#7C3AED',
+    color: '#741ce9',
   },
   instructorCard: {
     flexDirection: 'row',
@@ -689,12 +667,12 @@ const styles = StyleSheet.create({
   seeAllButton: {
     padding: 12,
     borderWidth: 1,
-    borderColor: '#7C3AED',
+    borderColor: '#741ce9',
     borderRadius: 8,
     alignItems: 'center',
   },
   seeAllButtonText: {
-    color: '#7C3AED',
+    color: '#741ce9',
     fontWeight: '600',
   },
   sidebar: {
@@ -714,7 +692,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#7C3AED',
+    backgroundColor: '#741ce9',
     borderRadius: 8,
     padding: 14,
     marginBottom: 20,

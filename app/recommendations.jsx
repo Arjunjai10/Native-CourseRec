@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,68 +6,174 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Image,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
+const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
+const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
 const RECENT_CHATS = [
-  { id: 1, title: 'UI/UX Design Path', active: true },
-  { id: 2, title: 'Data Science Basics', active: false },
-  { id: 3, title: 'Graphic Design 101', active: false },
-  { id: 4, title: 'Python for Beginners', active: false },
+  { id: 1, title: 'Python for Beginners', active: true },
+  { id: 2, title: 'Web Development Path', active: false },
+  { id: 3, title: 'Data Science Basics', active: false },
+  { id: 4, title: 'UI/UX Design', active: false },
 ];
 
-const SAMPLE_COURSES = [
-  {
-    id: 1,
-    title: 'Introduction to Figma Masterclass',
-    instructor: 'Jane Doe, Senior Designer',
-    rating: 4.9,
-    category: 'FIGMA',
-    thumbnail: 'https://via.placeholder.com/300x200',
-  },
-  {
-    id: 2,
-    title: 'UX Fundamentals & Accessibility',
-    instructor: 'Google Design Team',
-    rating: 4.8,
-    category: 'FUNDAMENTALS',
-    thumbnail: 'https://via.placeholder.com/300x200',
-  },
-];
+const AVAILABLE_COURSES = `
+Frontend Development:
+- React Fundamentals (Beginner) - Build modern web apps with React
+- Advanced React & Next.js (Intermediate) - Master React ecosystem
+- Vue.js Complete Guide (Beginner) - Learn Vue 3 from scratch
+- Modern CSS & Tailwind (Beginner) - Responsive design mastery
+
+Backend Development:
+- Node.js & Express (Beginner) - Build REST APIs
+- Python Django Framework (Intermediate) - Full-stack with Django
+- MongoDB Complete Course (Beginner) - NoSQL database mastery
+- PostgreSQL & Database Design (Intermediate) - Relational databases
+
+Full-Stack Development:
+- MERN Stack Bootcamp (Intermediate) - MongoDB, Express, React, Node
+- Full-Stack Python Developer (Intermediate) - Django + React
+- JAMstack Development (Advanced) - Next.js, Netlify, APIs
+- Serverless Architecture (Advanced) - AWS Lambda, Cloud Functions
+
+Data Science & AI:
+- Python for Data Science (Beginner) - Pandas, NumPy, Matplotlib
+- Machine Learning A-Z (Intermediate) - Scikit-learn, TensorFlow
+- Deep Learning Specialization (Advanced) - Neural networks, PyTorch
+- Data Analytics with SQL (Beginner) - Query and analyze data
+
+Design & UX:
+- UI/UX Design Fundamentals (Beginner) - Figma, user research
+- Advanced Figma & Prototyping (Intermediate) - Interactive designs
+- Design Systems (Advanced) - Build scalable design systems
+- Mobile App Design (Intermediate) - iOS & Android UI patterns
+
+Business & Marketing:
+- Digital Marketing Masterclass (Beginner) - SEO, social media
+- Product Management Essentials (Intermediate) - Agile, roadmaps
+- Data-Driven Marketing (Advanced) - Analytics & optimization
+- Entrepreneurship 101 (Beginner) - Start your business
+`;
+
 
 export default function Recommendations() {
   const router = useRouter();
   const [message, setMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState([
     {
       id: 1,
       type: 'ai',
-      text: "Hello Alex! I'm your EduLearn assistant. What would you like to learn today?",
-    },
-    {
-      id: 2,
-      type: 'user',
-      text: "I'm looking for a beginner-level course on UI/UX design. I'm specifically interested in Figma and accessibility fundamentals.",
-    },
-    {
-      id: 3,
-      type: 'ai',
-      text: 'Great choice! Based on your interest in design and accessibility, I found these top-rated courses that are perfect for beginners:',
-      courses: SAMPLE_COURSES,
-    },
-    {
-      id: 4,
-      type: 'ai',
-      text: 'The Figma course is hands-on and will get you building prototypes by day 3. The Google course is exceptional for learning inclusive design principles. Which one sounds more interesting?',
+      text: "Hello! I'm your EduLearn AI assistant. I can help you discover courses in programming, design, data science, business, and more. What would you like to learn today?",
     },
   ]);
+  const scrollViewRef = useRef(null);
 
-  const sendMessage = () => {
-    if (message.trim()) {
-      setMessages([...messages, { id: Date.now(), type: 'user', text: message }]);
-      setMessage('');
+  useEffect(() => {
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollToEnd({ animated: true });
+    }
+  }, [messages]);
+
+  const handleNewChat = () => {
+    setMessages([
+      {
+        id: 1,
+        type: 'ai',
+        text: "Hello! I'm your EduLearn AI assistant. I can help you discover courses in programming, design, data science, business, and more. What would you like to learn today?",
+      },
+    ]);
+    setMessage('');
+  };
+
+  const sendMessage = async () => {
+    if (!message.trim() || isLoading) return;
+
+    const userMessage = message.trim();
+    const userMessageObj = { 
+      id: Date.now(), 
+      type: 'user', 
+      text: userMessage 
+    };
+
+    setMessages(prev => [...prev, userMessageObj]);
+    setMessage('');
+    setIsLoading(true);
+
+    try {
+      const conversationHistory = messages
+        .slice(-6)
+        .map(msg => `${msg.type === 'user' ? 'Student' : 'EduLearn AI'}: ${msg.text}`)
+        .join('\n');
+
+      const response = await fetch(GEMINI_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: `You are an AI course recommendation assistant for EduLearn, an online learning platform.
+
+AVAILABLE COURSES ON EDULEARN:
+${AVAILABLE_COURSES}
+
+YOUR ROLE:
+- Help students find the perfect courses from the catalog above
+- ALWAYS recommend specific courses by name when appropriate
+- Be friendly, concise, and actionable
+- After 1-2 clarifying questions, START RECOMMENDING specific courses from the catalog
+- Format course recommendations clearly with bullet points
+
+CONVERSATION HISTORY:
+${conversationHistory}
+
+STUDENT'S NEW MESSAGE: ${userMessage}
+
+INSTRUCTIONS:
+1. If this is their first meaningful query about what they want to learn, ask ONE clarifying question about their experience level or goals
+2. If you already have enough context (e.g., they said "full stack developer" or "beginner"), immediately recommend 2-3 SPECIFIC courses from the catalog above
+3. Use the exact course names from the catalog
+4. Keep responses under 150 words
+5. Be encouraging and specific
+
+Respond now:`
+            }]
+          }],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 600,
+          },
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+        const aiResponse = data.candidates[0].content.parts[0].text;
+        
+        setMessages(prev => [...prev, {
+          id: Date.now() + 1,
+          type: 'ai',
+          text: aiResponse,
+        }]);
+      } else {
+        throw new Error('Invalid response format');
+      }
+    } catch (error) {
+      console.error('AI Error:', error);
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        type: 'ai',
+        text: "I apologize, but I'm having trouble connecting right now. Please try again in a moment. In the meantime, you can browse our course catalog or check your profile!",
+      }]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -76,13 +182,13 @@ export default function Recommendations() {
       <View style={styles.sidebar}>
         <View style={styles.sidebarHeader}>
           <View style={styles.logoContainer}>
-            <Ionicons name="school" size={28} color="#7C3AED" />
+            <Ionicons name="school" size={28} color="#741ce9" />
             <View>
               <Text style={styles.logoText}>EduLearn</Text>
               <Text style={styles.logoSubtext}>AI Course Assistant</Text>
             </View>
           </View>
-          <TouchableOpacity style={styles.newChatButton}>
+          <TouchableOpacity style={styles.newChatButton} onPress={handleNewChat}>
             <Ionicons name="add" size={20} color="white" />
             <Text style={styles.newChatButtonText}>New Chat</Text>
           </TouchableOpacity>
@@ -98,7 +204,7 @@ export default function Recommendations() {
               <Ionicons
                 name="chatbubble"
                 size={20}
-                color={chat.active ? '#7C3AED' : '#666'}
+                color={chat.active ? '#741ce9' : '#666'}
               />
               <Text style={[styles.chatItemText, chat.active && styles.chatItemTextActive]}>
                 {chat.title}
@@ -113,10 +219,9 @@ export default function Recommendations() {
             <Text style={styles.settingsText}>Settings</Text>
           </TouchableOpacity>
           <View style={styles.userInfo}>
-            <Image
-              source={{ uri: 'https://via.placeholder.com/40' }}
-              style={styles.userAvatar}
-            />
+            <View style={styles.userAvatarCircle}>
+              <Ionicons name="person" size={20} color="#741ce9" />
+            </View>
             <View>
               <Text style={styles.userName}>Alex Johnson</Text>
               <Text style={styles.userStatus}>Premium Member</Text>
@@ -128,8 +233,8 @@ export default function Recommendations() {
       <View style={styles.mainContent}>
         <View style={styles.header}>
           <View style={styles.headerLeft}>
-            <Ionicons name="sparkles" size={24} color="#7C3AED" />
-            <Text style={styles.headerTitle}>UI/UX Design Path</Text>
+            <Ionicons name="sparkles" size={24} color="#741ce9" />
+            <Text style={styles.headerTitle}>AI Course Assistant</Text>
           </View>
           <View style={styles.headerRight}>
             <TouchableOpacity style={styles.iconButton}>
@@ -144,7 +249,11 @@ export default function Recommendations() {
           </View>
         </View>
 
-        <ScrollView style={styles.chatArea}>
+        <ScrollView 
+          style={styles.chatArea}
+          ref={scrollViewRef}
+          onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+        >
           {messages.map((msg) => (
             <View key={msg.id} style={styles.messageContainer}>
               {msg.type === 'ai' ? (
@@ -155,34 +264,6 @@ export default function Recommendations() {
                   <View style={styles.messageContent}>
                     <Text style={styles.aiLabel}>EDULEARN AI</Text>
                     <Text style={styles.messageText}>{msg.text}</Text>
-                    
-                    {msg.courses && (
-                      <View style={styles.coursesContainer}>
-                        {msg.courses.map((course) => (
-                          <TouchableOpacity
-                            key={course.id}
-                            style={styles.courseCard}
-                            onPress={() => router.push(`/course/${course.id}`)}
-                          >
-                            <Image
-                              source={{ uri: course.thumbnail }}
-                              style={styles.courseThumbnail}
-                            />
-                            <View style={styles.courseInfo}>
-                              <View style={styles.courseCategory}>
-                                <Text style={styles.courseCategoryText}>{course.category}</Text>
-                              </View>
-                              <Text style={styles.courseTitle}>{course.title}</Text>
-                              <Text style={styles.courseInstructor}>{course.instructor}</Text>
-                              <View style={styles.courseRating}>
-                                <Ionicons name="star" size={16} color="#F59E0B" />
-                                <Text style={styles.ratingText}>{course.rating}</Text>
-                              </View>
-                            </View>
-                          </TouchableOpacity>
-                        ))}
-                      </View>
-                    )}
                   </View>
                 </View>
               ) : (
@@ -198,6 +279,21 @@ export default function Recommendations() {
               )}
             </View>
           ))}
+          
+          {isLoading && (
+            <View style={styles.loadingContainer}>
+              <View style={styles.aiAvatar}>
+                <Ionicons name="school" size={24} color="white" />
+              </View>
+              <View style={styles.loadingContent}>
+                <Text style={styles.aiLabel}>EDULEARN AI</Text>
+                <View style={styles.typingIndicator}>
+                  <ActivityIndicator size="small" color="#741ce9" />
+                  <Text style={styles.typingText}>Thinking...</Text>
+                </View>
+              </View>
+            </View>
+          )}
         </ScrollView>
 
         <View style={styles.inputContainer}>
@@ -224,7 +320,7 @@ export default function Recommendations() {
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.aiFooter}>Powered by EduLearn AI 4.0</Text>
+        <Text style={styles.aiFooter}>Powered by Google Gemini AI</Text>
       </View>
     </View>
   );
@@ -266,7 +362,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#7C3AED',
+    backgroundColor: '#741ce9',
     borderRadius: 8,
     padding: 12,
   },
@@ -300,7 +396,7 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   chatItemTextActive: {
-    color: '#7C3AED',
+    color: '#741ce9',
     fontWeight: '600',
   },
   sidebarFooter: {
@@ -324,10 +420,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
   },
-  userAvatar: {
+  userAvatarCircle: {
     width: 40,
     height: 40,
     borderRadius: 20,
+    backgroundColor: '#F3E8FF',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   userName: {
     fontSize: 14,
@@ -372,7 +471,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#7C3AED',
+    backgroundColor: '#741ce9',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -395,7 +494,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#7C3AED',
+    backgroundColor: '#741ce9',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -444,7 +543,7 @@ const styles = StyleSheet.create({
   courseCategoryText: {
     fontSize: 10,
     fontWeight: '600',
-    color: '#7C3AED',
+    color: '#741ce9',
   },
   courseTitle: {
     fontSize: 14,
@@ -471,7 +570,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   userMessageBubble: {
-    backgroundColor: '#7C3AED',
+    backgroundColor: '#741ce9',
     borderRadius: 12,
     padding: 16,
     maxWidth: '70%',
@@ -540,7 +639,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#7C3AED',
+    backgroundColor: '#741ce9',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -550,5 +649,24 @@ const styles = StyleSheet.create({
     color: '#999',
     padding: 12,
     backgroundColor: 'white',
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 24,
+  },
+  loadingContent: {
+    flex: 1,
+  },
+  typingIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 8,
+  },
+  typingText: {
+    fontSize: 14,
+    color: '#666',
+    fontStyle: 'italic',
   },
 });

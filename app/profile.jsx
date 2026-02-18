@@ -14,6 +14,10 @@ export default function Profile() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('profile');
 
+  const handleSignOut = () => {
+    router.replace('/signin');
+  };
+
   const userData = {
     name: 'Alex',
     studentId: '#EDU-88291',
@@ -34,7 +38,7 @@ export default function Profile() {
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.logoContainer}>
-          <Ionicons name="school" size={28} color="#7C3AED" />
+          <Ionicons name="school" size={28} color="#741ce9" />
           <Text style={styles.logoText}>EduLearn</Text>
         </View>
 
@@ -80,7 +84,7 @@ export default function Profile() {
                 style={[styles.sidebarItem, activeTab === 'profile' && styles.sidebarItemActive]}
                 onPress={() => setActiveTab('profile')}
               >
-                <Ionicons name="person" size={20} color={activeTab === 'profile' ? '#7C3AED' : '#666'} />
+                <Ionicons name="person" size={20} color={activeTab === 'profile' ? '#741ce9' : '#666'} />
                 <Text style={[styles.sidebarText, activeTab === 'profile' && styles.sidebarTextActive]}>
                   Profile Info
                 </Text>
@@ -101,7 +105,7 @@ export default function Profile() {
                 <Ionicons name="help-circle" size={20} color="#666" />
                 <Text style={styles.sidebarText}>Help Center</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.sidebarItem}>
+              <TouchableOpacity style={styles.sidebarItem} onPress={handleSignOut}>
                 <Ionicons name="log-out" size={20} color="#666" />
                 <Text style={styles.sidebarText}>Sign Out</Text>
               </TouchableOpacity>
@@ -129,7 +133,7 @@ export default function Profile() {
             <View style={styles.statsGrid}>
               <View style={styles.statCard}>
                 <View style={styles.statHeader}>
-                  <Ionicons name="book" size={24} color="#7C3AED" />
+                  <Ionicons name="book" size={24} color="#741ce9" />
                   <Text style={styles.statValue}>{userData.courses}</Text>
                 </View>
                 <Text style={styles.statLabel}>COURSES</Text>
@@ -138,7 +142,7 @@ export default function Profile() {
 
               <View style={styles.statCard}>
                 <View style={styles.statHeader}>
-                  <Ionicons name="time" size={24} color="#7C3AED" />
+                  <Ionicons name="time" size={24} color="#741ce9" />
                   <Text style={styles.statValue}>{userData.learningHours}</Text>
                 </View>
                 <Text style={styles.statLabel}>LEARNING HOURS</Text>
@@ -147,7 +151,7 @@ export default function Profile() {
 
               <View style={styles.statCard}>
                 <View style={styles.statHeader}>
-                  <Ionicons name="ribbon" size={24} color="#7C3AED" />
+                  <Ionicons name="ribbon" size={24} color="#741ce9" />
                   <Text style={styles.statValue}>{userData.certificates}</Text>
                 </View>
                 <Text style={styles.statLabel}>CERTIFICATES</Text>
@@ -170,7 +174,7 @@ export default function Profile() {
                   </View>
                 ))}
                 <TouchableOpacity style={styles.addInterestButton}>
-                  <Ionicons name="add" size={20} color="#7C3AED" />
+                  <Ionicons name="add" size={20} color="#741ce9" />
                   <Text style={styles.addInterestText}>Add Interest</Text>
                 </TouchableOpacity>
               </View>
@@ -187,7 +191,7 @@ export default function Profile() {
                 {userData.recentCertificates.map((cert) => (
                   <View key={cert.id} style={styles.certificateCard}>
                     <View style={styles.certificateIcon}>
-                      <Ionicons name="shield-checkmark" size={40} color="#7C3AED" />
+                      <Ionicons name="shield-checkmark" size={40} color="#741ce9" />
                     </View>
                     <View style={styles.certificateProgress} />
                     <Text style={styles.certificateTitle}>{cert.title}</Text>
@@ -208,7 +212,7 @@ export default function Profile() {
 
       <View style={styles.footer}>
         <View style={styles.footerLeft}>
-          <Ionicons name="school" size={24} color="#7C3AED" />
+          <Ionicons name="school" size={24} color="#741ce9" />
           <Text style={styles.footerText}>EduLearn</Text>
         </View>
         <Text style={styles.footerCopyright}>© 2023 EduLearn Inc.</Text>
@@ -271,7 +275,7 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   activeNavLink: {
-    color: '#7C3AED',
+    color: '#741ce9',
     fontWeight: '600',
   },
   iconButton: {
@@ -329,7 +333,7 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   sidebarTextActive: {
-    color: '#7C3AED',
+    color: '#741ce9',
     fontWeight: '600',
   },
   profileContent: {
@@ -361,7 +365,7 @@ const styles = StyleSheet.create({
   },
   studentId: {
     fontSize: 14,
-    color: '#7C3AED',
+    color: '#741ce9',
     marginBottom: 12,
   },
   bio: {
@@ -371,7 +375,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   editButton: {
-    backgroundColor: '#7C3AED',
+    backgroundColor: '#741ce9',
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 24,
@@ -429,11 +433,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   manageLink: {
-    color: '#7C3AED',
+    color: '#741ce9',
     fontSize: 14,
   },
   viewAllLink: {
-    color: '#7C3AED',
+    color: '#741ce9',
     fontSize: 14,
   },
   interestsContainer: {
@@ -461,13 +465,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderWidth: 1,
-    borderColor: '#7C3AED',
+    borderColor: '#741ce9',
     borderRadius: 20,
     borderStyle: 'dashed',
   },
   addInterestText: {
     fontSize: 14,
-    color: '#7C3AED',
+    color: '#741ce9',
   },
   certificatesGrid: {
     flexDirection: 'row',
@@ -486,7 +490,7 @@ const styles = StyleSheet.create({
   },
   certificateProgress: {
     height: 4,
-    backgroundColor: '#7C3AED',
+    backgroundColor: '#741ce9',
     borderRadius: 2,
     marginBottom: 16,
   },
@@ -502,14 +506,14 @@ const styles = StyleSheet.create({
   },
   viewCertButton: {
     borderWidth: 1,
-    borderColor: '#7C3AED',
+    borderColor: '#741ce9',
     borderRadius: 8,
     paddingVertical: 8,
     paddingHorizontal: 16,
     alignItems: 'center',
   },
   viewCertButtonText: {
-    color: '#7C3AED',
+    color: '#741ce9',
     fontSize: 14,
     fontWeight: '600',
   },

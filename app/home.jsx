@@ -8,15 +8,18 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { COURSES } from '../data/courses';
 
 export default function Home() {
   const router = useRouter();
+  const continueLearningCourses = COURSES.slice(0, 3);
+  const recommendedCourses = COURSES.slice(3, 9);
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.logoContainer}>
-          <Ionicons name="school" size={28} color="#7C3AED" />
+          <Ionicons name="school" size={28} color="#741ce9" />
           <Text style={styles.logoText}>EduLearn</Text>
         </View>
 
@@ -58,7 +61,7 @@ export default function Home() {
             style={styles.actionCard}
             onPress={() => router.push('/recommendations')}
           >
-            <Ionicons name="sparkles" size={32} color="#7C3AED" />
+            <Ionicons name="sparkles" size={32} color="#741ce9" />
             <Text style={styles.actionTitle}>AI Recommendations</Text>
             <Text style={styles.actionSubtitle}>Get personalized course suggestions</Text>
           </TouchableOpacity>
@@ -67,13 +70,13 @@ export default function Home() {
             style={styles.actionCard}
             onPress={() => router.push('/profile')}
           >
-            <Ionicons name="person" size={32} color="#7C3AED" />
+            <Ionicons name="person" size={32} color="#741ce9" />
             <Text style={styles.actionTitle}>My Profile</Text>
             <Text style={styles.actionSubtitle}>View your learning progress</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.actionCard}>
-            <Ionicons name="book" size={32} color="#7C3AED" />
+            <Ionicons name="book" size={32} color="#741ce9" />
             <Text style={styles.actionTitle}>Browse Courses</Text>
             <Text style={styles.actionSubtitle}>Explore 5000+ courses</Text>
           </TouchableOpacity>
@@ -82,7 +85,7 @@ export default function Home() {
             style={styles.actionCard}
             onPress={() => router.push('/settings')}
           >
-            <Ionicons name="settings" size={32} color="#7C3AED" />
+            <Ionicons name="settings" size={32} color="#741ce9" />
             <Text style={styles.actionTitle}>Settings</Text>
             <Text style={styles.actionSubtitle}>Manage your account</Text>
           </TouchableOpacity>
@@ -91,50 +94,48 @@ export default function Home() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Continue Learning</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.coursesList}>
-            <TouchableOpacity
-              style={styles.courseCard}
-              onPress={() => router.push('/course/1')}
-            >
-              <View style={styles.courseThumbnail}>
-                <Ionicons name="code-slash" size={48} color="white" />
-              </View>
-              <Text style={styles.courseTitle}>Python for Beginners</Text>
-              <Text style={styles.courseInstructor}>by John Doe</Text>
-              <View style={styles.progressBar}>
-                <View style={[styles.progressFill, { width: '60%' }]} />
-              </View>
-              <Text style={styles.progressText}>60% Complete</Text>
-            </TouchableOpacity>
+            {continueLearningCourses.map((course, index) => (
+              <TouchableOpacity
+                key={course.id}
+                style={styles.courseCard}
+                onPress={() => router.push(`/course/${course.id}`)}
+              >
+                <View style={[styles.courseThumbnail, { backgroundColor: course.thumbnailColor }]}>
+                  <Ionicons name={course.thumbnail} size={48} color="white" />
+                </View>
+                <Text style={styles.courseTitle}>{course.title}</Text>
+                <Text style={styles.courseInstructor}>by {course.instructor}</Text>
+                <View style={styles.progressBar}>
+                  <View style={[styles.progressFill, { width: `${[60, 35, 85][index]}%` }]} />
+                </View>
+                <Text style={styles.progressText}>{[60, 35, 85][index]}% Complete</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
 
-            <TouchableOpacity
-              style={styles.courseCard}
-              onPress={() => router.push('/course/2')}
-            >
-              <View style={[styles.courseThumbnail, { backgroundColor: '#10b981' }]}>
-                <Ionicons name="analytics" size={48} color="white" />
-              </View>
-              <Text style={styles.courseTitle}>Data Science Fundamentals</Text>
-              <Text style={styles.courseInstructor}>by Jane Smith</Text>
-              <View style={styles.progressBar}>
-                <View style={[styles.progressFill, { width: '35%' }]} />
-              </View>
-              <Text style={styles.progressText}>35% Complete</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.courseCard}
-              onPress={() => router.push('/course/3')}
-            >
-              <View style={[styles.courseThumbnail, { backgroundColor: '#f59e0b' }]}>
-                <Ionicons name="color-palette" size={48} color="white" />
-              </View>
-              <Text style={styles.courseTitle}>UI/UX Design Masterclass</Text>
-              <Text style={styles.courseInstructor}>by Sarah Johnson</Text>
-              <View style={styles.progressBar}>
-                <View style={[styles.progressFill, { width: '85%' }]} />
-              </View>
-              <Text style={styles.progressText}>85% Complete</Text>
-            </TouchableOpacity>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Explore More Courses</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.coursesList}>
+            {recommendedCourses.map((course) => (
+              <TouchableOpacity
+                key={course.id}
+                style={styles.courseCard}
+                onPress={() => router.push(`/course/${course.id}`)}
+              >
+                <View style={[styles.courseThumbnail, { backgroundColor: course.thumbnailColor }]}>
+                  <Ionicons name={course.thumbnail} size={48} color="white" />
+                </View>
+                <Text style={styles.courseTitle}>{course.title}</Text>
+                <Text style={styles.courseInstructor}>by {course.instructor}</Text>
+                <View style={styles.courseRating}>
+                  <Ionicons name="star" size={16} color="#F59E0B" />
+                  <Text style={styles.ratingText}>{course.rating}</Text>
+                  <Text style={styles.studentsText}>({(course.studentsEnrolled / 1000).toFixed(0)}k students)</Text>
+                </View>
+                <Text style={styles.priceText}>{course.price}</Text>
+              </TouchableOpacity>
+            ))}
           </ScrollView>
         </View>
 
@@ -144,7 +145,7 @@ export default function Home() {
             style={styles.bigCard}
             onPress={() => router.push('/recommendations')}
           >
-            <Ionicons name="sparkles" size={48} color="#7C3AED" />
+            <Ionicons name="sparkles" size={48} color="#741ce9" />
             <Text style={styles.bigCardTitle}>Try AI Course Assistant</Text>
             <Text style={styles.bigCardText}>
               Get personalized course recommendations based on your interests and learning goals
@@ -209,7 +210,7 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   activeNavLink: {
-    color: '#7C3AED',
+    color: '#741ce9',
     fontWeight: '600',
   },
   iconButton: {
@@ -280,7 +281,7 @@ const styles = StyleSheet.create({
   },
   courseThumbnail: {
     height: 140,
-    backgroundColor: '#7C3AED',
+    backgroundColor: '#741ce9',
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
@@ -304,12 +305,32 @@ const styles = StyleSheet.create({
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#7C3AED',
+    backgroundColor: '#741ce9',
     borderRadius: 3,
   },
   progressText: {
     fontSize: 12,
     color: '#666',
+  },
+  courseRating: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 8,
+  },
+  ratingText: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginRight: 4,
+  },
+  studentsText: {
+    fontSize: 12,
+    color: '#666',
+  },
+  priceText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#741ce9',
   },
   bigCard: {
     backgroundColor: '#F3E8FF',
@@ -334,7 +355,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: '#7C3AED',
+    backgroundColor: '#741ce9',
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 24,

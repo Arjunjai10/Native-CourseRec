@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   linkText: {
-    color: '#7C3AED',
+    color: '#741ce9',
     fontWeight: '600',
   },
   errorText: {
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   forgotText: {
-    color: '#7C3AED',
+    color: '#741ce9',
     fontSize: 14,
   },
   input: {
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   signInButton: {
-    backgroundColor: '#7C3AED',
+    backgroundColor: '#741ce9',
     borderRadius: 8,
     padding: 16,
     alignItems: 'center',

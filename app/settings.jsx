@@ -31,7 +31,7 @@ export default function Settings() {
           <Ionicons name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
         <View style={styles.logoContainer}>
-          <Ionicons name="school" size={24} color="#7C3AED" />
+          <Ionicons name="school" size={24} color="#741ce9" />
           <Text style={styles.logoText}>EduLearn</Text>
         </View>
         <View style={styles.nav}>
@@ -68,7 +68,7 @@ export default function Settings() {
 
           <View style={styles.sidebarSection}>
             <TouchableOpacity style={[styles.sidebarItem, styles.sidebarItemActive]}>
-              <Ionicons name="person" size={20} color="#7C3AED" />
+              <Ionicons name="person" size={20} color="#741ce9" />
               <Text style={[styles.sidebarText, styles.sidebarTextActive]}>Profile Info</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.sidebarItem}>
@@ -155,7 +155,7 @@ export default function Settings() {
                   placeholder="alex.johnson@edulearn.com"
                   keyboardType="email-address"
                 />
-                <Ionicons name="checkmark-circle" size={20} color="#7C3AED" />
+                <Ionicons name="checkmark-circle" size={20} color="#741ce9" />
               </View>
               <Text style={styles.helperText}>
                 Your email is verified and will be used for course notifications.
@@ -303,7 +303,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   sidebarItemActive: {
-    backgroundColor: '#7C3AED',
+    backgroundColor: '#741ce9',
   },
   sidebarText: {
     fontSize: 14,
@@ -356,7 +356,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#7C3AED',
+    backgroundColor: '#741ce9',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -380,7 +380,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   uploadButton: {
-    backgroundColor: '#7C3AED',
+    backgroundColor: '#741ce9',
     borderRadius: 8,
     paddingVertical: 10,
     paddingHorizontal: 20,
@@ -470,7 +470,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   saveButton: {
-    backgroundColor: '#7C3AED',
+    backgroundColor: '#741ce9',
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 24,
