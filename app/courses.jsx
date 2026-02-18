@@ -75,25 +75,29 @@ export default function Courses() {
         </View>
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesScroll}>
-        {categories.map((category) => (
-          <TouchableOpacity
-            key={category}
-            style={[
-              styles.categoryButton,
-              selectedCategory === category && styles.categoryButtonActive
-            ]}
-            onPress={() => setSelectedCategory(category)}
-          >
-            <Text style={[
-              styles.categoryButtonText,
-              selectedCategory === category && styles.categoryButtonTextActive
-            ]}>
-              {category}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+      <View style={styles.categoriesContainer}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesScroll}>
+          <View style={styles.categoriesWrapper}>
+            {categories.map((category) => (
+              <TouchableOpacity
+                key={category}
+                style={[
+                  styles.categoryButton,
+                  selectedCategory === category && styles.categoryButtonActive
+                ]}
+                onPress={() => setSelectedCategory(category)}
+              >
+                <Text style={[
+                  styles.categoryButtonText,
+                  selectedCategory === category && styles.categoryButtonTextActive
+                ]}>
+                  {category}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
+      </View>
 
       <View style={styles.resultsHeader}>
         <Text style={styles.resultsText}>
@@ -189,27 +193,31 @@ const styles = StyleSheet.create({
   },
   searchSection: {
     backgroundColor: 'white',
-    padding: 24,
+    padding: 32,
+    paddingBottom: 24,
     borderBottomWidth: 1,
     borderBottomColor: '#e5e5e5',
   },
   pageTitle: {
-    fontSize: 32,
+    fontSize: 36,
     fontWeight: 'bold',
     marginBottom: 8,
+    color: '#1a1a1a',
   },
   pageSubtitle: {
     fontSize: 16,
     color: '#666',
-    marginBottom: 24,
+    marginBottom: 20,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f9fafb',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
     borderRadius: 12,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 14,
     gap: 12,
   },
   searchInput: {
@@ -217,19 +225,28 @@ const styles = StyleSheet.create({
     fontSize: 16,
     outlineStyle: 'none',
   },
-  categoriesScroll: {
+  categoriesContainer: {
     backgroundColor: 'white',
     borderBottomWidth: 1,
     borderBottomColor: '#e5e5e5',
+  },
+  categoriesScroll: {
     paddingHorizontal: 24,
     paddingVertical: 16,
   },
+  categoriesWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   categoryButton: {
     paddingHorizontal: 20,
-    paddingVertical: 10,
+    paddingVertical: 8,
     borderRadius: 20,
     backgroundColor: '#f5f5f5',
     marginRight: 12,
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   categoryButtonActive: {
     backgroundColor: '#741ce9',
@@ -238,6 +255,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#666',
+    whiteSpace: 'nowrap',
   },
   categoryButtonTextActive: {
     color: 'white',
@@ -258,16 +276,21 @@ const styles = StyleSheet.create({
   coursesGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 16,
+    gap: 20,
     paddingBottom: 24,
   },
   courseCard: {
-    width: 300,
+    width: 320,
     backgroundColor: 'white',
     borderRadius: 12,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: '#e5e5e5',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   courseThumbnail: {
     height: 160,
@@ -279,22 +302,25 @@ const styles = StyleSheet.create({
   },
   categoryBadge: {
     backgroundColor: '#F3E8FF',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
     borderRadius: 4,
     alignSelf: 'flex-start',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   categoryBadgeText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600',
     color: '#741ce9',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   courseTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
     marginBottom: 8,
-    minHeight: 48,
+    lineHeight: 22,
+    height: 44,
   },
   courseInstructor: {
     fontSize: 14,
