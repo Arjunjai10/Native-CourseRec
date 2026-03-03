@@ -1,28 +1,91 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { COURSES } from '../data/courses';
+import { courseAPI, userAPI } from './utils/api';
 
 export default function Home() {
   const router = useRouter();
-  
-  const continueLearningCourses = [
-    COURSES.find(c => c.category === 'Programming') || COURSES[0],
-    COURSES.find(c => c.category === 'Web Development') || COURSES[1],
-    COURSES.find(c => c.category === 'Data Science') || COURSES[2],
-  ];
-  
-  const allCategories = [...new Set(COURSES.map(c => c.category))];
-  const recommendedCourses = allCategories.slice(3, 12).map(category => 
-    COURSES.find(c => c.category === category)
-  ).filter(Boolean);
+
+  const [courses, setCourses] = useState([]);
+  const [recommendedCourses, setRecommendedCourses] = useState([]);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Get user info from local storage (if available) to get the ID
+        let userId = null;
+        let storedUser = null;
+        if (Platform.OS === 'web') {
+          const userStr = localStorage.getItem('user');
+          if (userStr) {
+            storedUser = JSON.parse(userStr);
+            userId = storedUser.id;
+            setUser(storedUser);
+          }
+        }
+
+        const [coursesRes, recommendationsRes] = await Promise.all([
+          courseAPI.getAll(),
+          userId ? courseAPI.getRecommendations(userId) : Promise.resolve({ data: [] })
+        ]);
+
+        setCourses(coursesRes.data);
+        setRecommendedCourses(recommendationsRes.data);
+
+        // Fetch full profile if we have an ID
+        if (userId) {
+          const profileRes = await userAPI.getProfile(userId);
+          setUser(profileRes.data);
+        }
+
+      } catch (err) {
+        console.error('Error fetching data:', err);
+        setError('Failed to load data. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={[styles.container, styles.centered]}>
+        <ActivityIndicator size="large" color="#741ce9" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={[styles.container, styles.centered]}>
+        <Text style={styles.errorText}>{error}</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={() => router.replace('/home')}>
+          <Text style={styles.retryButtonText}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  const continueLearningCourses = courses.slice(0, 3);
+  const exploreMoreCourses = courses.slice(3, 12);
+  const displayRecommendations = recommendedCourses.length > 0 ? recommendedCourses : courses.slice(12, 18);
 
   return (
     <View style={styles.container}>
@@ -61,7 +124,7 @@ export default function Home() {
 
       <ScrollView style={styles.content}>
         <View style={styles.hero}>
-          <Text style={styles.heroTitle}>Welcome back! 👋</Text>
+          <Text style={styles.heroTitle}>Welcome back, {user ? user.fullName.split(' ')[0] : 'learner'}! 👋</Text>
           <Text style={styles.heroSubtitle}>Continue your learning journey</Text>
         </View>
 
@@ -105,19 +168,19 @@ export default function Home() {
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.coursesList}>
             {continueLearningCourses.map((course, index) => (
               <TouchableOpacity
-                key={course.id}
+                key={course._id || course.id}
                 style={styles.courseCard}
-                onPress={() => router.push(`/course/${course.id}`)}
+                onPress={() => router.push(`/course/${course._id || course.id}`)}
               >
-                <View style={[styles.courseThumbnail, { backgroundColor: course.thumbnailColor }]}>
-                  <Ionicons name={course.thumbnail} size={48} color="white" />
+                <View style={[styles.courseThumbnail, { backgroundColor: course.thumbnailColor || '#741ce9' }]}>
+                  <Ionicons name={course.thumbnail || 'book'} size={48} color="white" />
                 </View>
                 <Text style={styles.courseTitle}>{course.title}</Text>
-                <Text style={styles.courseInstructor}>by {course.instructor}</Text>
+                <Text style={styles.courseInstructor}>by {course.instructor?.name || course.instructor}</Text>
                 <View style={styles.progressBar}>
-                  <View style={[styles.progressFill, { width: `${[60, 35, 85][index]}%` }]} />
+                  <View style={[styles.progressFill, { width: `${[60, 35, 85][index % 3]}%` }]} />
                 </View>
-                <Text style={styles.progressText}>{[60, 35, 85][index]}% Complete</Text>
+                <Text style={styles.progressText}>{[60, 35, 85][index % 3]}% Complete</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -126,23 +189,23 @@ export default function Home() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Explore More Courses</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.coursesList}>
-            {recommendedCourses.map((course) => (
+            {exploreMoreCourses.map((course) => (
               <TouchableOpacity
-                key={course.id}
+                key={course._id || course.id}
                 style={styles.courseCard}
-                onPress={() => router.push(`/course/${course.id}`)}
+                onPress={() => router.push(`/course/${course._id || course.id}`)}
               >
-                <View style={[styles.courseThumbnail, { backgroundColor: course.thumbnailColor }]}>
-                  <Ionicons name={course.thumbnail} size={48} color="white" />
+                <View style={[styles.courseThumbnail, { backgroundColor: course.thumbnailColor || '#741ce9' }]}>
+                  <Ionicons name={course.thumbnail || 'book'} size={48} color="white" />
                 </View>
                 <Text style={styles.courseTitle}>{course.title}</Text>
-                <Text style={styles.courseInstructor}>by {course.instructor}</Text>
+                <Text style={styles.courseInstructor}>by {course.instructor?.name || course.instructor}</Text>
                 <View style={styles.courseRating}>
                   <Ionicons name="star" size={16} color="#F59E0B" />
                   <Text style={styles.ratingText}>{course.rating}</Text>
-                  <Text style={styles.studentsText}>({(course.studentsEnrolled / 1000).toFixed(0)}k students)</Text>
+                  <Text style={styles.studentsText}>({((course.studentsEnrolled || 0) / 1000).toFixed(0)}k students)</Text>
                 </View>
-                <Text style={styles.priceText}>{course.price}</Text>
+                <Text style={styles.priceText}>{course.price === 0 ? 'Free' : `$${course.price}`}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -150,20 +213,44 @@ export default function Home() {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Recommended for You</Text>
-          <TouchableOpacity
-            style={styles.bigCard}
-            onPress={() => router.push('/recommendations')}
-          >
-            <Ionicons name="sparkles" size={48} color="#741ce9" />
-            <Text style={styles.bigCardTitle}>Try AI Course Assistant</Text>
-            <Text style={styles.bigCardText}>
-              Get personalized course recommendations based on your interests and learning goals
-            </Text>
-            <View style={styles.bigCardButton}>
-              <Text style={styles.bigCardButtonText}>Get Started</Text>
-              <Ionicons name="arrow-forward" size={20} color="white" />
-            </View>
-          </TouchableOpacity>
+          {user ? (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.coursesList}>
+              {displayRecommendations.map((course) => (
+                <TouchableOpacity
+                  key={course._id || course.id}
+                  style={styles.courseCard}
+                  onPress={() => router.push(`/course/${course._id || course.id}`)}
+                >
+                  <View style={[styles.courseThumbnail, { backgroundColor: course.thumbnailColor || '#741ce9' }]}>
+                    <Ionicons name={course.thumbnail || 'sparkles'} size={48} color="white" />
+                  </View>
+                  <Text style={styles.courseTitle}>{course.title}</Text>
+                  <Text style={styles.courseInstructor}>by {course.instructor?.name || course.instructor}</Text>
+                  <View style={styles.courseRating}>
+                    <Ionicons name="star" size={16} color="#F59E0B" />
+                    <Text style={styles.ratingText}>{course.rating}</Text>
+                    <Text style={styles.studentsText}>({((course.studentsEnrolled || 0) / 1000).toFixed(0)}k students)</Text>
+                  </View>
+                  <Text style={styles.priceText}>{course.price === 0 ? 'Free' : `$${course.price}`}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          ) : (
+            <TouchableOpacity
+              style={styles.bigCard}
+              onPress={() => router.push('/recommendations')}
+            >
+              <Ionicons name="sparkles" size={48} color="#741ce9" />
+              <Text style={styles.bigCardTitle}>Try AI Course Assistant</Text>
+              <Text style={styles.bigCardText}>
+                Get personalized course recommendations based on your interests and learning goals
+              </Text>
+              <View style={styles.bigCardButton}>
+                <Text style={styles.bigCardButtonText}>Get Started</Text>
+                <Ionicons name="arrow-forward" size={20} color="white" />
+              </View>
+            </TouchableOpacity>
+          )}
         </View>
       </ScrollView>
     </View>
@@ -175,6 +262,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
+  centered: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -182,6 +273,21 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderBottomWidth: 1,
     borderBottomColor: '#e5e5e5',
+  },
+  errorText: {
+    color: '#ef4444',
+    fontSize: 16,
+    marginBottom: 16,
+  },
+  retryButton: {
+    backgroundColor: '#741ce9',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: 'white',
+    fontWeight: '600',
   },
   logoContainer: {
     flexDirection: 'row',
