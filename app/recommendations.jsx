@@ -7,63 +7,24 @@ import {
   StyleSheet,
   ScrollView,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { userAPI, courseAPI } from './utils/api';
 
 const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-
-const RECENT_CHATS = [
-  { id: 1, title: 'Python for Beginners', active: true },
-  { id: 2, title: 'Web Development Path', active: false },
-  { id: 3, title: 'Data Science Basics', active: false },
-  { id: 4, title: 'UI/UX Design', active: false },
-];
-
-const AVAILABLE_COURSES = `
-Frontend Development:
-- React Fundamentals (Beginner) - Build modern web apps with React
-- Advanced React & Next.js (Intermediate) - Master React ecosystem
-- Vue.js Complete Guide (Beginner) - Learn Vue 3 from scratch
-- Modern CSS & Tailwind (Beginner) - Responsive design mastery
-
-Backend Development:
-- Node.js & Express (Beginner) - Build REST APIs
-- Python Django Framework (Intermediate) - Full-stack with Django
-- MongoDB Complete Course (Beginner) - NoSQL database mastery
-- PostgreSQL & Database Design (Intermediate) - Relational databases
-
-Full-Stack Development:
-- MERN Stack Bootcamp (Intermediate) - MongoDB, Express, React, Node
-- Full-Stack Python Developer (Intermediate) - Django + React
-- JAMstack Development (Advanced) - Next.js, Netlify, APIs
-- Serverless Architecture (Advanced) - AWS Lambda, Cloud Functions
-
-Data Science & AI:
-- Python for Data Science (Beginner) - Pandas, NumPy, Matplotlib
-- Machine Learning A-Z (Intermediate) - Scikit-learn, TensorFlow
-- Deep Learning Specialization (Advanced) - Neural networks, PyTorch
-- Data Analytics with SQL (Beginner) - Query and analyze data
-
-Design & UX:
-- UI/UX Design Fundamentals (Beginner) - Figma, user research
-- Advanced Figma & Prototyping (Intermediate) - Interactive designs
-- Design Systems (Advanced) - Build scalable design systems
-- Mobile App Design (Intermediate) - iOS & Android UI patterns
-
-Business & Marketing:
-- Digital Marketing Masterclass (Beginner) - SEO, social media
-- Product Management Essentials (Intermediate) - Agile, roadmaps
-- Data-Driven Marketing (Advanced) - Analytics & optimization
-- Entrepreneurship 101 (Beginner) - Start your business
-`;
-
 
 export default function Recommendations() {
   const router = useRouter();
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
+  const [user, setUser] = useState(null);
+  const [allCourses, setAllCourses] = useState([]);
+  const [recentLearning, setRecentLearning] = useState([]);
+  const [availableCoursesText, setAvailableCoursesText] = useState('');
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -71,6 +32,68 @@ export default function Recommendations() {
       text: "Hello! I'm your EduLearn AI assistant. I can help you discover courses in programming, design, data science, business, and more. What would you like to learn today?",
     },
   ]);
+
+
+  useEffect(() => {
+    const initializeData = async () => {
+      try {
+        setIsInitializing(true);
+        let userId = null;
+
+        if (Platform.OS === 'web') {
+          const userStr = localStorage.getItem('user');
+          if (userStr) {
+            const storedUser = JSON.parse(userStr);
+            userId = storedUser.id;
+          }
+        }
+
+        const promises = [courseAPI.getAll()];
+        if (userId) promises.push(userAPI.getProfile(userId));
+
+        const results = await Promise.all(promises);
+        const coursesData = results[0].data;
+        setAllCourses(coursesData);
+
+        if (userId && results[1]) {
+          const userData = results[1].data;
+          setUser(userData);
+          // Set recent learning from enrolled courses, or default to recommended if none
+          if (userData.enrolledCourses && userData.enrolledCourses.length > 0) {
+            setRecentLearning(userData.enrolledCourses.map(c => ({ id: c._id, title: c.title, active: false })));
+          } else {
+            // Fallback to top few courses if no enrollments
+            setRecentLearning(coursesData.slice(0, 4).map((c, i) => ({ id: c._id, title: c.title, active: i === 0 })));
+          }
+        } else {
+          setRecentLearning(coursesData.slice(0, 4).map((c, i) => ({ id: c._id, title: c.title, active: i === 0 })));
+        }
+
+        // Build dynamic course catalog string for Gemini
+        const catalogString = coursesData.reduce((acc, course) => {
+          const category = course.category || 'Uncategorized';
+          if (!acc[category]) acc[category] = [];
+          acc[category].push(`- ${course.title} (${course.level || 'All Levels'})`);
+          return acc;
+        }, {});
+
+        const formattedCatalog = Object.entries(catalogString)
+          .map(([category, courses]) => `${category}:\n${courses.slice(0, 5).join('\n')}`) // limit to 5 per category to save tokens
+          .join('\n\n');
+
+        setAvailableCoursesText(formattedCatalog);
+
+      } catch (error) {
+        console.error("Failed to initialize course assistant data:", error);
+      } finally {
+        setIsInitializing(false);
+      }
+    };
+
+    initializeData();
+  }, []);
+
+
   const scrollViewRef = useRef(null);
 
   useEffect(() => {
@@ -94,10 +117,10 @@ export default function Recommendations() {
     if (!message.trim() || isLoading) return;
 
     const userMessage = message.trim();
-    const userMessageObj = { 
-      id: Date.now(), 
-      type: 'user', 
-      text: userMessage 
+    const userMessageObj = {
+      id: Date.now(),
+      type: 'user',
+      text: userMessage
     };
 
     setMessages(prev => [...prev, userMessageObj]);
@@ -121,7 +144,7 @@ export default function Recommendations() {
               text: `You are an AI course recommendation assistant for EduLearn, an online learning platform.
 
 AVAILABLE COURSES ON EDULEARN:
-${AVAILABLE_COURSES}
+${availableCoursesText}
 
 YOUR ROLE:
 - Help students find the perfect courses from the catalog above
@@ -153,10 +176,10 @@ Respond now:`
       });
 
       const data = await response.json();
-      
+
       if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
         const aiResponse = data.candidates[0].content.parts[0].text;
-        
+
         setMessages(prev => [...prev, {
           id: Date.now() + 1,
           type: 'ai',
@@ -177,6 +200,14 @@ Respond now:`
     }
   };
 
+  if (isInitializing) {
+    return (
+      <View style={[styles.container, styles.centered]}>
+        <ActivityIndicator size="large" color="#741ce9" />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.sidebar}>
@@ -196,7 +227,7 @@ Respond now:`
 
         <View style={styles.recentChats}>
           <Text style={styles.sectionTitle}>RECENT LEARNING</Text>
-          {RECENT_CHATS.map((chat) => (
+          {recentLearning.map((chat) => (
             <TouchableOpacity
               key={chat.id}
               style={[styles.chatItem, chat.active && styles.chatItemActive]}
@@ -220,11 +251,11 @@ Respond now:`
           </TouchableOpacity>
           <View style={styles.userInfo}>
             <View style={styles.userAvatarCircle}>
-              <Ionicons name="person" size={20} color="#741ce9" />
+              <Text style={{ color: '#741ce9', fontWeight: 'bold' }}>{user ? user.fullName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'U'}</Text>
             </View>
             <View>
-              <Text style={styles.userName}>Alex Johnson</Text>
-              <Text style={styles.userStatus}>Premium Member</Text>
+              <Text style={styles.userName}>{user ? user.fullName : 'Guest User'}</Text>
+              <Text style={styles.userStatus}>{user ? 'Premium Member' : 'Sign in to save'}</Text>
             </View>
           </View>
         </View>
@@ -249,7 +280,7 @@ Respond now:`
           </View>
         </View>
 
-        <ScrollView 
+        <ScrollView
           style={styles.chatArea}
           ref={scrollViewRef}
           onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
@@ -279,7 +310,7 @@ Respond now:`
               )}
             </View>
           ))}
-          
+
           {isLoading && (
             <View style={styles.loadingContainer}>
               <View style={styles.aiAvatar}>
@@ -331,6 +362,10 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     backgroundColor: '#f9f9f9',
+  },
+  centered: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   sidebar: {
     width: 280,
