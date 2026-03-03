@@ -11,7 +11,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import axios from 'axios';
+import { authAPI } from './utils/api';
 
 export default function SignIn() {
   const router = useRouter();
@@ -23,12 +23,13 @@ export default function SignIn() {
   const handleSignIn = async () => {
     try {
       setError('');
-      const response = await axios.post('http://localhost:5000/api/auth/login', {
-        email,
-        password,
-      });
-      
-      if (response.data.token) {
+      const response = await authAPI.login(email, password);
+
+      if (response.data.token && response.data.user) {
+        if (Platform.OS === 'web') {
+          localStorage.setItem('token', response.data.token);
+          localStorage.setItem('user', JSON.stringify(response.data.user));
+        }
         router.push('/home');
       }
     } catch (err) {

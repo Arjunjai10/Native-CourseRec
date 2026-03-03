@@ -11,7 +11,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import axios from 'axios';
+import { authAPI } from './utils/api';
 
 const INTERESTS = [
   { id: 'data-science', label: 'Data Science', icon: 'analytics' },
@@ -39,20 +39,24 @@ export default function SignUp() {
   const handleSignUp = async () => {
     try {
       setError('');
-      
+
       if (!fullName || !email || !password) {
         setError('Please fill all fields');
         return;
       }
 
-      const response = await axios.post('http://localhost:5000/api/auth/signup', {
+      const response = await authAPI.signup({
         fullName,
         email,
         password,
         interests: selectedInterests,
       });
-      
-      if (response.data.token) {
+
+      if (response.data.token && response.data.user) {
+        if (Platform.OS === 'web') {
+          localStorage.setItem('token', response.data.token);
+          localStorage.setItem('user', JSON.stringify(response.data.user));
+        }
         router.push('/home');
       }
     } catch (err) {
