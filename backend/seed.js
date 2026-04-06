@@ -165,6 +165,30 @@ function generateCourses() {
                     thumbnail: topic.icon,
                     thumbnailColor: topic.color,
                     language: 'English',
+                    externalLink: `https://www.youtube.com/results?search_query=${topic.name}+${courseType}`,
+                    syllabus: [
+                        {
+                            module: 'Introduction',
+                            lectures: 4,
+                            duration: '1.5h',
+                            topics: [
+                                { title: `What is ${topic.name}?`, duration: '15m', contentType: 'video' },
+                                { title: 'Environment Setup', duration: '25m', contentType: 'video' },
+                                { title: 'First Project Overview', duration: '10m', contentType: 'video' },
+                                { title: 'Introduction Quiz', duration: '30m', contentType: 'quiz' },
+                            ]
+                        },
+                        {
+                            module: 'Foundations',
+                            lectures: 6,
+                            duration: '3h',
+                            topics: [
+                                { title: 'The Core Concepts', duration: '45m', contentType: 'video' },
+                                { title: 'Data Structures', duration: '50m', contentType: 'video' },
+                                { title: 'Best Practices', duration: '40m', contentType: 'article' },
+                            ]
+                        }
+                    ]
                 });
             }
         }

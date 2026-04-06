@@ -65,6 +65,7 @@ const courseSchema = new mongoose.Schema({
   },
   thumbnail: String,
   videoUrl: String,
+  externalLink: String,
   syllabus: [{
     module: String,
     lectures: Number,
@@ -72,7 +73,7 @@ const courseSchema = new mongoose.Schema({
     topics: [{
       title: String,
       duration: String,
-      type: String,
+      contentType: String,
     }],
   }],
   reviews: [reviewSchema],

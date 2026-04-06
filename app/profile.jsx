@@ -10,10 +10,11 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { userAPI } from './utils/api';
+import Navbar from './components/Navbar';
 
 export default function Profile() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState('profile');
   const [user, setUser] = useState(null);
 
   const [userProfile, setUserProfile] = useState({
@@ -36,88 +37,31 @@ export default function Profile() {
         const u = JSON.parse(userStr);
         setUser(u);
         
-        // Dynamic fetch from backend
-        import('./utils/api').then(({ userAPI }) => {
-            userAPI.getProfile(u.id || u._id).then(res => {
-               const data = res.data;
-               setUserProfile({
-                  name: data.fullName || 'User',
-                  studentId: data.id ? `#EDU-${data.id.substring(data.id.length - 5)}` : (data._id ? `#EDU-${data._id.substring(data._id.length - 5)}` : ''),
-                  bio: data.bio || '',
-                  courses: (data.enrolledCourses || []).length + (data.completedCourses || []).length,
-                  coursesChange: 'Active Learner',
-                  learningHours: data.learningHours || 0,
-                  learningRank: 'Top 10% of learners',
-                  certificates: (data.certificates || []).length,
-                  interests: data.interests || [],
-                  recentCertificates: data.certificates || [],
-               });
-            }).catch(err => console.error(err));
-        });
+        userAPI.getProfile(u.id || u._id).then(res => {
+           const data = res.data;
+           setUserProfile({
+              name: data.fullName || 'User',
+              studentId: data.id ? `#EDU-${data.id.substring(data.id.length - 5)}` : (data._id ? `#EDU-${data._id.substring(data._id.length - 5)}` : ''),
+              bio: data.bio || '',
+              courses: (data.enrolledCourses || []).length + (data.completedCourses || []).length,
+              coursesChange: 'Active Learner',
+              learningHours: data.learningHours || 0,
+              learningRank: 'Top 10% of learners',
+              certificates: (data.certificates || []).length,
+              interests: data.interests || [],
+              recentCertificates: data.certificates || [],
+           });
+        }).catch(err => console.error(err));
       }
     }
   }, []);
 
-  const handleSignOut = () => {
-    if (Platform.OS === 'web') {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-    }
-    router.replace('/signin');
-  };
-
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.logoContainer}>
-          <Ionicons name="school" size={28} color="#741ce9" />
-          <Text style={styles.logoText}>EduLearn</Text>
-        </View>
-
-        <View style={styles.searchContainer}>
-          <Ionicons name="search" size={20} color="#666" />
-          <Text style={styles.searchPlaceholder}>Search courses...</Text>
-        </View>
-
-        <View style={styles.headerRight}>
-          <TouchableOpacity onPress={() => router.push('/home')}>
-            <Text style={styles.navLink}>Dashboard</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/courses')}>
-            <Text style={styles.navLink}>Courses</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/recommendations')}>
-            <Text style={styles.navLink}>Mentors</Text>
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Text style={[styles.navLink, styles.activeNavLink]}>Profile</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
-            <Ionicons name="notifications-outline" size={24} color="#333" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/settings')}>
-            <Ionicons name="settings-outline" size={24} color="#333" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.avatar} onPress={() => router.push('/profile')}>
-            <Image
-              source={{ uri: 'https://via.placeholder.com/40' }}
-              style={styles.avatarImage}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
+      <Navbar />
 
       <ScrollView style={styles.content}>
         <View style={styles.mainContent}>
-          <View style={styles.sidebar}>
-            <View style={styles.sidebarSection}>
-              <TouchableOpacity style={styles.sidebarItem} onPress={handleSignOut}>
-                <Ionicons name="log-out" size={20} color="#666" />
-                <Text style={styles.sidebarText}>Sign Out</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
           <View style={styles.profileContent}>
             <View style={styles.profileHeader}>
               <View style={styles.profileImageContainer}>
@@ -193,38 +137,24 @@ export default function Profile() {
                 </TouchableOpacity>
               </View>
               <View style={styles.certificatesGrid}>
-                {userProfile.recentCertificates.length > 0 ? userProfile.recentCertificates.map(cert => (
-                  <View key={cert.id || cert.courseId} style={styles.certCard}>
+                {userProfile.recentCertificates.length > 0 ? userProfile.recentCertificates.map((cert, index) => (
+                  <View key={index} style={styles.certCard}>
                     <View style={styles.certIcon}>
                       <Ionicons name="ribbon" size={24} color="#741ce9" />
                     </View>
-                    <View style={styles.certInfo}>
-                      <Text style={styles.certTitle}>{cert.title || cert.courseName}</Text>
-                      <Text style={styles.certDate}>Issued on {cert.date || new Date(cert.completedDate).toLocaleDateString()}</Text>
-                    </View>
-                    <TouchableOpacity onPress={() => {if (Platform.OS === 'web') {alert('Downloading certificate PDF...');}}}>
-                      <Ionicons name="download-outline" size={20} color="#666" />
+                    <Text style={styles.certTitle}>{cert.courseTitle || 'Course Certificate'}</Text>
+                    <Text style={styles.certDate}>Issued: {cert.issueDate ? new Date(cert.issueDate).toLocaleDateString() : 'Recent'}</Text>
+                    <TouchableOpacity style={styles.downloadLink}>
+                      <Ionicons name="download-outline" size={16} color="#741ce9" />
+                      <Text style={styles.downloadText}>Download</Text>
                     </TouchableOpacity>
                   </View>
-                )) : <Text style={{marginLeft: 10, color: '#666', marginBottom: 20}}>No certificates earned yet.</Text>}
+                )) : <Text style={{marginLeft: 10, color: '#666'}}>You haven't earned any certificates yet.</Text>}
               </View>
             </View>
           </View>
         </View>
       </ScrollView>
-
-      <View style={styles.footer}>
-        <View style={styles.footerLeft}>
-          <Ionicons name="school" size={24} color="#741ce9" />
-          <Text style={styles.footerText}>EduLearn</Text>
-        </View>
-        <Text style={styles.footerCopyright}>© 2023 EduLearn Inc.</Text>
-        <View style={styles.footerLinks}>
-          <TouchableOpacity onPress={() => {if (Platform.OS === 'web') {alert('Loading Privacy Policy...');}}}><Text style={styles.footerLink}>Privacy Policy</Text></TouchableOpacity>
-          <TouchableOpacity onPress={() => {if (Platform.OS === 'web') {alert('Loading Terms of Service...');}}}><Text style={styles.footerLink}>Terms of Service</Text></TouchableOpacity>
-          <TouchableOpacity onPress={() => {if (Platform.OS === 'web') {alert('Loading Cookie Settings...');}}}><Text style={styles.footerLink}>Cookie Settings</Text></TouchableOpacity>
-        </View>
-      </View>
     </View>
   );
 }
@@ -232,196 +162,114 @@ export default function Profile() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
-  },
-  logoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginRight: 24,
-  },
-  logoText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    flex: 1,
-    maxWidth: 400,
-    gap: 8,
-  },
-  searchPlaceholder: {
-    color: '#999',
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-    marginLeft: 'auto',
-  },
-  navLink: {
-    fontSize: 14,
-    color: '#666',
-  },
-  activeNavLink: {
-    color: '#741ce9',
-    fontWeight: '600',
-  },
-  iconButton: {
-    padding: 4,
-  },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    overflow: 'hidden',
-  },
-  avatarImage: {
-    width: '100%',
-    height: '100%',
+    backgroundColor: '#f5f7fb',
   },
   content: {
     flex: 1,
   },
   mainContent: {
-    flexDirection: 'row',
-    maxWidth: 1200,
-    marginHorizontal: 'auto',
+    maxWidth: 1000,
     width: '100%',
+    alignSelf: 'center',
     padding: 24,
-    gap: 24,
-  },
-  sidebar: {
-    width: 250,
-    gap: 24,
-  },
-  sidebarSection: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-  },
-  sidebarTitle: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#999',
-    marginBottom: 12,
-  },
-  sidebarItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 4,
-  },
-  sidebarItemActive: {
-    backgroundColor: '#F3E8FF',
-  },
-  sidebarText: {
-    fontSize: 14,
-    color: '#666',
-  },
-  sidebarTextActive: {
-    color: '#741ce9',
-    fontWeight: '600',
   },
   profileContent: {
     flex: 1,
   },
   profileHeader: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 24,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 30,
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 3,
   },
   profileImageContainer: {
-    alignItems: 'center',
-    marginBottom: 16,
+    marginRight: 30,
   },
   profileImage: {
     width: 120,
     height: 120,
     borderRadius: 60,
+    borderWidth: 4,
+    borderColor: '#f3ebff',
   },
   profileInfo: {
-    alignItems: 'center',
-    marginBottom: 16,
+    flex: 1,
   },
   profileName: {
     fontSize: 28,
     fontWeight: 'bold',
+    color: '#1a1a1a',
     marginBottom: 4,
   },
   studentId: {
-    fontSize: 14,
+    fontSize: 16,
     color: '#741ce9',
+    fontWeight: '600',
     marginBottom: 12,
   },
   bio: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#666',
-    textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 22,
   },
   editButton: {
-    backgroundColor: '#741ce9',
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    alignSelf: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 10,
+    backgroundColor: '#f3ebff',
   },
   editButtonText: {
-    color: 'white',
-    fontWeight: '600',
+    color: '#741ce9',
+    fontWeight: 'bold',
   },
   statsGrid: {
     flexDirection: 'row',
-    gap: 16,
+    justifyContent: 'space-between',
     marginBottom: 24,
   },
   statCard: {
-    flex: 1,
-    backgroundColor: 'white',
-    borderRadius: 12,
+    width: '31%',
+    backgroundColor: '#fff',
+    borderRadius: 16,
     padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 2,
   },
   statHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   statValue: {
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: 'bold',
+    color: '#1a1a1a',
   },
   statLabel: {
-    fontSize: 11,
-    fontWeight: '600',
+    fontSize: 12,
+    fontWeight: 'bold',
     color: '#999',
     marginBottom: 4,
   },
   statChange: {
     fontSize: 12,
-    color: '#666',
+    color: '#10b981',
+    fontWeight: '500',
   },
   section: {
-    backgroundColor: 'white',
-    borderRadius: 12,
+    backgroundColor: '#fff',
+    borderRadius: 20,
     padding: 24,
     marginBottom: 24,
   },
@@ -429,130 +277,97 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
+    color: '#1a1a1a',
   },
   manageLink: {
     color: '#741ce9',
-    fontSize: 14,
+    fontWeight: '600',
   },
   viewAllLink: {
     color: '#741ce9',
-    fontSize: 14,
+    fontWeight: '600',
   },
   interestsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
   },
-  interestChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
+  interestTag: {
+    backgroundColor: '#f5f5f5',
     paddingHorizontal: 16,
     paddingVertical: 8,
-    backgroundColor: '#f5f5f5',
     borderRadius: 20,
+    marginRight: 10,
+    marginBottom: 10,
   },
   interestText: {
-    fontSize: 14,
-    color: '#333',
+    color: '#666',
+    fontWeight: '500',
   },
   addInterestButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
     borderWidth: 1,
     borderColor: '#741ce9',
-    borderRadius: 20,
     borderStyle: 'dashed',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginBottom: 10,
   },
   addInterestText: {
-    fontSize: 14,
     color: '#741ce9',
+    fontWeight: '600',
+    marginLeft: 4,
   },
   certificatesGrid: {
     flexDirection: 'row',
-    gap: 16,
+    flexWrap: 'wrap',
   },
-  certificateCard: {
-    flex: 1,
-    backgroundColor: '#F3E8FF',
+  certCard: {
+    width: '48%',
+    backgroundColor: '#f9fafb',
     borderRadius: 12,
-    padding: 20,
-    position: 'relative',
+    padding: 16,
+    marginBottom: 16,
+    marginRight: '2%',
   },
-  certificateIcon: {
+  certIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
   },
-  certificateProgress: {
-    height: 4,
-    backgroundColor: '#741ce9',
-    borderRadius: 2,
-    marginBottom: 16,
-  },
-  certificateTitle: {
+  certTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: 'bold',
+    color: '#1a1a1a',
     marginBottom: 4,
   },
-  certificateDate: {
-    fontSize: 12,
+  certDate: {
+    fontSize: 13,
     color: '#666',
     marginBottom: 12,
   },
-  viewCertButton: {
-    borderWidth: 1,
-    borderColor: '#741ce9',
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+  downloadLink: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
-  viewCertButtonText: {
+  downloadText: {
     color: '#741ce9',
     fontSize: 14,
-    fontWeight: '600',
-  },
-  downloadIcon: {
-    position: 'absolute',
-    top: 20,
-    right: 20,
-  },
-  footer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 24,
-    backgroundColor: 'white',
-    borderTopWidth: 1,
-    borderTopColor: '#e5e5e5',
-  },
-  footerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  footerText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  footerCopyright: {
-    fontSize: 14,
-    color: '#666',
-  },
-  footerLinks: {
-    flexDirection: 'row',
-    gap: 24,
-  },
-  footerLink: {
-    fontSize: 14,
-    color: '#666',
-  },
+    fontWeight: 'bold',
+    marginLeft: 6,
+  }
 });

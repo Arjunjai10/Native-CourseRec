@@ -11,6 +11,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { courseAPI, userAPI } from './utils/api';
+import Navbar from './components/Navbar';
 
 export default function Home() {
   const router = useRouter();
@@ -91,41 +92,7 @@ export default function Home() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.logoContainer}>
-          <Ionicons name="school" size={28} color="#741ce9" />
-          <Text style={styles.logoText}>EduLearn</Text>
-        </View>
-
-        <View style={styles.searchContainer}>
-          <Ionicons name="search" size={20} color="#666" />
-          <Text style={styles.searchPlaceholder}>Search courses...</Text>
-        </View>
-
-        <View style={styles.headerRight}>
-          <TouchableOpacity onPress={() => router.push('/home')}>
-            <Text style={[styles.navLink, styles.activeNavLink]}>Dashboard</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/courses')}>
-            <Text style={styles.navLink}>Courses</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/recommendations')}>
-            <Text style={styles.navLink}>Mentors</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/profile')}>
-            <Text style={styles.navLink}>Profile</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
-            <Ionicons name="notifications-outline" size={24} color="#333" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/settings')}>
-            <Ionicons name="settings-outline" size={24} color="#333" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.avatar} onPress={() => router.push('/profile')}>
-            <Ionicons name="person" size={20} color="#fff" />
-          </TouchableOpacity>
-        </View>
-      </View>
+      <Navbar />
 
       <ScrollView style={styles.content}>
         <View style={styles.hero}>
@@ -248,12 +215,8 @@ export default function Home() {
               <Ionicons name="sparkles" size={48} color="#741ce9" />
               <Text style={styles.bigCardTitle}>Try AI Course Assistant</Text>
               <Text style={styles.bigCardText}>
-                Get personalized course recommendations based on your interests and learning goals
+                Get personalized path advice, course suggestions, and more.
               </Text>
-              <View style={styles.bigCardButton}>
-                <Text style={styles.bigCardButtonText}>Get Started</Text>
-                <Ionicons name="arrow-forward" size={20} color="white" />
-              </View>
             </TouchableOpacity>
           )}
         </View>
@@ -265,163 +228,107 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f5f7fb',
   },
   centered: {
     justifyContent: 'center',
     alignItems: 'center',
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
-  },
-  errorText: {
-    color: '#ef4444',
-    fontSize: 16,
-    marginBottom: 16,
-  },
-  retryButton: {
-    backgroundColor: '#741ce9',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
-  retryButtonText: {
-    color: 'white',
-    fontWeight: '600',
-  },
-  logoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginRight: 24,
-  },
-  logoText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    flex: 1,
-    maxWidth: 400,
-    gap: 8,
-  },
-  searchPlaceholder: {
-    color: '#999',
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-    marginLeft: 'auto',
-  },
-  navLink: {
-    fontSize: 14,
-    color: '#666',
-  },
-  activeNavLink: {
-    color: '#741ce9',
-    fontWeight: '600',
-  },
-  iconButton: {
-    padding: 4,
-  },
   content: {
     flex: 1,
   },
   hero: {
-    padding: 40,
-    backgroundColor: 'white',
+    padding: 30,
+    backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
+    borderBottomColor: '#eee',
   },
   heroTitle: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: 'bold',
+    color: '#333',
     marginBottom: 8,
   },
   heroSubtitle: {
-    fontSize: 18,
+    fontSize: 16,
     color: '#666',
   },
   quickActions: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    padding: 24,
-    gap: 16,
+    padding: 20,
+    justifyContent: 'space-between',
   },
   actionCard: {
-    flex: 1,
-    minWidth: 200,
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 24,
-    borderWidth: 1,
-    borderColor: '#e5e5e5',
+    width: '48%',
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 15,
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   actionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginTop: 12,
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginTop: 10,
     marginBottom: 4,
   },
   actionSubtitle: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#666',
   },
   section: {
-    padding: 24,
+    padding: 20,
   },
   sectionTitle: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 16,
+    color: '#333',
+    marginBottom: 15,
   },
   coursesList: {
     flexDirection: 'row',
   },
   courseCard: {
-    width: 280,
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    marginRight: 16,
-    borderWidth: 1,
-    borderColor: '#e5e5e5',
+    width: 200,
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    marginRight: 15,
+    padding: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   courseThumbnail: {
-    height: 140,
-    backgroundColor: '#741ce9',
-    borderRadius: 8,
-    alignItems: 'center',
+    height: 120,
+    borderRadius: 10,
     justifyContent: 'center',
-    marginBottom: 12,
+    alignItems: 'center',
+    marginBottom: 10,
   },
   courseTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: 'bold',
+    color: '#333',
     marginBottom: 4,
   },
   courseInstructor: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#666',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   progressBar: {
     height: 6,
-    backgroundColor: '#e5e5e5',
+    backgroundColor: '#eee',
     borderRadius: 3,
-    marginBottom: 8,
+    marginBottom: 4,
   },
   progressFill: {
     height: '100%',
@@ -429,18 +336,20 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   progressText: {
-    fontSize: 12,
-    color: '#666',
+    fontSize: 11,
+    color: '#999',
+    fontWeight: '500',
   },
   courseRating: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
     marginBottom: 8,
   },
   ratingText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: 'bold',
+    color: '#333',
+    marginLeft: 4,
     marginRight: 4,
   },
   studentsText: {
@@ -448,41 +357,43 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   priceText: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: 'bold',
     color: '#741ce9',
   },
   bigCard: {
-    backgroundColor: '#F3E8FF',
-    borderRadius: 16,
-    padding: 40,
+    backgroundColor: '#f3ebff',
+    padding: 30,
+    borderRadius: 20,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#741ce933',
   },
   bigCardTitle: {
-    fontSize: 28,
+    fontSize: 20,
     fontWeight: 'bold',
-    marginTop: 16,
-    marginBottom: 12,
+    color: '#333',
+    marginTop: 15,
+    marginBottom: 8,
   },
   bigCardText: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#666',
     textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 24,
   },
-  bigCardButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  errorText: {
+    fontSize: 16,
+    color: '#ef4444',
+    marginBottom: 20,
+  },
+  retryButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
     backgroundColor: '#741ce9',
     borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
   },
-  bigCardButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-  },
+  retryButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  }
 });

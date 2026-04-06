@@ -9,10 +9,12 @@ import {
   Linking,
   Alert,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { courseAPI } from '../utils/api';
+import { courseAPI, userAPI } from '../utils/api';
+import Navbar from '../components/Navbar';
 
 export default function CourseDetail() {
   const router = useRouter();
@@ -45,10 +47,8 @@ export default function CourseDetail() {
   if (!course) {
     return (
       <View style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color="#333" />
-          </TouchableOpacity>
+        <Navbar showBackButton={true} />
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <Text style={styles.logoText}>Course Not Found</Text>
         </View>
       </View>
@@ -57,14 +57,28 @@ export default function CourseDetail() {
 
   const handleGoToCourse = async () => {
     try {
-      const supported = await Linking.canOpenURL(course.externalLink);
+      if (Platform.OS === 'web') {
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+          const u = JSON.parse(userStr);
+          const userId = u.id || u._id;
+          if (userId) {
+            await userAPI.enroll(id);
+          }
+        }
+      }
+
+      const supported = await Linking.canOpenURL(course.externalLink || 'https://www.youtube.com');
       if (supported) {
-        await Linking.openURL(course.externalLink);
+        await Linking.openURL(course.externalLink || 'https://www.youtube.com');
       } else {
         Alert.alert('Error', 'Cannot open this URL');
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to open course link');
+      console.error('Enrollment/Navigation error:', error);
+      if (course.externalLink) {
+        Linking.openURL(course.externalLink);
+      }
     }
   };
 
@@ -95,29 +109,7 @@ export default function CourseDetail() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#333" />
-        </TouchableOpacity>
-        <View style={styles.logoContainer}>
-          <Ionicons name="school" size={24} color="#741ce9" />
-          <Text style={styles.logoText}>EduLearn</Text>
-        </View>
-        <View style={styles.headerRight}>
-          <TouchableOpacity onPress={() => router.push('/courses')}><Text style={styles.navLink}>Browse Courses</Text></TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/profile')}><Text style={styles.navLink}>My Learning</Text></TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/recommendations')}><Text style={styles.navLink}>Resources</Text></TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
-            <Ionicons name="notifications-outline" size={24} color="#333" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/settings')}>
-            <Ionicons name="settings-outline" size={24} color="#333" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.avatar} onPress={() => router.push('/profile')}>
-            <Ionicons name="person" size={20} color="#fff" />
-          </TouchableOpacity>
-        </View>
-      </View>
+      <Navbar showBackButton={true} />
 
       <ScrollView style={styles.content}>
         <View style={styles.breadcrumb}>
@@ -132,201 +124,195 @@ export default function CourseDetail() {
           <View style={styles.leftColumn}>
             <Text style={styles.title}>{course.title}</Text>
             <Text style={styles.description}>{course.description}</Text>
-
-            <View style={styles.metaInfo}>
-              <View style={styles.ratingContainer}>
-                <Text style={styles.ratingNumber}>{course.rating}</Text>
-                <View style={styles.stars}>
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Ionicons key={star} name="star" size={16} color="#F59E0B" />
-                  ))}
-                </View>
-                <Text style={styles.reviewCount}>({course.reviewsCount.toLocaleString()} reviews)</Text>
+            
+            <View style={styles.instructorSection}>
+              <View style={styles.instructorAvatar}>
+                <Ionicons name="person" size={24} color="#741ce9" />
               </View>
-              <View style={styles.metaItem}>
-                <Ionicons name="people" size={16} color="#666" />
-                <Text style={styles.metaText}>{(course.studentsEnrolled || 0).toLocaleString()} students enrolled</Text>
-              </View>
-              <View style={styles.metaItem}>
-                <Ionicons name="calendar" size={16} color="#666" />
-                <Text style={styles.metaText}>Last updated {course.lastUpdated || 'Recently'}</Text>
+              <View>
+                <Text style={styles.instructorLabel}>Created by</Text>
+                <Text style={styles.instructorName}>{course.instructor?.name || course.instructor}</Text>
               </View>
             </View>
 
-            <View style={styles.videoSection}>
-              <View style={styles.videoPlaceholder}>
-                <Ionicons name="play-circle" size={64} color="white" />
-                <Text style={styles.previewText}>Watch Course Preview</Text>
+            <View style={styles.detailsRow}>
+              <View style={styles.detailItem}>
+                <Ionicons name="star" size={18} color="#F59E0B" />
+                <Text style={styles.detailText}>{course.rating} Rating</Text>
+              </View>
+              <View style={styles.detailItem}>
+                <Ionicons name="people" size={18} color="#666" />
+                <Text style={styles.detailText}>{course.studentsEnrolled || 0} students</Text>
+              </View>
+              <View style={styles.detailItem}>
+                <Ionicons name="time" size={18} color="#666" />
+                <Text style={styles.detailText}>{course.duration?.hours ? `${course.duration.hours}h ${course.duration.minutes}m` : course.duration}</Text>
+              </View>
+              <View style={styles.detailItem}>
+                <Ionicons name="language" size={18} color="#666" />
+                <Text style={styles.detailText}>English</Text>
               </View>
             </View>
 
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Course Overview</Text>
-              <Text style={styles.sectionText}>{course.description}</Text>
-              <Text style={styles.sectionText}>
-                This comprehensive course is designed to take you from beginner to advanced level. You'll work on real-world projects and gain practical skills that are in high demand in the industry.
-              </Text>
-              <View style={styles.infoGrid}>
-                <View style={styles.infoBox}>
-                  <Ionicons name="bar-chart" size={24} color="#741ce9" />
-                  <Text style={styles.infoBoxLabel}>Level</Text>
-                  <Text style={styles.infoBoxValue}>{course.level}</Text>
-                </View>
-                <View style={styles.infoBox}>
-                  <Ionicons name="time" size={24} color="#741ce9" />
-                  <Text style={styles.infoBoxLabel}>Duration</Text>
-                  <Text style={styles.infoBoxValue}>{course.duration?.hours ? `${course.duration.hours} hours` : course.duration}</Text>
-                </View>
-                <View style={styles.infoBox}>
-                  <Ionicons name="book" size={24} color="#741ce9" />
-                  <Text style={styles.infoBoxLabel}>Lectures</Text>
-                  <Text style={styles.infoBoxValue}>{course.duration?.lectures || course.lectures}</Text>
-                </View>
-                <View style={styles.infoBox}>
-                  <Ionicons name="globe" size={24} color="#741ce9" />
-                  <Text style={styles.infoBoxLabel}>Language</Text>
-                  <Text style={styles.infoBoxValue}>{course.language || 'English'}</Text>
-                </View>
-              </View>
+            <View style={styles.tabs}>
+              <TouchableOpacity style={[styles.tab, styles.activeTab]}>
+                <Text style={[styles.tabText, styles.activeTabText]}>Syllabus</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.tab}>
+                <Text style={styles.tabText}>Reviews</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.tab}>
+                <Text style={styles.tabText}>Instructors</Text>
+              </TouchableOpacity>
             </View>
 
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Your Instructor</Text>
-              <View style={styles.instructorCard}>
-                <View style={styles.instructorAvatarCircle}>
-                  <Ionicons name="person" size={40} color="#741ce9" />
-                </View>
-                <View style={styles.instructorInfo}>
-                  <Text style={styles.instructorName}>{course.instructor?.name || course.instructor}</Text>
-                  <Text style={styles.instructorTitle}>{course.instructor?.title || 'Expert Instructor'}</Text>
-                  <View style={styles.instructorStats}>
-                    <View style={styles.instructorStat}>
-                      <Ionicons name="star" size={16} color="#F59E0B" />
-                      <Text style={styles.instructorStatText}>{course.instructor?.rating || course.rating || 4.8} Instructor Rating</Text>
+            <View style={styles.syllabusContainer}>
+              {course.syllabus ? course.syllabus.map((module, index) => (
+                <View key={index} style={styles.moduleItem}>
+                  <TouchableOpacity 
+                    style={styles.moduleHeader}
+                    onPress={() => setExpandedModule(expandedModule === index ? -1 : index)}
+                  >
+                    <View style={styles.moduleHeaderLeft}>
+                      <Ionicons 
+                        name={expandedModule === index ? "chevron-down" : "chevron-forward"} 
+                        size={20} 
+                        color="#333" 
+                      />
+                      <Text style={styles.moduleTitle}>Module {index + 1}: {module.moduleName || module.title}</Text>
                     </View>
-                    <View style={styles.instructorStat}>
-                      <Ionicons name="people" size={16} color="#666" />
-                      <Text style={styles.instructorStatText}>{(((course.instructor?.students || course.studentsEnrolled) || 1000) / 1000).toFixed(0)}K+ Students</Text>
+                    <Text style={styles.moduleDuration}>{module.topics?.length || 0} topics</Text>
+                  </TouchableOpacity>
+                  
+                  {expandedModule === index && (
+                    <View style={styles.topicsContainer}>
+                      {module.topics?.map((topic, tIndex) => (
+                        <View key={tIndex} style={styles.topicItem}>
+                          <View style={styles.topicLeft}>
+                            <Ionicons 
+                              name={topic.contentType === 'video' ? "play-circle" : "document-text"} 
+                              size={20} 
+                              color="#741ce9" 
+                            />
+                            <Text style={styles.topicTitle}>{topic.title}</Text>
+                          </View>
+                          <Text style={styles.topicDuration}>{topic.duration}</Text>
+                        </View>
+                      ))}
                     </View>
-                  </View>
-                  <Text style={styles.instructorBio}>
-                    A highly-rated instructor with extensive industry experience and a passion for teaching. 
-                    Known for making complex topics accessible and engaging for students of all levels.
-                  </Text>
+                  )}
                 </View>
-              </View>
+              )) : <Text>No syllabus available for this course.</Text>}
             </View>
 
-            <View style={styles.section}>
+            <View style={styles.reviewsSection}>
               <Text style={styles.sectionTitle}>Student Reviews</Text>
-              <View style={styles.reviewsOverview}>
-                <View style={styles.ratingOverview}>
-                  <Text style={styles.ratingLarge}>{course.rating}</Text>
-                  <View style={styles.starsLarge}>
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Ionicons key={star} name="star" size={20} color="#F59E0B" />
-                    ))}
+              <View style={styles.reviewSummary}>
+                <View style={styles.ratingBig}>
+                  <Text style={styles.ratingBigValue}>{course.rating}</Text>
+                  <View style={styles.starsRow}>
+                    <Ionicons name="star" size={20} color="#F59E0B" />
+                    <Ionicons name="star" size={20} color="#F59E0B" />
+                    <Ionicons name="star" size={20} color="#F59E0B" />
+                    <Ionicons name="star" size={20} color="#F59E0B" />
+                    <Ionicons name="star-half" size={20} color="#F59E0B" />
                   </View>
-                  <Text style={styles.courseRatingLabel}>Course Rating</Text>
+                  <Text style={styles.ratingCount}>Course Rating</Text>
                 </View>
                 <View style={styles.ratingBars}>
-                  {ratingDistribution.map((rating) => (
-                    <View key={rating.stars} style={styles.ratingBar}>
-                      <Text style={styles.starLabel}>{rating.stars} star</Text>
+                  {ratingDistribution.map((item) => (
+                    <View key={item.stars} style={styles.ratingBarItem}>
                       <View style={styles.barContainer}>
-                        <View style={[styles.barFill, { width: `${rating.percentage}%` }]} />
+                        <View style={[styles.barFill, { width: `${item.percentage}%` }]} />
                       </View>
-                      <Text style={styles.percentageLabel}>{rating.percentage}%</Text>
+                      <View style={styles.barStars}>
+                        {[...Array(item.stars)].map((_, i) => (
+                          <Ionicons key={i} name="star" size={12} color="#F59E0B" />
+                        ))}
+                      </View>
+                      <Text style={styles.barPercentage}>{item.percentage}%</Text>
                     </View>
                   ))}
                 </View>
               </View>
 
-              {courseReviews.map((review, index) => (
-                <View key={review.id || index} style={styles.reviewCard}>
-                  <View style={styles.reviewHeader}>
-                    <View style={styles.reviewerAvatar}>
-                      <Ionicons name="person" size={20} color="#666" />
-                    </View>
-                    <View style={styles.reviewerInfo}>
-                      <Text style={styles.reviewerName}>{review.userName}</Text>
-                      <View style={styles.reviewRating}>
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <Ionicons
-                            key={star}
-                            name="star"
-                            size={12}
-                            color={star <= review.rating ? '#F59E0B' : '#ddd'}
-                          />
-                        ))}
-                        <Text style={styles.reviewDate}>{review.date}</Text>
+              <View style={styles.reviewsList}>
+                {courseReviews.map((review) => (
+                  <View key={review.id} style={styles.reviewItem}>
+                    <View style={styles.reviewHeader}>
+                      <View style={styles.reviewerAvatar}>
+                        <Text style={styles.avatarText}>{review.userName[0]}</Text>
+                      </View>
+                      <View>
+                        <Text style={styles.reviewerName}>{review.userName}</Text>
+                        <View style={styles.reviewMeta}>
+                          <View style={styles.starsSmall}>
+                            {[...Array(review.rating)].map((_, i) => (
+                              <Ionicons key={i} name="star" size={12} color="#F59E0B" />
+                            ))}
+                          </View>
+                          <Text style={styles.reviewDate}>{review.date}</Text>
+                        </View>
                       </View>
                     </View>
+                    <Text style={styles.reviewText}>{review.comment}</Text>
                   </View>
-                  <Text style={styles.reviewComment}>{review.comment}</Text>
-                </View>
-              ))}
-
-              <TouchableOpacity style={styles.seeAllButton}>
-                <Text style={styles.seeAllButtonText}>See All Reviews</Text>
-              </TouchableOpacity>
+                ))}
+              </View>
             </View>
           </View>
 
-          <View style={styles.sidebar}>
-            <View style={styles.courseCard}>
-              <View style={styles.priceSection}>
-                <Text style={styles.priceLabel}>Course Access</Text>
-                <Text style={styles.priceValue}>{course.price === 0 ? 'Free' : `$${course.price || 49.99}`}</Text>
-              </View>
-
-              <TouchableOpacity style={styles.goCourseButton} onPress={handleGoToCourse}>
-                <Ionicons name="open-outline" size={20} color="white" />
-                <Text style={styles.goCourseButtonText}>Start Learning Now</Text>
-              </TouchableOpacity>
-
-              <Text style={styles.externalLinkText}>Opens in external platform</Text>
-
-              <Text style={styles.cardSectionTitle}>This course includes:</Text>
-              {(course.includes || [
-                {icon: 'videocam-outline', text: 'On-demand video'}, 
-                {icon: 'download-outline', text: 'Downloadable resources'}, 
-                {icon: 'phone-portrait-outline', text: 'Access on mobile and TV'}, 
-                {icon: 'ribbon-outline', text: 'Certificate of completion'}
-              ]).map((item, index) => (
-                <View key={index} style={styles.includeItem}>
-                  <Ionicons name={item.icon} size={16} color="#741ce9" />
-                  <Text style={styles.includeText}>{item.text}</Text>
+          <View style={styles.rightColumn}>
+            <View style={styles.stickyCard}>
+              <Image 
+                source={{ uri: 'https://via.placeholder.com/400x225' }} 
+                style={styles.previewImage}
+              />
+              <View style={styles.cardContent}>
+                <View style={styles.priceRow}>
+                  <Text style={styles.cardPrice}>{course.price === 0 ? 'Free' : `$${course.price}`}</Text>
+                  <Text style={styles.originalPrice}>$94.99</Text>
+                  <View style={styles.discountBadge}>
+                    <Text style={styles.discountText}>85% OFF</Text>
+                  </View>
                 </View>
-              ))}
+                
+                <TouchableOpacity style={styles.enrollButton} onPress={handleGoToCourse}>
+                  <Text style={styles.enrollButtonText}>Enroll Now</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity style={styles.wishlistButton}>
+                  <Ionicons name="heart-outline" size={20} color="#333" />
+                  <Text style={styles.wishlistText}>Add to Wishlist</Text>
+                </TouchableOpacity>
 
-              <View style={styles.divider} />
-
-              <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>Skill Level</Text>
-                <Text style={styles.infoValue}>{course.level}</Text>
-              </View>
-              <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>Language</Text>
-                <Text style={styles.infoValue}>{course.language || 'English'}</Text>
-              </View>
-              <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>Duration</Text>
-                <Text style={styles.infoValue}>{course.duration?.hours ? `${course.duration.hours} hours` : course.duration}</Text>
-              </View>
-              <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>Lectures</Text>
-                <Text style={styles.infoValue}>{course.duration?.lectures || course.lectures} Lectures</Text>
-              </View>
-
-              <View style={styles.certBanner}>
-                <Ionicons name="ribbon" size={24} color="#741ce9" />
-                <View>
-                  <Text style={styles.certTitle}>Professional Certification</Text>
-                  <Text style={styles.certSubtitle}>
-                    Earn a recognized certificate and share it with your industry peers upon completion
-                  </Text>
+                <View style={styles.featuresList}>
+                  <Text style={styles.featuresTitle}>This course includes:</Text>
+                  <View style={styles.featureItem}>
+                    <Ionicons name="play-circle-outline" size={18} color="#666" />
+                    <Text style={styles.featureText}>{course.duration?.hours ? `${course.duration.hours} hours` : course.duration} on-demand video</Text>
+                  </View>
+                  <View style={styles.featureItem}>
+                    <Ionicons name="document-text-outline" size={18} color="#666" />
+                    <Text style={styles.featureText}>{course.syllabus?.length || 0} modules</Text>
+                  </View>
+                  <View style={styles.featureItem}>
+                    <Ionicons name="infinite-outline" size={18} color="#666" />
+                    <Text style={styles.featureText}>Full lifetime access</Text>
+                  </View>
+                  <View style={styles.featureItem}>
+                    <Ionicons name="phone-portrait-outline" size={18} color="#666" />
+                    <Text style={styles.featureText}>Access on mobile and TV</Text>
+                  </View>
+                  <View style={styles.featureItem}>
+                    <Ionicons name="ribbon-outline" size={18} color="#666" />
+                    <Text style={styles.featureText}>Certificate of completion</Text>
+                  </View>
                 </View>
+
+                <TouchableOpacity style={styles.shareLink}>
+                  <Text style={styles.shareText}>Share this course</Text>
+                </TouchableOpacity>
               </View>
             </View>
           </View>
@@ -341,480 +327,396 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
-  },
-  backButton: {
-    marginRight: 16,
-  },
-  logoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginRight: 24,
-  },
-  logoText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-    marginLeft: 'auto',
-  },
-  navLink: {
-    fontSize: 14,
-    color: '#666',
-  },
-  iconButton: {
-    padding: 4,
-  },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#741ce9',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   content: {
     flex: 1,
   },
   breadcrumb: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    padding: 16,
-    backgroundColor: '#f9f9f9',
+    padding: 24,
+    backgroundColor: '#f9fafb',
   },
   breadcrumbText: {
     fontSize: 14,
     color: '#666',
+    marginHorizontal: 8,
   },
   mainSection: {
     flexDirection: 'row',
-    maxWidth: 1200,
-    marginHorizontal: 'auto',
-    width: '100%',
-    padding: 24,
-    gap: 24,
+    paddingHorizontal: 24,
+    paddingBottom: 60,
   },
   leftColumn: {
+    flex: 2,
+    marginRight: 40,
+  },
+  rightColumn: {
     flex: 1,
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    marginBottom: 12,
+    color: '#1a1a1a',
+    marginBottom: 16,
+    lineHeight: 40,
   },
   description: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: '#333',
-    marginBottom: 16,
-  },
-  metaInfo: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    gap: 16,
+    fontSize: 18,
+    color: '#444',
+    lineHeight: 28,
     marginBottom: 24,
   },
-  ratingContainer: {
+  instructorSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    marginBottom: 24,
   },
-  ratingNumber: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  stars: {
-    flexDirection: 'row',
-    gap: 2,
-  },
-  reviewCount: {
-    fontSize: 14,
-    color: '#666',
-    marginLeft: 4,
-  },
-  metaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  metaText: {
-    fontSize: 14,
-    color: '#666',
-  },
-  videoSection: {
-    marginBottom: 32,
-  },
-  videoPlaceholder: {
-    width: '100%',
-    height: 400,
-    backgroundColor: '#1a1a2e',
-    borderRadius: 12,
-    alignItems: 'center',
+  instructorAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#f3ebff',
     justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
   },
-  previewText: {
-    color: 'white',
+  instructorLabel: {
+    fontSize: 12,
+    color: '#666',
+  },
+  instructorName: {
     fontSize: 16,
-    marginTop: 12,
+    fontWeight: 'bold',
+    color: '#741ce9',
   },
-  section: {
+  detailsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     marginBottom: 32,
+    gap: 20,
+  },
+  detailItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  detailText: {
+    fontSize: 14,
+    color: '#444',
+    fontWeight: '500',
+  },
+  tabs: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    marginBottom: 32,
+  },
+  tab: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    marginRight: 8,
+  },
+  activeTab: {
+    borderBottomWidth: 2,
+    borderBottomColor: '#741ce9',
+  },
+  tabText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#666',
+  },
+  activeTabText: {
+    color: '#741ce9',
+  },
+  syllabusContainer: {
+    marginBottom: 48,
   },
   sectionTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 16,
+    color: '#1a1a1a',
+    marginBottom: 24,
   },
-  sectionText: {
-    fontSize: 15,
-    lineHeight: 24,
-    color: '#333',
-    marginBottom: 12,
-  },
-  contentSummary: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 16,
-  },
-  moduleContainer: {
+  moduleItem: {
     borderWidth: 1,
-    borderColor: '#e5e5e5',
+    borderColor: '#eee',
     borderRadius: 8,
-    marginBottom: 8,
+    marginBottom: 12,
     overflow: 'hidden',
   },
   moduleHeader: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
     padding: 16,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#f9fafb',
+  },
+  moduleHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 12,
   },
   moduleTitle: {
-    flex: 1,
     fontSize: 16,
     fontWeight: '600',
+    color: '#1a1a1a',
   },
-  moduleMeta: {
+  moduleDuration: {
     fontSize: 14,
     color: '#666',
   },
-  topicsList: {
-    backgroundColor: 'white',
+  topicsContainer: {
+    padding: 16,
+    backgroundColor: '#fff',
   },
   topicItem: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 12,
-    paddingLeft: 48,
-    gap: 8,
-    borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
   },
-  topicTitle: {
-    flex: 1,
-    fontSize: 14,
-  },
-  topicDuration: {
-    fontSize: 14,
-    color: '#666',
-  },
-  topicType: {
-    fontSize: 12,
-    color: '#741ce9',
-  },
-  instructorCard: {
-    flexDirection: 'row',
-    gap: 16,
-    padding: 20,
-    backgroundColor: '#f9f9f9',
-    borderRadius: 12,
-  },
-  instructorAvatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-  },
-  instructorInfo: {
-    flex: 1,
-  },
-  instructorName: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  instructorTitle: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 12,
-  },
-  instructorStats: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
-    marginBottom: 12,
-  },
-  instructorStat: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  instructorStatText: {
-    fontSize: 13,
-    color: '#666',
-  },
-  instructorBio: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: '#333',
-  },
-  reviewsOverview: {
-    flexDirection: 'row',
-    gap: 32,
-    marginBottom: 24,
-    padding: 20,
-    backgroundColor: '#f9f9f9',
-    borderRadius: 12,
-  },
-  ratingOverview: {
-    alignItems: 'center',
-  },
-  ratingLarge: {
-    fontSize: 48,
-    fontWeight: 'bold',
-  },
-  starsLarge: {
-    flexDirection: 'row',
-    gap: 4,
-    marginBottom: 8,
-  },
-  courseRatingLabel: {
-    fontSize: 14,
-    color: '#666',
-  },
-  ratingBars: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  ratingBar: {
+  topicLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+  },
+  topicTitle: {
+    fontSize: 14,
+    color: '#444',
+  },
+  topicDuration: {
+    fontSize: 12,
+    color: '#999',
+  },
+  reviewsSection: {
+    marginTop: 20,
+  },
+  reviewSummary: {
+    flexDirection: 'row',
+    backgroundColor: '#f9fafb',
+    borderRadius: 16,
+    padding: 24,
+    marginBottom: 32,
+  },
+  ratingBig: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingRight: 24,
+    borderRightWidth: 1,
+    borderRightColor: '#eee',
+    width: 140,
+  },
+  ratingBigValue: {
+    fontSize: 48,
+    fontWeight: 'bold',
+    color: '#F59E0B',
     marginBottom: 8,
   },
-  starLabel: {
+  starsRow: {
+    flexDirection: 'row',
+    marginBottom: 8,
+  },
+  ratingCount: {
     fontSize: 14,
-    width: 40,
+    fontWeight: 'bold',
+    color: '#F59E0B',
+  },
+  ratingBars: {
+    flex: 1,
+    paddingLeft: 24,
+    justifyContent: 'center',
+  },
+  ratingBarItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
   },
   barContainer: {
     flex: 1,
     height: 8,
-    backgroundColor: '#e5e5e5',
+    backgroundColor: '#e5e7eb',
     borderRadius: 4,
+    marginRight: 12,
   },
   barFill: {
     height: '100%',
     backgroundColor: '#F59E0B',
     borderRadius: 4,
   },
-  percentageLabel: {
-    fontSize: 14,
-    width: 40,
-    textAlign: 'right',
+  barStars: {
+    flexDirection: 'row',
+    width: 60,
+    marginRight: 10,
   },
-  reviewCard: {
-    padding: 20,
-    borderWidth: 1,
-    borderColor: '#e5e5e5',
-    borderRadius: 12,
-    marginBottom: 16,
+  barPercentage: {
+    fontSize: 12,
+    color: '#666',
+    width: 30,
+  },
+  reviewsList: {
+    gap: 24,
+  },
+  reviewItem: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    paddingBottom: 24,
   },
   reviewHeader: {
     flexDirection: 'row',
-    gap: 12,
+    alignItems: 'center',
     marginBottom: 12,
   },
   reviewerAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#f0f0f0',
-    alignItems: 'center',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#741ce9',
     justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
   },
-  reviewerInfo: {
-    flex: 1,
+  avatarText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 18,
   },
   reviewerName: {
     fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
+    fontWeight: 'bold',
+    color: '#1a1a1a',
+    marginBottom: 2,
   },
-  reviewRating: {
+  reviewMeta: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+  },
+  starsSmall: {
+    flexDirection: 'row',
   },
   reviewDate: {
     fontSize: 12,
-    color: '#666',
+    color: '#999',
   },
-  reviewComment: {
+  reviewText: {
     fontSize: 14,
-    lineHeight: 20,
-    color: '#333',
+    color: '#444',
+    lineHeight: 22,
   },
-  seeAllButton: {
-    padding: 12,
+  stickyCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#741ce9',
-    borderRadius: 8,
-    alignItems: 'center',
+    borderColor: '#eee',
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 10,
+    ...Platform.select({
+        web: {
+            position: 'sticky',
+            top: 100,
+        }
+    })
   },
-  seeAllButtonText: {
-    color: '#741ce9',
-    fontWeight: '600',
+  previewImage: {
+    width: '100%',
+    height: 200,
   },
-  sidebar: {
-    width: 350,
+  cardContent: {
+    padding: 24,
   },
-  courseCard: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e5e5e5',
-    padding: 20,
-    position: 'sticky',
-    top: 24,
-  },
-  goCourseButton: {
+  priceRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
+    marginBottom: 24,
+  },
+  cardPrice: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#1a1a1a',
+    marginRight: 12,
+  },
+  originalPrice: {
+    fontSize: 16,
+    color: '#999',
+    textDecorationLine: 'line-through',
+    marginRight: 12,
+  },
+  discountBadge: {
+    backgroundColor: '#fef3c7',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  discountText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#92400e',
+  },
+  enrollButton: {
     backgroundColor: '#741ce9',
-    borderRadius: 8,
-    padding: 14,
-    marginBottom: 20,
-  },
-  goCourseButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  cardSectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
     marginBottom: 12,
   },
-  includeItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 10,
-  },
-  includeText: {
-    fontSize: 14,
-    color: '#333',
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#e5e5e5',
-    marginVertical: 16,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  infoLabel: {
-    fontSize: 14,
-    color: '#666',
-  },
-  infoValue: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  certBanner: {
-    flexDirection: 'row',
-    gap: 12,
-    padding: 16,
-    backgroundColor: '#F3E8FF',
-    borderRadius: 8,
-    marginTop: 16,
-  },
-  certTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  certSubtitle: {
-    fontSize: 12,
-    color: '#666',
-    lineHeight: 16,
-  },
-  priceSection: {
-    marginBottom: 16,
-  },
-  priceLabel: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 4,
-  },
-  priceValue: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#741ce9',
-  },
-  externalLinkText: {
-    fontSize: 12,
-    color: '#666',
-    textAlign: 'center',
-    marginTop: 8,
-    marginBottom: 16,
-  },
-  infoGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
-    marginTop: 16,
-  },
-  infoBox: {
-    flex: 1,
-    minWidth: 120,
-    backgroundColor: '#f9f9f9',
-    borderRadius: 8,
-    padding: 16,
-    alignItems: 'center',
-  },
-  infoBoxLabel: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 8,
-    marginBottom: 4,
-  },
-  infoBoxValue: {
+  enrollButtonText: {
+    color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: 'bold',
   },
-  instructorAvatarCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#F3E8FF',
+  wishlistButton: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#1a1a1a',
+    gap: 8,
+    marginBottom: 24,
   },
+  wishlistText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#1a1a1a',
+  },
+  featuresTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1a1a1a',
+    marginBottom: 16,
+  },
+  featuresList: {
+    gap: 12,
+    marginBottom: 24,
+  },
+  featureItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  featureText: {
+    fontSize: 14,
+    color: '#444',
+  },
+  shareLink: {
+    alignItems: 'center',
+  },
+  shareText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#741ce9',
+    textDecorationLine: 'underline',
+  },
+  logoText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1a1a1a',
+  }
 });

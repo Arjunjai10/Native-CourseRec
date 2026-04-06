@@ -10,6 +10,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { courseAPI } from './utils/api';
+import Navbar from './components/Navbar';
 
 export default function Courses() {
   const router = useRouter();
@@ -44,32 +45,7 @@ export default function Courses() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#333" />
-        </TouchableOpacity>
-        <View style={styles.logoContainer}>
-          <Ionicons name="school" size={28} color="#741ce9" />
-          <Text style={styles.logoText}>EduLearn</Text>
-        </View>
-        <View style={styles.headerRight}>
-          <TouchableOpacity onPress={() => router.push('/home')}>
-            <Text style={styles.navLink}>Dashboard</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/courses')}>
-            <Text style={[styles.navLink, styles.activeNavLink]}>Courses</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/profile')}>
-            <Text style={styles.navLink}>Profile</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
-            <Ionicons name="notifications-outline" size={24} color="#333" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/settings')}>
-            <Ionicons name="settings-outline" size={24} color="#333" />
-          </TouchableOpacity>
-        </View>
-      </View>
+      <Navbar />
 
       <View style={styles.searchSection}>
         <Text style={styles.pageTitle}>Browse Courses</Text>
@@ -129,8 +105,8 @@ export default function Courses() {
               style={styles.courseCard}
               onPress={() => router.push(`/course/${course._id || course.id}`)}
             >
-              <View style={[styles.courseThumbnail, { backgroundColor: course.thumbnailColor }]}>
-                <Ionicons name={course.thumbnail} size={48} color="white" />
+              <View style={[styles.courseThumbnail, { backgroundColor: course.thumbnailColor || '#741ce9' }]}>
+                <Ionicons name={course.thumbnail || 'book'} size={48} color="white" />
               </View>
               <View style={styles.courseInfo}>
                 <View style={styles.categoryBadge}>
@@ -141,19 +117,15 @@ export default function Courses() {
                 <View style={styles.courseRating}>
                   <Ionicons name="star" size={16} color="#F59E0B" />
                   <Text style={styles.ratingText}>{course.rating}</Text>
-                  <Text style={styles.studentsText}>({((course.studentsEnrolled || 0) / 1000).toFixed(0)}k)</Text>
+                  <Text style={styles.studentsText}>({((course.studentsEnrolled || 0) / 1000).toFixed(0)}k students)</Text>
                 </View>
                 <View style={styles.courseMeta}>
                   <View style={styles.metaItem}>
                     <Ionicons name="time-outline" size={14} color="#666" />
                     <Text style={styles.metaText}>{course.duration?.hours ? `${course.duration.hours} hours` : course.duration}</Text>
                   </View>
-                  <View style={styles.metaItem}>
-                    <Ionicons name="book-outline" size={14} color="#666" />
-                    <Text style={styles.metaText}>{course.duration?.lectures || course.lectures} lectures</Text>
-                  </View>
+                  <Text style={styles.priceText}>{course.price === 0 ? 'Free' : `$${course.price}`}</Text>
                 </View>
-                <Text style={styles.priceText}>{course.price === 0 ? 'Free' : `$${course.price}`}</Text>
               </View>
             </TouchableOpacity>
           ))}
@@ -166,103 +138,56 @@ export default function Courses() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
-  },
-  backButton: {
-    marginRight: 16,
-  },
-  logoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginRight: 24,
-  },
-  logoText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-    marginLeft: 'auto',
-  },
-  navLink: {
-    fontSize: 14,
-    color: '#666',
-  },
-  activeNavLink: {
-    color: '#741ce9',
-    fontWeight: '600',
-  },
-  iconButton: {
-    padding: 4,
+    backgroundColor: '#fff',
   },
   searchSection: {
-    backgroundColor: 'white',
-    padding: 32,
-    paddingBottom: 24,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
+    padding: 24,
+    backgroundColor: '#f3ebff',
   },
   pageTitle: {
-    fontSize: 36,
+    fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 8,
     color: '#1a1a1a',
+    marginBottom: 8,
   },
   pageSubtitle: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#666',
     marginBottom: 20,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f9fafb',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
+    backgroundColor: '#fff',
     borderRadius: 12,
     paddingHorizontal: 16,
-    paddingVertical: 14,
-    gap: 12,
+    height: 52,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
   },
   searchInput: {
     flex: 1,
+    marginLeft: 10,
     fontSize: 16,
-    outlineStyle: 'none',
+    color: '#333',
   },
   categoriesContainer: {
-    backgroundColor: 'white',
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
+    borderBottomColor: '#f0f0f0',
   },
   categoriesScroll: {
-    paddingHorizontal: 24,
-    paddingVertical: 16,
+    paddingVertical: 12,
   },
   categoriesWrapper: {
     flexDirection: 'row',
-    alignItems: 'center',
+    paddingHorizontal: 24,
   },
   categoryButton: {
     paddingHorizontal: 20,
     paddingVertical: 8,
     borderRadius: 20,
     backgroundColor: '#f5f5f5',
-    marginRight: 12,
-    height: 36,
-    justifyContent: 'center',
-    alignItems: 'center',
+    marginRight: 10,
   },
   categoryButtonActive: {
     backgroundColor: '#741ce9',
@@ -271,88 +196,87 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#666',
-    whiteSpace: 'nowrap',
   },
   categoryButtonTextActive: {
-    color: 'white',
+    color: '#fff',
   },
   resultsHeader: {
-    padding: 24,
-    paddingBottom: 12,
+    paddingHorizontal: 24,
+    paddingVertical: 16,
   },
   resultsText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
+    color: '#1a1a1a',
   },
   coursesList: {
     flex: 1,
-    paddingHorizontal: 24,
   },
   coursesGrid: {
+    padding: 24,
+    paddingTop: 0,
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 20,
-    paddingBottom: 24,
+    justifyContent: 'space-between',
   },
   courseCard: {
-    width: 320,
-    backgroundColor: 'white',
-    borderRadius: 12,
+    width: '48%',
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    marginBottom: 20,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#e5e5e5',
+    borderColor: '#f0f0f0',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
     elevation: 2,
   },
   courseThumbnail: {
-    height: 160,
-    alignItems: 'center',
+    height: 120,
     justifyContent: 'center',
+    alignItems: 'center',
   },
   courseInfo: {
-    padding: 16,
+    padding: 12,
   },
   categoryBadge: {
-    backgroundColor: '#F3E8FF',
     paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingVertical: 2,
+    backgroundColor: '#f3ebff',
     borderRadius: 4,
     alignSelf: 'flex-start',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   categoryBadgeText: {
     fontSize: 10,
-    fontWeight: '600',
+    fontWeight: 'bold',
     color: '#741ce9',
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
   },
   courseTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 8,
-    lineHeight: 22,
-    height: 44,
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#1a1a1a',
+    height: 40,
+    marginBottom: 4,
   },
   courseInstructor: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#666',
     marginBottom: 8,
   },
   courseRating: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
     marginBottom: 12,
   },
   ratingText: {
     fontSize: 14,
-    fontWeight: '600',
-    marginRight: 4,
+    fontWeight: 'bold',
+    color: '#1a1a1a',
+    marginHorizontal: 4,
   },
   studentsText: {
     fontSize: 12,
@@ -360,21 +284,22 @@ const styles = StyleSheet.create({
   },
   courseMeta: {
     flexDirection: 'row',
-    gap: 16,
-    marginBottom: 12,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 'auto',
   },
   metaItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
   },
   metaText: {
     fontSize: 12,
     color: '#666',
+    marginLeft: 4,
   },
   priceText: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '800',
     color: '#741ce9',
-  },
+  }
 });

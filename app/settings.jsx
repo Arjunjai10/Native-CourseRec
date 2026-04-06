@@ -7,11 +7,12 @@ import {
   StyleSheet,
   ScrollView,
   Image,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { userAPI } from './utils/api';
-import { Platform } from 'react-native';
+import Navbar from './components/Navbar';
 
 export default function Settings() {
   const router = useRouter();
@@ -69,212 +70,131 @@ export default function Settings() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#333" />
-        </TouchableOpacity>
-        <View style={styles.logoContainer}>
-          <Ionicons name="school" size={24} color="#741ce9" />
-          <Text style={styles.logoText}>EduLearn</Text>
-        </View>
-        <View style={styles.nav}>
-          <TouchableOpacity onPress={() => router.push('/courses')}><Text style={styles.navLink}>Explore</Text></TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/profile')}><Text style={styles.navLink}>My Courses</Text></TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/recommendations')}><Text style={styles.navLink}>Recommendations</Text></TouchableOpacity>
-        </View>
-        <View style={styles.headerRight}>
-          <TouchableOpacity style={styles.searchButton}>
-            <Ionicons name="search" size={20} color="#666" />
-            <Text style={styles.searchText}>Search courses...</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
-            <Ionicons name="notifications-outline" size={24} color="#333" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/settings')}>
-            <Ionicons name="settings-outline" size={24} color="#333" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.avatar} onPress={() => router.push('/profile')}>
-            <Image
-              source={{ uri: 'https://via.placeholder.com/40' }}
-              style={styles.avatarImage}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
+      <Navbar />
 
-      <View style={styles.mainContent}>
-        <View style={styles.sidebar}>
-          <View style={styles.sidebarSection}>
+      <ScrollView style={styles.content}>
+        <View style={styles.mainContent}>
+          <View style={styles.sidebar}>
             <Text style={styles.sidebarTitle}>Settings</Text>
-            <Text style={styles.sidebarSubtitle}>Manage your account and preferences</Text>
-          </View>
-
-          <View style={styles.sidebarSection}>
             <TouchableOpacity 
               style={[styles.sidebarItem, activeTab === 'profile' && styles.sidebarItemActive]}
               onPress={() => setActiveTab('profile')}
             >
-              <Ionicons name="person" size={20} color={activeTab === 'profile' ? '#741ce9' : '#666'} />
-              <Text style={[styles.sidebarText, activeTab === 'profile' && styles.sidebarTextActive]}>Profile Info</Text>
+              <Ionicons name="person-outline" size={20} color={activeTab === 'profile' ? '#741ce9' : '#666'} />
+              <Text style={[styles.sidebarText, activeTab === 'profile' && styles.sidebarTextActive]}>Edit Profile</Text>
             </TouchableOpacity>
-            
             <TouchableOpacity 
               style={[styles.sidebarItem, activeTab === 'notifications' && styles.sidebarItemActive]}
               onPress={() => setActiveTab('notifications')}
             >
-              <Ionicons name="notifications" size={20} color={activeTab === 'notifications' ? '#741ce9' : '#666'} />
+              <Ionicons name="notifications-outline" size={20} color={activeTab === 'notifications' ? '#741ce9' : '#666'} />
               <Text style={[styles.sidebarText, activeTab === 'notifications' && styles.sidebarTextActive]}>Notifications</Text>
             </TouchableOpacity>
-            
             <TouchableOpacity 
               style={[styles.sidebarItem, activeTab === 'security' && styles.sidebarItemActive]}
               onPress={() => setActiveTab('security')}
             >
-              <Ionicons name="shield" size={20} color={activeTab === 'security' ? '#741ce9' : '#666'} />
+              <Ionicons name="shield-checkmark-outline" size={20} color={activeTab === 'security' ? '#741ce9' : '#666'} />
               <Text style={[styles.sidebarText, activeTab === 'security' && styles.sidebarTextActive]}>Security</Text>
             </TouchableOpacity>
-            
             <TouchableOpacity 
-              style={[styles.sidebarItem, activeTab === 'privacy' && styles.sidebarItemActive]}
-              onPress={() => setActiveTab('privacy')}
+              style={[styles.sidebarItem, activeTab === 'billing' && styles.sidebarItemActive]}
+              onPress={() => setActiveTab('billing')}
             >
-              <Ionicons name="eye" size={20} color={activeTab === 'privacy' ? '#741ce9' : '#666'} />
-              <Text style={[styles.sidebarText, activeTab === 'privacy' && styles.sidebarTextActive]}>Privacy</Text>
+              <Ionicons name="card-outline" size={20} color={activeTab === 'billing' ? '#741ce9' : '#666'} />
+              <Text style={[styles.sidebarText, activeTab === 'billing' && styles.sidebarTextActive]}>Billing</Text>
             </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={[styles.sidebarItem, activeTab === 'language' && styles.sidebarItemActive]}
-              onPress={() => setActiveTab('language')}
-            >
-              <Ionicons name="globe" size={20} color={activeTab === 'language' ? '#741ce9' : '#666'} />
-              <Text style={[styles.sidebarText, activeTab === 'language' && styles.sidebarTextActive]}>Language & Region</Text>
-            </TouchableOpacity>
+          </View>
+
+          <View style={styles.settingsContent}>
+            {activeTab === 'profile' ? (
+              <>
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionTitle}>Edit Profile</Text>
+                  <Text style={styles.sectionSubtitle}>Update your personal information and biography.</Text>
+                </View>
+
+                <View style={styles.profileImageSection}>
+                  <Image
+                    source={{ uri: 'https://via.placeholder.com/100' }}
+                    style={styles.profileImage}
+                  />
+                  <View style={styles.imageActions}>
+                    <TouchableOpacity style={styles.changeImageButton}>
+                      <Text style={styles.changeImageText}>Change Photo</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.removeImageButton}>
+                      <Text style={styles.removeImageText}>Remove</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                <View style={styles.formContainer}>
+                  <View style={styles.formRow}>
+                    <View style={styles.formGroup}>
+                      <Text style={styles.label}>First Name</Text>
+                      <TextInput
+                        style={styles.input}
+                        value={firstName}
+                        onChangeText={setFirstName}
+                        placeholder="First Name"
+                      />
+                    </View>
+                    <View style={styles.formGroup}>
+                      <Text style={styles.label}>Last Name</Text>
+                      <TextInput
+                        style={styles.input}
+                        value={lastName}
+                        onChangeText={setLastName}
+                        placeholder="Last Name"
+                      />
+                    </View>
+                  </View>
+
+                  <View style={styles.formGroup}>
+                    <Text style={styles.label}>Email Address</Text>
+                    <TextInput
+                      style={[styles.input, styles.disabledInput]}
+                      value={email}
+                      editable={false}
+                    />
+                    <Text style={styles.helperText}>Email address cannot be changed.</Text>
+                  </View>
+
+                  <View style={styles.formGroup}>
+                    <Text style={styles.label}>Biography</Text>
+                    <TextInput
+                      style={[styles.input, styles.textArea]}
+                      value={bio}
+                      onChangeText={setBio}
+                      placeholder="Write a short bio about yourself..."
+                      multiline={true}
+                      numberOfLines={4}
+                    />
+                  </View>
+
+                  {showSuccess && (
+                    <View style={styles.successMessage}>
+                      <Ionicons name="checkmark-circle" size={20} color="#10b981" />
+                      <Text style={styles.successText}>Changes saved successfully!</Text>
+                    </View>
+                  )}
+
+                  <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+                    <Text style={styles.saveButtonText}>Save Changes</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            ) : (
+              <View style={styles.placeholderSection}>
+                <Ionicons name="construct-outline" size={64} color="#ddd" />
+                <Text style={styles.placeholderTitle}>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Settings</Text>
+                <Text style={styles.placeholderSubtitle}>This section is coming soon.</Text>
+              </View>
+            )}
           </View>
         </View>
-
-        <ScrollView style={styles.content}>
-          {activeTab === 'profile' ? (
-            <>
-              <View style={styles.contentHeader}>
-                <Text style={styles.contentTitle}>Profile Information</Text>
-                <Text style={styles.contentSubtitle}>
-                  Update your personal details and how others see you on the platform.
-                </Text>
-              </View>
-
-          <View style={styles.profilePictureSection}>
-            <View style={styles.profilePictureContainer}>
-              <View style={styles.profilePicture}>
-                <Ionicons name="person" size={48} color="#999" />
-              </View>
-              <TouchableOpacity style={styles.uploadIcon}>
-                <Ionicons name="camera" size={16} color="white" />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.profilePictureInfo}>
-              <Text style={styles.profilePictureTitle}>Profile Picture</Text>
-              <Text style={styles.profilePictureText}>
-                Upload a clear photo to help your mentors and peers identify you. JPG, GIF or PNG. Max size 800K.
-              </Text>
-              <View style={styles.uploadButtons}>
-                <TouchableOpacity style={styles.uploadButton}>
-                  <Text style={styles.uploadButtonText}>Upload New</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.removeButton}>
-                  <Text style={styles.removeButtonText}>Remove</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.formSection}>
-            <View style={styles.formRow}>
-              <View style={styles.formGroup}>
-                <Text style={styles.label}>First Name</Text>
-                <TextInput
-                  style={styles.input}
-                  value={firstName}
-                  onChangeText={setFirstName}
-                  placeholder="Alex"
-                />
-              </View>
-              <View style={styles.formGroup}>
-                <Text style={styles.label}>Last Name</Text>
-                <TextInput
-                  style={styles.input}
-                  value={lastName}
-                  onChangeText={setLastName}
-                  placeholder="Johnson"
-                />
-              </View>
-            </View>
-
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>Email Address</Text>
-              <View style={styles.emailInputContainer}>
-                <TextInput
-                  style={[styles.input, styles.emailInput]}
-                  value={email}
-                  onChangeText={setEmail}
-                  placeholder="alex.johnson@edulearn.com"
-                  keyboardType="email-address"
-                />
-                <Ionicons name="checkmark-circle" size={20} color="#741ce9" />
-              </View>
-              <Text style={styles.helperText}>
-                Your email is verified and will be used for course notifications.
-              </Text>
-            </View>
-
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>Bio</Text>
-              <TextInput
-                style={[styles.input, styles.textArea]}
-                value={bio}
-                onChangeText={setBio}
-                placeholder="Brief description for your profile (max 200 characters)."
-                multiline
-                numberOfLines={4}
-              />
-              <Text style={styles.helperText}>
-                Brief description for your profile (max 200 characters).
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.actionButtons}>
-            <TouchableOpacity style={styles.cancelButton} onPress={() => router.back()}>
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-              <Text style={styles.saveButtonText}>Save Changes</Text>
-            </TouchableOpacity>
-          </View>
-
-          {showSuccess && (
-            <View style={styles.successToast}>
-              <Ionicons name="checkmark-circle" size={20} color="#10b981" />
-              <View style={styles.toastContent}>
-                <Text style={styles.toastTitle}>Settings saved successfully</Text>
-                <Text style={styles.toastText}>Your profile info is now up to date.</Text>
-              </View>
-              <TouchableOpacity onPress={() => setShowSuccess(false)}>
-                <Ionicons name="close" size={20} color="#666" />
-              </TouchableOpacity>
-            </View>
-          )}
-            </>
-          ) : (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 50 }}>
-              <Ionicons name="hammer-outline" size={64} color="#ccc" style={{ marginBottom: 20 }} />
-              <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#333', marginBottom: 10 }}>Under Construction</Text>
-              <Text style={{ fontSize: 16, color: '#666', textAlign: 'center' }}>
-                The {activeTab} settings panel is currently being updated. Please check back later!
-              </Text>
-            </View>
-          )}
-        </ScrollView>
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -282,303 +202,201 @@ export default function Settings() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f5f7fb',
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
-  },
-  backButton: {
-    marginRight: 16,
-  },
-  logoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginRight: 24,
-  },
-  logoText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  nav: {
-    flexDirection: 'row',
-    gap: 24,
-  },
-  navLink: {
-    fontSize: 14,
-    color: '#666',
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginLeft: 'auto',
-  },
-  searchButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  searchText: {
-    fontSize: 14,
-    color: '#999',
-  },
-  iconButton: {
-    padding: 4,
-  },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    overflow: 'hidden',
-  },
-  avatarImage: {
-    width: '100%',
-    height: '100%',
+  content: {
+    flex: 1,
   },
   mainContent: {
-    flex: 1,
     flexDirection: 'row',
+    maxWidth: 1200,
+    width: '100%',
+    alignSelf: 'center',
+    padding: 30,
   },
   sidebar: {
-    width: 280,
-    backgroundColor: 'white',
-    padding: 24,
-    borderRightWidth: 1,
-    borderRightColor: '#e5e5e5',
-  },
-  sidebarSection: {
-    marginBottom: 24,
+    width: 250,
+    marginRight: 40,
   },
   sidebarTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  sidebarSubtitle: {
-    fontSize: 14,
-    color: '#666',
+    color: '#1a1a1a',
+    marginBottom: 30,
+    marginLeft: 12,
   },
   sidebarItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
     padding: 12,
-    borderRadius: 8,
+    borderRadius: 10,
     marginBottom: 4,
   },
   sidebarItemActive: {
-    backgroundColor: '#741ce9',
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    elevation: 2,
   },
   sidebarText: {
-    fontSize: 14,
+    fontSize: 15,
+    fontWeight: '600',
     color: '#666',
+    marginLeft: 12,
   },
   sidebarTextActive: {
-    color: 'white',
-    fontWeight: '600',
+    color: '#741ce9',
   },
-  content: {
+  settingsContent: {
     flex: 1,
+    backgroundColor: '#fff',
+    borderRadius: 20,
     padding: 40,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 3,
   },
-  contentHeader: {
-    marginBottom: 32,
+  sectionHeader: {
+    marginBottom: 30,
   },
-  contentTitle: {
-    fontSize: 28,
+  sectionTitle: {
+    fontSize: 22,
     fontWeight: 'bold',
+    color: '#1a1a1a',
     marginBottom: 8,
   },
-  contentSubtitle: {
+  sectionSubtitle: {
     fontSize: 14,
     color: '#666',
-    lineHeight: 20,
   },
-  profilePictureSection: {
+  profileImageSection: {
     flexDirection: 'row',
-    gap: 20,
-    padding: 24,
-    backgroundColor: 'white',
-    borderRadius: 12,
-    marginBottom: 24,
-  },
-  profilePictureContainer: {
-    position: 'relative',
-  },
-  profilePicture: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: '#f0f0f0',
     alignItems: 'center',
-    justifyContent: 'center',
+    marginBottom: 40,
   },
-  uploadIcon: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+  profileImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginRight: 24,
+    borderWidth: 4,
+    borderColor: '#f3ebff',
+  },
+  changeImageButton: {
     backgroundColor: '#741ce9',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  profilePictureInfo: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  profilePictureTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  profilePictureText: {
-    fontSize: 14,
-    color: '#666',
-    lineHeight: 20,
-    marginBottom: 16,
-  },
-  uploadButtons: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  uploadButton: {
-    backgroundColor: '#741ce9',
-    borderRadius: 8,
+    paddingHorizontal: 16,
     paddingVertical: 10,
-    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginBottom: 8,
   },
-  uploadButtonText: {
-    color: 'white',
-    fontWeight: '600',
+  changeImageText: {
+    color: '#fff',
     fontSize: 14,
+    fontWeight: 'bold',
   },
-  removeButton: {
+  removeImageButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#e5e5e5',
-    borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    borderColor: '#eee',
   },
-  removeButtonText: {
+  removeImageText: {
     color: '#ef4444',
-    fontWeight: '600',
     fontSize: 14,
+    fontWeight: 'bold',
   },
-  formSection: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 24,
-    marginBottom: 24,
+  formContainer: {
+    width: '100%',
   },
   formRow: {
     flexDirection: 'row',
-    gap: 20,
+    justifyContent: 'space-between',
+    marginBottom: 20,
   },
   formGroup: {
     flex: 1,
+    marginRight: 10,
     marginBottom: 20,
   },
   label: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: 'bold',
+    color: '#444',
     marginBottom: 8,
   },
   input: {
+    backgroundColor: '#f9fafb',
     borderWidth: 1,
-    borderColor: '#e5e5e5',
-    borderRadius: 8,
+    borderColor: '#e5e7eb',
+    borderRadius: 10,
     padding: 12,
-    fontSize: 14,
-    backgroundColor: '#fafafa',
+    fontSize: 16,
+    color: '#1a1a1a',
   },
-  emailInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#e5e5e5',
-    borderRadius: 8,
-    paddingRight: 12,
-    backgroundColor: '#fafafa',
-  },
-  emailInput: {
-    flex: 1,
-    borderWidth: 0,
-    backgroundColor: 'transparent',
-  },
-  textArea: {
-    height: 100,
-    textAlignVertical: 'top',
+  disabledInput: {
+    backgroundColor: '#f3f4f6',
+    color: '#9ca3af',
   },
   helperText: {
     fontSize: 12,
-    color: '#666',
+    color: '#9ca3af',
     marginTop: 4,
   },
-  actionButtons: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 12,
-  },
-  cancelButton: {
-    borderWidth: 1,
-    borderColor: '#e5e5e5',
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-  },
-  cancelButtonText: {
-    color: '#666',
-    fontWeight: '600',
-    fontSize: 16,
+  textArea: {
+    height: 120,
+    textAlignVertical: 'top',
   },
   saveButton: {
     backgroundColor: '#741ce9',
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 20,
+    shadowColor: '#741ce9',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 5,
   },
   saveButtonText: {
-    color: 'white',
-    fontWeight: '600',
+    color: '#fff',
     fontSize: 16,
+    fontWeight: 'bold',
+    letterSpacing: 0.5,
   },
-  successToast: {
+  successMessage: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 20,
-    borderWidth: 1,
-    borderColor: '#10b981',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    backgroundColor: '#ecfdf5',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 20,
   },
-  toastContent: {
-    flex: 1,
-  },
-  toastTitle: {
-    fontSize: 14,
+  successText: {
+    color: '#10b981',
     fontWeight: '600',
-    marginBottom: 2,
+    marginLeft: 8,
   },
-  toastText: {
-    fontSize: 12,
-    color: '#666',
+  placeholderSection: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
   },
+  placeholderTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    marginTop: 20,
+    marginBottom: 8,
+  },
+  placeholderSubtitle: {
+    fontSize: 14,
+    color: '#999',
+  }
 });

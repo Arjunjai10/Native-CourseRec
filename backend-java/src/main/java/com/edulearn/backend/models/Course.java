@@ -26,6 +26,7 @@ public class Course {
     private String thumbnail;
     private String thumbnailColor;
     private String videoUrl;
+    private String externalLink;
     private List<SyllabusModule> syllabus;
     private List<Review> reviews;
     private double price;
@@ -61,7 +62,7 @@ public class Course {
     public static class Topic {
         private String title;
         private String duration;
-        private String type;
+        private String contentType;
     }
 
     @Data
