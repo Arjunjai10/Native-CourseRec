@@ -111,32 +111,6 @@ export default function Profile() {
         <View style={styles.mainContent}>
           <View style={styles.sidebar}>
             <View style={styles.sidebarSection}>
-              <Text style={styles.sidebarTitle}>ACCOUNT</Text>
-              <TouchableOpacity
-                style={[styles.sidebarItem, activeTab === 'profile' && styles.sidebarItemActive]}
-                onPress={() => setActiveTab('profile')}
-              >
-                <Ionicons name="person" size={20} color={activeTab === 'profile' ? '#741ce9' : '#666'} />
-                <Text style={[styles.sidebarText, activeTab === 'profile' && styles.sidebarTextActive]}>
-                  Profile Info
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.sidebarItem}>
-                <Ionicons name="shield" size={20} color="#666" />
-                <Text style={styles.sidebarText}>Security</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.sidebarItem}>
-                <Ionicons name="eye" size={20} color="#666" />
-                <Text style={styles.sidebarText}>Privacy Settings</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.sidebarSection}>
-              <Text style={styles.sidebarTitle}>SUPPORT</Text>
-              <TouchableOpacity style={styles.sidebarItem}>
-                <Ionicons name="help-circle" size={20} color="#666" />
-                <Text style={styles.sidebarText}>Help Center</Text>
-              </TouchableOpacity>
               <TouchableOpacity style={styles.sidebarItem} onPress={handleSignOut}>
                 <Ionicons name="log-out" size={20} color="#666" />
                 <Text style={styles.sidebarText}>Sign Out</Text>
@@ -157,7 +131,7 @@ export default function Profile() {
                 <Text style={styles.studentId}>Student ID: {userProfile.studentId}</Text>
                 <Text style={styles.bio}>{userProfile.bio}</Text>
               </View>
-              <TouchableOpacity style={styles.editButton}>
+              <TouchableOpacity style={styles.editButton} onPress={() => router.push('/settings')}>
                 <Text style={styles.editButtonText}>Edit Profile</Text>
               </TouchableOpacity>
             </View>
@@ -194,7 +168,7 @@ export default function Profile() {
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>My Interests</Text>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => router.push('/settings')}>
                   <Text style={styles.manageLink}>Manage Interests</Text>
                 </TouchableOpacity>
               </View>
@@ -204,7 +178,7 @@ export default function Profile() {
                     <Text style={styles.interestText}>{interest}</Text>
                   </View>
                 )) : <Text style={{marginLeft: 10, color: '#666'}}>No interests added yet.</Text>}
-                <TouchableOpacity style={styles.addInterestButton}>
+                <TouchableOpacity style={styles.addInterestButton} onPress={() => router.push('/settings')}>
                   <Ionicons name="add" size={20} color="#741ce9" />
                   <Text style={styles.addInterestText}>Add Interest</Text>
                 </TouchableOpacity>
@@ -214,7 +188,7 @@ export default function Profile() {
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>Recent Certificates</Text>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => {if (Platform.OS === 'web') {alert('All certificates shown.');}}}>
                   <Text style={styles.viewAllLink}>View All</Text>
                 </TouchableOpacity>
               </View>
@@ -228,7 +202,7 @@ export default function Profile() {
                       <Text style={styles.certTitle}>{cert.title || cert.courseName}</Text>
                       <Text style={styles.certDate}>Issued on {cert.date || new Date(cert.completedDate).toLocaleDateString()}</Text>
                     </View>
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={() => {if (Platform.OS === 'web') {alert('Downloading certificate PDF...');}}}>
                       <Ionicons name="download-outline" size={20} color="#666" />
                     </TouchableOpacity>
                   </View>
@@ -246,9 +220,9 @@ export default function Profile() {
         </View>
         <Text style={styles.footerCopyright}>© 2023 EduLearn Inc.</Text>
         <View style={styles.footerLinks}>
-          <TouchableOpacity><Text style={styles.footerLink}>Privacy Policy</Text></TouchableOpacity>
-          <TouchableOpacity><Text style={styles.footerLink}>Terms of Service</Text></TouchableOpacity>
-          <TouchableOpacity><Text style={styles.footerLink}>Cookie Settings</Text></TouchableOpacity>
+          <TouchableOpacity onPress={() => {if (Platform.OS === 'web') {alert('Loading Privacy Policy...');}}}><Text style={styles.footerLink}>Privacy Policy</Text></TouchableOpacity>
+          <TouchableOpacity onPress={() => {if (Platform.OS === 'web') {alert('Loading Terms of Service...');}}}><Text style={styles.footerLink}>Terms of Service</Text></TouchableOpacity>
+          <TouchableOpacity onPress={() => {if (Platform.OS === 'web') {alert('Loading Cookie Settings...');}}}><Text style={styles.footerLink}>Cookie Settings</Text></TouchableOpacity>
         </View>
       </View>
     </View>
