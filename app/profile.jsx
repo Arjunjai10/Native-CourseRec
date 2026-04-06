@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { userAPI } from './utils/api';
 import Navbar from './components/Navbar';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function Profile() {
   const router = useRouter();
@@ -60,98 +61,112 @@ export default function Profile() {
     <View style={styles.container}>
       <Navbar />
 
-      <ScrollView style={styles.content}>
-        <View style={styles.mainContent}>
-          <View style={styles.profileContent}>
-            <View style={styles.profileHeader}>
-              <View style={styles.profileImageContainer}>
-                <Image
-                  source={{ uri: 'https://via.placeholder.com/120' }}
-                  style={styles.profileImage}
-                />
-              </View>
-              <View style={styles.profileInfo}>
-                <Text style={styles.profileName}>{userProfile.name}</Text>
-                <Text style={styles.studentId}>Student ID: {userProfile.studentId}</Text>
-                <Text style={styles.bio}>{userProfile.bio}</Text>
-              </View>
-              <TouchableOpacity style={styles.editButton} onPress={() => router.push('/settings')}>
-                <Text style={styles.editButtonText}>Edit Profile</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.statsGrid}>
-              <View style={styles.statCard}>
-                <View style={styles.statHeader}>
-                  <Ionicons name="book" size={24} color="#741ce9" />
-                  <Text style={styles.statValue}>{userProfile.courses}</Text>
-                </View>
-                <Text style={styles.statLabel}>COURSES</Text>
-                <Text style={styles.statChange}>{userProfile.coursesChange}</Text>
-              </View>
-
-              <View style={styles.statCard}>
-                <View style={styles.statHeader}>
-                  <Ionicons name="time" size={24} color="#741ce9" />
-                  <Text style={styles.statValue}>{userProfile.learningHours}</Text>
-                </View>
-                <Text style={styles.statLabel}>LEARNING HOURS</Text>
-                <Text style={styles.statChange}>{userProfile.learningRank}</Text>
-              </View>
-
-              <View style={styles.statCard}>
-                <View style={styles.statHeader}>
-                  <Ionicons name="ribbon" size={24} color="#741ce9" />
-                  <Text style={styles.statValue}>{userProfile.certificates}</Text>
-                </View>
-                <Text style={styles.statLabel}>CERTIFICATES</Text>
-                <Text style={styles.statChange}>Verified credentials</Text>
-              </View>
-            </View>
-
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>My Interests</Text>
-                <TouchableOpacity onPress={() => router.push('/settings')}>
-                  <Text style={styles.manageLink}>Manage Interests</Text>
-                </TouchableOpacity>
-              </View>
-              <View style={styles.interestsContainer}>
-                {userProfile.interests.length > 0 ? userProfile.interests.map((interest, index) => (
-                  <View key={index} style={styles.interestTag}>
-                    <Text style={styles.interestText}>{interest}</Text>
-                  </View>
-                )) : <Text style={{marginLeft: 10, color: '#666'}}>No interests added yet.</Text>}
-                <TouchableOpacity style={styles.addInterestButton} onPress={() => router.push('/settings')}>
-                  <Ionicons name="add" size={20} color="#741ce9" />
-                  <Text style={styles.addInterestText}>Add Interest</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Recent Certificates</Text>
-                <TouchableOpacity onPress={() => {if (Platform.OS === 'web') {alert('All certificates shown.');}}}>
-                  <Text style={styles.viewAllLink}>View All</Text>
-                </TouchableOpacity>
-              </View>
-              <View style={styles.certificatesGrid}>
-                {userProfile.recentCertificates.length > 0 ? userProfile.recentCertificates.map((cert, index) => (
-                  <View key={index} style={styles.certCard}>
-                    <View style={styles.certIcon}>
-                      <Ionicons name="ribbon" size={24} color="#741ce9" />
-                    </View>
-                    <Text style={styles.certTitle}>{cert.courseTitle || 'Course Certificate'}</Text>
-                    <Text style={styles.certDate}>Issued: {cert.issueDate ? new Date(cert.issueDate).toLocaleDateString() : 'Recent'}</Text>
-                    <TouchableOpacity style={styles.downloadLink}>
-                      <Ionicons name="download-outline" size={16} color="#741ce9" />
-                      <Text style={styles.downloadText}>Download</Text>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.headerSection}>
+           <LinearGradient
+             colors={['#741ce9', '#9d50bb']}
+             style={styles.headerGradient}
+           >
+              <View style={styles.profileHeaderContent}>
+                 <View style={styles.profilePicBox}>
+                    <Image
+                      source={{ uri: 'https://via.placeholder.com/150' }}
+                      style={styles.profilePic}
+                    />
+                    <TouchableOpacity style={styles.editPicBtn}>
+                       <Ionicons name="camera" size={16} color="#fff" />
                     </TouchableOpacity>
-                  </View>
-                )) : <Text style={{marginLeft: 10, color: '#666'}}>You haven't earned any certificates yet.</Text>}
+                 </View>
+                 <View style={styles.nameSection}>
+                    <Text style={styles.nameText}>{userProfile.name}</Text>
+                    <View style={styles.idRow}>
+                       <Text style={styles.idText}>{userProfile.studentId}</Text>
+                       <View style={styles.idDivider} />
+                       <Text style={styles.rankText}>Gold Member</Text>
+                    </View>
+                 </View>
               </View>
-            </View>
+           </LinearGradient>
+           
+           <View style={styles.statsOverlay}>
+              <View style={styles.statBox}>
+                 <Text style={styles.statNum}>{userProfile.courses}</Text>
+                 <Text style={styles.statLabel}>Recommends</Text>
+              </View>
+              <View style={styles.statBoxDivider} />
+              <View style={styles.statBox}>
+                 <Text style={styles.statNum}>84%</Text>
+                 <Text style={styles.statLabel}>Skill Match</Text>
+              </View>
+              <View style={styles.statBoxDivider} />
+              <View style={styles.statBox}>
+                 <Text style={styles.statNum}>{userProfile.certificates}</Text>
+                 <Text style={styles.statLabel}>Saved</Text>
+              </View>
+           </View>
+        </View>
+
+        <View style={styles.mainContent}>
+          <View style={styles.section}>
+             <View style={styles.sectionHead}>
+                <Text style={styles.sectionTitle}>About Me</Text>
+                <TouchableOpacity onPress={() => router.push('/settings')}>
+                  <Ionicons name="create-outline" size={20} color="#741ce9" />
+                </TouchableOpacity>
+             </View>
+             <Text style={styles.bioText}>
+                {userProfile.bio || "No biography provided yet. Tell us about your learning goals and professional background to personalize your experience."}
+             </Text>
+          </View>
+
+          <View style={styles.section}>
+             <Text style={styles.sectionTitle}>My Interests</Text>
+             <View style={styles.interestsGrid}>
+                {userProfile.interests.length > 0 ? (
+                   userProfile.interests.map((interest, i) => (
+                      <View key={i} style={styles.interestPill}>
+                         <Text style={styles.interestText}>{interest}</Text>
+                      </View>
+                   ))
+                ) : (
+                  ['Web Development', 'UI/UX Design', 'Data Analysis', 'React Native'].map((interest, i) => (
+                    <View key={i} style={styles.interestPill}>
+                       <Text style={styles.interestText}>{interest}</Text>
+                    </View>
+                 ))
+                )}
+             </View>
+          </View>
+
+          <View style={styles.section}>
+             <View style={styles.sectionHead}>
+                <Text style={styles.sectionTitle}>Saved Recommendations</Text>
+                <TouchableOpacity>
+                   <Text style={styles.seeAllText}>Manage Library</Text>
+                </TouchableOpacity>
+             </View>
+             
+             {userProfile.recentCertificates.length > 0 ? (
+                userProfile.recentCertificates.map((cert, index) => (
+                   <View key={index} style={styles.certificateCard}>
+                      <View style={styles.certIcon}>
+                         <Ionicons name="bookmark" size={24} color="#741ce9" />
+                      </View>
+                      <View style={styles.certInfo}>
+                         <Text style={styles.certTitle}>Full Stack Web Development</Text>
+                         <Text style={styles.certMeta}>Platform: Coursera • Matched: {new Date().toLocaleDateString()}</Text>
+                      </View>
+                      <TouchableOpacity style={styles.viewCertBtn}>
+                         <Ionicons name="arrow-forward-outline" size={20} color="#666" />
+                      </TouchableOpacity>
+                   </View>
+                ))
+             ) : (
+                <View style={styles.emptyActivity}>
+                   <Ionicons name="sparkles-outline" size={40} color="#e2e8f0" />
+                   <Text style={styles.emptyText}>Find your first recommendation!</Text>
+                </View>
+             )}
           </View>
         </View>
       </ScrollView>
@@ -162,212 +177,211 @@ export default function Profile() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f7fb',
+    backgroundColor: '#fff',
   },
   content: {
     flex: 1,
   },
-  mainContent: {
-    maxWidth: 1000,
-    width: '100%',
-    alignSelf: 'center',
-    padding: 24,
-  },
-  profileContent: {
-    flex: 1,
-  },
-  profileHeader: {
+  headerSection: {
+    paddingBottom: 40,
     backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 30,
+  },
+  headerGradient: {
+    paddingTop: 40,
+    paddingBottom: 100,
+    paddingHorizontal: 25,
+    borderBottomLeftRadius: 50,
+    borderBottomRightRadius: 50,
+  },
+  profileHeaderContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 3,
   },
-  profileImageContainer: {
-    marginRight: 30,
+  profilePicBox: {
+    position: 'relative',
+    marginRight: 20,
   },
-  profileImage: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+  profilePic: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     borderWidth: 4,
-    borderColor: '#f3ebff',
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
-  profileInfo: {
-    flex: 1,
-  },
-  profileName: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-    marginBottom: 4,
-  },
-  studentId: {
-    fontSize: 16,
-    color: '#741ce9',
-    fontWeight: '600',
-    marginBottom: 12,
-  },
-  bio: {
-    fontSize: 15,
-    color: '#666',
-    lineHeight: 22,
-  },
-  editButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 10,
-    backgroundColor: '#f3ebff',
-  },
-  editButtonText: {
-    color: '#741ce9',
-    fontWeight: 'bold',
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 24,
-  },
-  statCard: {
-    width: '31%',
+  editPicBtn: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
     backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 2,
-  },
-  statHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  statValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-  },
-  statLabel: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: '#999',
-    marginBottom: 4,
-  },
-  statChange: {
-    fontSize: 12,
-    color: '#10b981',
-    fontWeight: '500',
-  },
-  section: {
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 24,
-    marginBottom: 24,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-  },
-  manageLink: {
-    color: '#741ce9',
-    fontWeight: '600',
-  },
-  viewAllLink: {
-    color: '#741ce9',
-    fontWeight: '600',
-  },
-  interestsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  interestTag: {
-    backgroundColor: '#f5f5f5',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginRight: 10,
-    marginBottom: 10,
-  },
-  interestText: {
-    color: '#666',
-    fontWeight: '500',
-  },
-  addInterestButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#741ce9',
-    borderStyle: 'dashed',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginBottom: 10,
-  },
-  addInterestText: {
-    color: '#741ce9',
-    fontWeight: '600',
-    marginLeft: 4,
-  },
-  certificatesGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  certCard: {
-    width: '48%',
-    backgroundColor: '#f9fafb',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    marginRight: '2%',
-  },
-  certIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 8,
-    backgroundColor: '#fff',
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
   },
-  certTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-    marginBottom: 4,
+  nameSection: {
+    flex: 1,
   },
-  certDate: {
-    fontSize: 13,
-    color: '#666',
-    marginBottom: 12,
+  nameText: {
+    fontSize: 28,
+    fontWeight: '900',
+    color: '#fff',
+    letterSpacing: -1,
   },
-  downloadLink: {
+  idRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: 8,
   },
-  downloadText: {
-    color: '#741ce9',
+  idText: {
     fontSize: 14,
-    fontWeight: 'bold',
-    marginLeft: 6,
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontWeight: '600',
+  },
+  idDivider: {
+    width: 1,
+    height: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    marginHorizontal: 12,
+  },
+  rankText: {
+     fontSize: 14,
+     color: '#fff',
+     fontWeight: '800',
+  },
+  statsOverlay: {
+     flexDirection: 'row',
+     marginHorizontal: 40,
+     marginTop: -45,
+     backgroundColor: '#fff',
+     borderRadius: 30,
+     paddingVertical: 25,
+     shadowColor: '#000',
+     shadowOffset: { width: 0, height: 10 },
+     shadowOpacity: 0.1,
+     shadowRadius: 20,
+     elevation: 10,
+     alignItems: 'center',
+  },
+  statBox: {
+     flex: 1,
+     alignItems: 'center',
+  },
+  statNum: {
+     fontSize: 24,
+     fontWeight: '900',
+     color: '#1e293b',
+  },
+  statLabel: {
+     fontSize: 12,
+     fontWeight: '700',
+     color: '#94a3b8',
+     textTransform: 'uppercase',
+  },
+  statBoxDivider: {
+     width: 1,
+     height: 30,
+     backgroundColor: '#f1f5f9',
+  },
+  mainContent: {
+     padding: 25,
+     paddingTop: 10,
+  },
+  section: {
+     marginBottom: 35,
+  },
+  sectionHead: {
+     flexDirection: 'row',
+     justifyContent: 'space-between',
+     alignItems: 'center',
+     marginBottom: 15,
+  },
+  sectionTitle: {
+     fontSize: 20,
+     fontWeight: '800',
+     color: '#1e293b',
+     letterSpacing: -0.5,
+  },
+  bioText: {
+     fontSize: 15,
+     lineHeight: 24,
+     color: '#64748b',
+     fontWeight: '500',
+  },
+  interestsGrid: {
+     flexDirection: 'row',
+     flexWrap: 'wrap',
+  },
+  interestPill: {
+     backgroundColor: '#f8fafc',
+     paddingHorizontal: 16,
+     paddingVertical: 10,
+     borderRadius: 14,
+     marginRight: 10,
+     marginBottom: 10,
+     borderWidth: 1,
+     borderColor: '#f1f5f9',
+  },
+  interestText: {
+     fontSize: 14,
+     fontWeight: '700',
+     color: '#475569',
+  },
+  seeAllText: {
+     fontSize: 14,
+     fontWeight: 'bold',
+     color: '#741ce9',
+  },
+  certificateCard: {
+     flexDirection: 'row',
+     backgroundColor: '#fff',
+     padding: 16,
+     borderRadius: 24,
+     borderWidth: 1,
+     borderColor: '#f1f5f9',
+     alignItems: 'center',
+     marginBottom: 12,
+  },
+  certIcon: {
+     width: 50,
+     height: 50,
+     borderRadius: 18,
+     backgroundColor: '#f3ebff',
+     justifyContent: 'center',
+     alignItems: 'center',
+     marginRight: 15,
+  },
+  certInfo: {
+     flex: 1,
+  },
+  certTitle: {
+     fontSize: 15,
+     fontWeight: '800',
+     color: '#1e293b',
+  },
+  certMeta: {
+     fontSize: 12,
+     color: '#94a3b8',
+     marginTop: 4,
+     fontWeight: '500',
+  },
+  viewCertBtn: {
+     width: 40,
+     height: 40,
+     borderRadius: 20,
+     justifyContent: 'center',
+     alignItems: 'center',
+  },
+  emptyActivity: {
+     alignItems: 'center',
+     paddingVertical: 40,
+  },
+  emptyText: {
+     marginTop: 10,
+     color: '#cbd5e1',
+     fontWeight: '600',
   }
 });

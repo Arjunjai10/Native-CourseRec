@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { userAPI, courseAPI } from './utils/api';
 import Navbar from './components/Navbar';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
@@ -24,16 +25,17 @@ export default function Recommendations() {
   const [isInitializing, setIsInitializing] = useState(true);
   const [user, setUser] = useState(null);
   const [allCourses, setAllCourses] = useState([]);
-  const [recentLearning, setRecentLearning] = useState([]);
   const [availableCoursesText, setAvailableCoursesText] = useState('');
+  const [activeSessionId, setActiveSessionId] = useState(null);
+  const [chatHistory, setChatHistory] = useState([]);
+  
   const [messages, setMessages] = useState([
     {
-      id: 1,
+      id: Date.now(),
       type: 'ai',
       text: "Hello! I'm your EduLearn AI assistant. I can help you discover courses in programming, design, data science, business, and more. What would you like to learn today?",
     },
   ]);
-
 
   useEffect(() => {
     const initializeChat = async () => {
@@ -48,31 +50,20 @@ export default function Recommendations() {
           }
           storedUser = JSON.parse(userStr);
           setUser(storedUser);
-          userId = storedUser.id;
+          userId = storedUser.id || storedUser._id;
+
+          // Load chat history from localStorage
+          const savedHistory = localStorage.getItem(`chat_history_${userId}`);
+          if (savedHistory) {
+              setChatHistory(JSON.parse(savedHistory));
+          }
         }
 
-        const promises = [courseAPI.getAll()];
-        if (userId) promises.push(userAPI.getProfile(userId));
-
-        const results = await Promise.all(promises);
+        const results = await Promise.all([courseAPI.getAll(), userAPI.getProfile(userId)]);
         const coursesData = results[0].data;
         setAllCourses(coursesData);
+        setUser(results[1].data);
 
-        if (userId && results[1]) {
-          const userData = results[1].data;
-          setUser(userData);
-          // Set recent learning from enrolled courses, or default to recommended if none
-          if (userData.enrolledCourses && userData.enrolledCourses.length > 0) {
-            setRecentLearning(userData.enrolledCourses.map(c => ({ id: c._id, title: c.title, active: false })));
-          } else {
-            // Fallback to top few courses if no enrollments
-            setRecentLearning(coursesData.slice(0, 4).map((c, i) => ({ id: c._id, title: c.title, active: i === 0 })));
-          }
-        } else {
-          setRecentLearning(coursesData.slice(0, 4).map((c, i) => ({ id: c._id, title: c.title, active: i === 0 })));
-        }
-
-        // Build dynamic course catalog string for Gemini
         const catalogString = coursesData.reduce((acc, course) => {
           const category = course.category || 'Uncategorized';
           if (!acc[category]) acc[category] = [];
@@ -81,13 +72,13 @@ export default function Recommendations() {
         }, {});
 
         const formattedCatalog = Object.entries(catalogString)
-          .map(([category, courses]) => `${category}:\n${courses.slice(0, 5).join('\n')}`) // limit to 5 per category to save tokens
+          .map(([category, courses]) => `${category}:\n${courses.slice(0, 5).join('\n')}`)
           .join('\n\n');
 
         setAvailableCoursesText(formattedCatalog);
 
       } catch (error) {
-        console.error("Failed to initialize course assistant data:", error);
+        console.error("Failed to initialize assistant:", error);
       } finally {
         setIsInitializing(false);
       }
@@ -96,122 +87,79 @@ export default function Recommendations() {
     initializeChat();
   }, []);
 
+  const saveToHistory = (newMessages) => {
+      if (Platform.OS !== 'web' || !user) return;
+      const userId = user.id || user._id;
+      const newHistory = [...chatHistory];
+      const sessionIndex = newHistory.findIndex(h => h.id === activeSessionId);
 
-  const scrollViewRef = useRef(null);
+      const firstUserMsg = newMessages.find(m => m.type === 'user')?.text || 'New Session';
+      const sessionData = {
+          id: activeSessionId || Date.now(),
+          title: firstUserMsg.substring(0, 30) + (firstUserMsg.length > 30 ? '...' : ''),
+          messages: newMessages,
+          date: new Date().toISOString()
+      };
 
-  useEffect(() => {
-    if (scrollViewRef.current) {
-      scrollViewRef.current.scrollToEnd({ animated: true });
-    }
-  }, [messages]);
+      if (sessionIndex > -1) {
+          newHistory[sessionIndex] = sessionData;
+      } else {
+          newHistory.unshift(sessionData);
+          setActiveSessionId(sessionData.id);
+      }
+
+      setChatHistory(newHistory);
+      localStorage.setItem(`chat_history_${userId}`, JSON.stringify(newHistory));
+  };
 
   const handleNewChat = () => {
+    setActiveSessionId(null);
     setMessages([
       {
-        id: 1,
+        id: Date.now(),
         type: 'ai',
-        text: "Hello! I'm your EduLearn AI assistant. I can help you discover courses in programming, design, data science, business, and more. What would you like to learn today?",
+        text: "Hello! I'm your EduLearn AI assistant. What would you like to discover today?",
       },
     ]);
     setMessage('');
   };
 
+  const loadSession = (session) => {
+      setActiveSessionId(session.id);
+      setMessages(session.messages);
+  };
+
   const sendMessage = async () => {
     if (!message.trim() || isLoading) return;
-
     const userMessage = message.trim();
-    const userMessageObj = {
-      id: Date.now(),
-      type: 'user',
-      text: userMessage
-    };
-
-    setMessages(prev => [...prev, userMessageObj]);
+    const updatedMessages = [...messages, { id: Date.now(), type: 'user', text: userMessage }];
+    setMessages(updatedMessages);
     setMessage('');
     setIsLoading(true);
 
-    if (!GEMINI_API_KEY || GEMINI_API_KEY === 'undefined' || GEMINI_API_KEY === 'your_gemini_api_key_here') {
-      setMessages(prev => [...prev, {
-        id: Date.now() + 1,
-        type: 'ai',
-        text: "It looks like the AI API Key is missing. Please ask your developer to set 'EXPO_PUBLIC_GEMINI_API_KEY' in the project's .env file.",
-      }]);
-      setIsLoading(false);
-      return;
-    }
-
     try {
-      const conversationHistory = messages
-        .slice(-6)
-        .map(msg => `${msg.type === 'user' ? 'Student' : 'EduLearn AI'}: ${msg.text}`)
-        .join('\n');
-
       const response = await fetch(GEMINI_API_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{
-            parts: [{
-              text: `You are an AI course recommendation assistant for EduLearn, an online learning platform.
-
-AVAILABLE COURSES ON EDULEARN:
-${availableCoursesText}
-
-YOUR ROLE:
-- Help students find the perfect courses from the catalog above
-- ALWAYS recommend specific courses by name when appropriate
-- Be friendly, concise, and actionable
-- After 1-2 clarifying questions, START RECOMMENDING specific courses from the catalog
-- Format course recommendations clearly with bullet points
-
-CONVERSATION HISTORY:
-${conversationHistory}
-
-STUDENT'S NEW MESSAGE: ${userMessage}
-
-INSTRUCTIONS:
-1. If this is their first meaningful query about what they want to learn, ask ONE clarifying question about their experience level or goals
-2. If you already have enough context (e.g., they said "full stack developer" or "beginner"), immediately recommend 2-3 SPECIFIC courses from the catalog above
-3. Use the exact course names from the catalog
-4. Keep responses under 150 words
-5. Be encouraging and specific
-
-Respond now:`
-            }]
-          }],
-          generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 600,
-          },
+            parts: [{ text: `You are an AI at EduLearn. Catalog: ${availableCoursesText}. Respond to: ${userMessage}` }]
+          }]
         }),
       });
-
       const data = await response.json();
-
-      if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
-        const aiResponse = data.candidates[0].content.parts[0].text;
-
-        setMessages(prev => [...prev, {
-          id: Date.now() + 1,
-          type: 'ai',
-          text: aiResponse,
-        }]);
-      } else {
-        throw new Error('Invalid response format');
-      }
+      const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm sorry, I'm having trouble right now.";
+      const finalMessages = [...updatedMessages, { id: Date.now() + 1, type: 'ai', text: aiResponse }];
+      setMessages(finalMessages);
+      saveToHistory(finalMessages);
     } catch (error) {
-      console.error('AI Error:', error);
-      setMessages(prev => [...prev, {
-        id: Date.now() + 1,
-        type: 'ai',
-        text: "I apologize, but I'm having trouble connecting right now. Please try again in a moment. In the meantime, you can browse our course catalog or check your profile!",
-      }]);
+       console.error(error);
     } finally {
-      setIsLoading(false);
+       setIsLoading(false);
     }
   };
+
+  const scrollViewRef = useRef(null);
 
   if (isInitializing) {
     return (
@@ -228,43 +176,37 @@ Respond now:`
         <View style={styles.sidebar}>
           <View style={styles.sidebarHeader}>
             <TouchableOpacity style={styles.newChatButton} onPress={handleNewChat}>
-              <Ionicons name="add" size={20} color="white" />
-              <Text style={styles.newChatButtonText}>New Chat</Text>
+              <LinearGradient colors={['#741ce9', '#9d50bb']} style={styles.newChatGradient}>
+                 <Ionicons name="add" size={20} color="white" />
+                 <Text style={styles.newChatButtonText}>New Session</Text>
+              </LinearGradient>
             </TouchableOpacity>
           </View>
 
-          <View style={styles.recentChats}>
-            <Text style={styles.sectionTitle}>RECENT LEARNING</Text>
-            {recentLearning.map((chat) => (
-              <TouchableOpacity
-                key={chat.id}
-                style={[styles.chatItem, chat.active && styles.chatItemActive]}
+          <ScrollView style={styles.recentChats} showsVerticalScrollIndicator={false}>
+            <Text style={styles.sectionTitle}>SESSION HISTORY</Text>
+            {chatHistory.map((chat) => (
+              <TouchableOpacity 
+                key={chat.id} 
+                style={[styles.chatItem, activeSessionId === chat.id && styles.chatItemActive]}
+                onPress={() => loadSession(chat)}
               >
-                <Ionicons
-                  name="chatbubble"
-                  size={20}
-                  color={chat.active ? '#741ce9' : '#666'}
-                />
-                <Text style={[styles.chatItemText, chat.active && styles.chatItemTextActive]}>
-                  {chat.title}
-                </Text>
+                <View style={[styles.chatDot, activeSessionId === chat.id && styles.chatDotActive]} />
+                <Text style={[styles.chatItemText, activeSessionId === chat.id && styles.chatItemTextActive]} numberOfLines={1}>{chat.title}</Text>
               </TouchableOpacity>
             ))}
-          </View>
+            {chatHistory.length === 0 && (
+                <Text style={styles.emptyHistory}>No previous sessions found.</Text>
+            )}
+          </ScrollView>
 
           <View style={styles.sidebarFooter}>
-            <TouchableOpacity style={styles.settingsButton} onPress={() => router.push('/settings')}>
-              <Ionicons name="settings-outline" size={20} color="#666" />
-              <Text style={styles.settingsText}>Settings</Text>
-            </TouchableOpacity>
-            <View style={styles.userInfo}>
-              <View style={styles.userAvatarCircle}>
-                <Text style={{ color: '#741ce9', fontWeight: 'bold' }}>{user ? user.fullName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'U'}</Text>
-              </View>
-              <View>
-                <Text style={styles.userName}>{user ? user.fullName : 'Guest User'}</Text>
-                <Text style={styles.userStatus}>{user ? 'Premium Member' : 'Sign in to save'}</Text>
-              </View>
+            <View style={styles.userPod}>
+               <View style={styles.userDot} />
+               <View>
+                  <Text style={styles.userName}>{user ? user.fullName : 'Learner'}</Text>
+                  <Text style={styles.userStatus}>Online Now</Text>
+               </View>
             </View>
           </View>
         </View>
@@ -274,66 +216,45 @@ Respond now:`
             style={styles.chatArea}
             ref={scrollViewRef}
             onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+            contentContainerStyle={{ padding: 25 }}
           >
             {messages.map((msg) => (
-              <View key={msg.id} style={styles.messageContainer}>
-                {msg.type === 'ai' ? (
-                  <View style={styles.aiMessage}>
-                    <View style={styles.aiAvatar}>
-                      <Ionicons name="school" size={24} color="white" />
-                    </View>
-                    <View style={styles.messageContent}>
-                      <Text style={styles.aiLabel}>EDULEARN AI</Text>
-                      <Text style={styles.messageText}>{msg.text}</Text>
-                    </View>
-                  </View>
-                ) : (
-                  <View style={styles.userMessage}>
-                    <View style={styles.userMessageBubble}>
-                      <Text style={styles.userLabel}>YOU</Text>
-                      <Text style={styles.userMessageText}>{msg.text}</Text>
-                    </View>
-                    <View style={styles.userAvatarContainer}>
-                      <Ionicons name="person" size={20} color="white" />
-                    </View>
-                  </View>
+              <View key={msg.id} style={[styles.msgContainer, msg.type === 'user' ? styles.userMsgCont : styles.aiMsgCont]}>
+                {msg.type === 'ai' && (
+                  <LinearGradient colors={['#741ce9', '#9d50bb']} style={styles.aiAvatar}>
+                    <Ionicons name="sparkles" size={16} color="white" />
+                  </LinearGradient>
                 )}
+                <View style={[styles.msgBubble, msg.type === 'user' ? styles.userBubble : styles.aiBubble]}>
+                  <Text style={[styles.msgText, msg.type === 'user' ? styles.userMsgText : styles.aiMsgText]}>{msg.text}</Text>
+                </View>
               </View>
             ))}
-
             {isLoading && (
-              <View style={styles.loadingContainer}>
-                <View style={styles.aiAvatar}>
-                  <Ionicons name="school" size={24} color="white" />
-                </View>
-                <View style={styles.loadingContent}>
-                  <Text style={styles.aiLabel}>EDULEARN AI</Text>
-                  <View style={styles.typingIndicator}>
-                    <ActivityIndicator size="small" color="#741ce9" />
-                    <Text style={styles.typingText}>Thinking...</Text>
-                  </View>
-                </View>
-              </View>
+               <View style={styles.loadingBox}>
+                  <ActivityIndicator size="small" color="#741ce9" />
+                  <Text style={styles.loadingText}>Analyzing path...</Text>
+               </View>
             )}
           </ScrollView>
 
-          <View style={styles.inputContainer}>
-            <TouchableOpacity style={styles.attachButton}>
-              <Ionicons name="attach" size={24} color="#666" />
-            </TouchableOpacity>
-            <TextInput
-              style={styles.input}
-              placeholder="Ask EduLearn anything about your learning path..."
-              value={message}
-              onChangeText={setMessage}
-              onSubmitEditing={sendMessage}
-            />
-            <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
-              <Ionicons name="send" size={20} color="white" />
-            </TouchableOpacity>
+          <View style={styles.inputArea}>
+            <View style={styles.inputWrapper}>
+               <TextInput
+                 style={styles.input}
+                 placeholder="Search for your ideal mastery path..."
+                 placeholderTextColor="#94a3b8"
+                 value={message}
+                 onChangeText={setMessage}
+                 onSubmitEditing={sendMessage}
+               />
+               <TouchableOpacity style={styles.sendBtn} onPress={sendMessage}>
+                 <LinearGradient colors={['#741ce9', '#9d50bb']} style={styles.sendGradient}>
+                    <Ionicons name="paper-plane" size={18} color="white" />
+                 </LinearGradient>
+               </TouchableOpacity>
+            </View>
           </View>
-
-          <Text style={styles.aiFooter}>Powered by Google Gemini AI</Text>
         </View>
       </View>
     </View>
@@ -343,225 +264,210 @@ Respond now:`
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9f9f9',
-  },
-  appArea: {
-    flex: 1,
-    flexDirection: 'row',
+    backgroundColor: '#fff',
   },
   centered: {
     justifyContent: 'center',
     alignItems: 'center',
   },
+  appArea: {
+    flex: 1,
+    flexDirection: 'row',
+  },
   sidebar: {
     width: 280,
-    backgroundColor: 'white',
+    backgroundColor: '#f8fafc',
     borderRightWidth: 1,
-    borderRightColor: '#e5e5e5',
+    borderRightColor: '#f1f5f9',
   },
   sidebarHeader: {
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
+    padding: 24,
   },
-  newChatButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: '#741ce9',
-    borderRadius: 8,
-    padding: 12,
+  newChatGradient: {
+     flexDirection: 'row',
+     alignItems: 'center',
+     justifyContent: 'center',
+     paddingVertical: 14,
+     gap: 10,
+     borderRadius: 20,
   },
   newChatButtonText: {
     color: 'white',
-    fontWeight: '600',
+    fontWeight: '800',
+    fontSize: 14,
   },
   recentChats: {
-    padding: 20,
     flex: 1,
+    paddingHorizontal: 20,
   },
   sectionTitle: {
     fontSize: 11,
-    fontWeight: '600',
-    color: '#999',
-    marginBottom: 12,
+    fontWeight: '900',
+    color: '#94a3b8',
+    marginBottom: 20,
+    letterSpacing: 1.5,
   },
   chatItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    padding: 12,
-    borderRadius: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderRadius: 16,
     marginBottom: 4,
   },
   chatItemActive: {
-    backgroundColor: '#F3E8FF',
+     backgroundColor: '#fff',
+     shadowColor: '#000',
+     shadowOpacity: 0.05,
+     shadowRadius: 10,
+  },
+  chatDot: {
+     width: 8,
+     height: 8,
+     borderRadius: 4,
+     backgroundColor: '#cbd5e1',
+     marginRight: 12,
+  },
+  chatDotActive: {
+     backgroundColor: '#741ce9',
   },
   chatItemText: {
     fontSize: 14,
-    color: '#666',
+    color: '#64748b',
+    fontWeight: '700',
   },
   chatItemTextActive: {
-    color: '#741ce9',
-    fontWeight: '600',
+     color: '#0a0a0a',
+  },
+  emptyHistory: {
+     fontSize: 12,
+     color: '#94a3b8',
+     fontStyle: 'italic',
+     textAlign: 'center',
+     marginTop: 20,
   },
   sidebarFooter: {
     padding: 20,
     borderTopWidth: 1,
-    borderTopColor: '#e5e5e5',
+    borderTopColor: '#f1f5f9',
   },
-  settingsButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    padding: 12,
-    marginBottom: 12,
+  userPod: {
+     flexDirection: 'row',
+     alignItems: 'center',
+     backgroundColor: '#fff',
+     padding: 12,
+     borderRadius: 20,
+     borderWidth: 1,
+     borderColor: '#f1f5f9',
   },
-  settingsText: {
-    fontSize: 14,
-    color: '#666',
-  },
-  userInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  userAvatarCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F3E8FF',
-    alignItems: 'center',
-    justifyContent: 'center',
+  userDot: {
+     width: 10,
+     height: 10,
+     borderRadius: 5,
+     backgroundColor: '#10b981',
+     marginRight: 12,
+     marginLeft: 4,
   },
   userName: {
-    fontSize: 14,
-    fontWeight: '600',
+     fontSize: 14,
+     fontWeight: '800',
+     color: '#1e293b',
   },
   userStatus: {
-    fontSize: 12,
-    color: '#666',
+     fontSize: 12,
+     color: '#94a3b8',
+     fontWeight: '600',
   },
   mainContent: {
     flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
+    backgroundColor: '#fff',
   },
   chatArea: {
     flex: 1,
-    padding: 20,
   },
-  messageContainer: {
-    marginBottom: 24,
+  msgContainer: {
+     flexDirection: 'row',
+     marginBottom: 25,
+     alignItems: 'flex-end',
   },
-  aiMessage: {
-    flexDirection: 'row',
-    gap: 12,
+  userMsgCont: {
+     justifyContent: 'flex-end',
+  },
+  aiMsgCont: {
+     justifyContent: 'flex-start',
   },
   aiAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#741ce9',
-    alignItems: 'center',
-    justifyContent: 'center',
+     width: 32,
+     height: 32,
+     borderRadius: 12,
+     justifyContent: 'center',
+     alignItems: 'center',
+     marginRight: 12,
   },
-  messageContent: {
-    flex: 1,
+  msgBubble: {
+     maxWidth: '80%',
+     paddingHorizontal: 20,
+     paddingVertical: 14,
+     borderRadius: 24,
   },
-  aiLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#999',
-    marginBottom: 8,
+  userBubble: {
+     backgroundColor: '#0a0a0a',
+     borderBottomRightRadius: 4,
   },
-  messageText: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: '#333',
+  aiBubble: {
+     backgroundColor: '#f1f5f9',
+     borderBottomLeftRadius: 4,
   },
-  userMessage: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 12,
+  msgText: {
+     fontSize: 15,
+     lineHeight: 22,
+     fontWeight: '500',
   },
-  userMessageBubble: {
-    backgroundColor: '#741ce9',
-    borderRadius: 12,
-    padding: 16,
-    maxWidth: '70%',
+  userMsgText: {
+     color: '#fff',
   },
-  userLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: 'rgba(255,255,255,0.8)',
-    marginBottom: 8,
+  aiMsgText: {
+     color: '#1e293b',
   },
-  userMessageText: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: 'white',
+  loadingBox: {
+     flexDirection: 'row',
+     alignItems: 'center',
+     padding: 20,
+     gap: 10,
   },
-  userAvatarContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#333',
-    alignItems: 'center',
-    justifyContent: 'center',
+  loadingText: {
+     fontSize: 14,
+     color: '#64748b',
+     fontStyle: 'italic',
   },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: 'white',
-    borderTopWidth: 1,
-    borderTopColor: '#e5e5e5',
-    gap: 12,
+  inputArea: {
+     padding: 25,
+     borderTopWidth: 1,
+     borderTopColor: '#f1f5f9',
   },
-  attachButton: {
-    padding: 8,
+  inputWrapper: {
+     flexDirection: 'row',
+     backgroundColor: '#f8fafc',
+     borderRadius: 24,
+     padding: 6,
+     alignItems: 'center',
   },
   input: {
-    flex: 1,
-    padding: 12,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
-    fontSize: 14,
+     flex: 1,
+     height: 50,
+     paddingHorizontal: 20,
+     fontSize: 15,
+     fontWeight: '600',
+     color: '#1e293b',
   },
-  sendButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#741ce9',
-    alignItems: 'center',
-    justifyContent: 'center',
+  sendBtn: {
+     marginRight: 6,
   },
-  aiFooter: {
-    textAlign: 'center',
-    fontSize: 12,
-    color: '#999',
-    padding: 12,
-    backgroundColor: 'white',
-  },
-  loadingContainer: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 24,
-  },
-  loadingContent: {
-    flex: 1,
-  },
-  typingIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingVertical: 8,
-  },
-  typingText: {
-    fontSize: 14,
-    color: '#666',
-    fontStyle: 'italic',
-  },
+  sendGradient: {
+     width: 44,
+     height: 44,
+     borderRadius: 22,
+     justifyContent: 'center',
+     alignItems: 'center',
+  }
 });

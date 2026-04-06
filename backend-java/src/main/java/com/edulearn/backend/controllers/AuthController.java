@@ -5,6 +5,7 @@ import com.edulearn.backend.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -18,13 +19,15 @@ public class AuthController {
     @Autowired
     private UserRepository userRepository;
 
+    private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> loginData) {
         String email = loginData.get("email");
         String password = loginData.get("password");
 
         return userRepository.findByEmail(email).map(user -> {
-            if (user.getPassword().equals(password)) {
+            if (encoder.matches(password, user.getPassword())) {
                 Map<String, Object> response = new HashMap<>();
                 response.put("token", "fake-jwt-token-for-" + user.getId());
                 Map<String, Object> safeUser = new HashMap<>();
@@ -44,6 +47,7 @@ public class AuthController {
         if (userRepository.findByEmail(newUser.getEmail()).isPresent()) {
             return ResponseEntity.status(400).body(Map.of("message", "Email already exists"));
         }
+        newUser.setPassword(encoder.encode(newUser.getPassword()));
         User savedUser = userRepository.save(newUser);
         Map<String, Object> response = new HashMap<>();
         response.put("token", "fake-jwt-token-for-" + savedUser.getId());

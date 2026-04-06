@@ -1,17 +1,34 @@
 import axios from 'axios';
 import { Platform } from 'react-native';
 
-// Toggle this to switch between Node (5000) and Java (8080) backends
-const USE_JAVA_BACKEND = false; 
-
+// Default URLs
 const NODE_API_URL = 'http://localhost:5000/api';
 const JAVA_API_URL = 'http://localhost:8080/api';
 
-const API_URL = USE_JAVA_BACKEND ? JAVA_API_URL : NODE_API_URL;
+// Dynamic selection
+let activeUrl = NODE_API_URL;
+if (Platform.OS === 'web') {
+    const savedBackend = localStorage.getItem('backend_choice');
+    if (savedBackend === 'java') {
+        activeUrl = JAVA_API_URL;
+    }
+}
 
 const api = axios.create({
-    baseURL: API_URL,
+    baseURL: activeUrl,
 });
+
+// Helper to switch backend at runtime (requires reload usually)
+export const switchBackend = (choice) => {
+    if (Platform.OS === 'web') {
+        localStorage.setItem('backend_choice', choice);
+        window.location.reload();
+    }
+};
+
+export const getActiveBackend = () => {
+    return activeUrl === JAVA_API_URL ? 'Java (Spring Boot)' : 'Node.js (Express)';
+};
 
 api.interceptors.request.use(
     async (config) => {
@@ -19,8 +36,6 @@ api.interceptors.request.use(
         if (Platform.OS === 'web') {
             token = localStorage.getItem('token');
         }
-        // Note: For native, we would typically use AsyncStorage here
-
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }

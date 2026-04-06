@@ -76,19 +76,19 @@ export default function SignUp() {
           </View>
 
           <View style={styles.heroContent}>
-            <Text style={styles.heroTitle}>Start your learning{'\n'}journey.</Text>
+            <Text style={styles.heroTitle}>Your Personal{'\n'}Discovery Path.</Text>
             <Text style={styles.heroSubtitle}>
-              Join 10,000+ learners today and access thousands of courses from industry experts. Your future starts here.
+              Join 10,000+ students finding the best content across Coursera, YouTube, Udemy and more. We find the right path for you.
             </Text>
 
             <View style={styles.statsContainer}>
               <View style={styles.statItem}>
-                <Text style={styles.statNumber}>1k+</Text>
-                <Text style={styles.statLabel}>Verified Tutors</Text>
+                <Text style={styles.statNumber}>10k+</Text>
+                <Text style={styles.statLabel}>Successful Matches</Text>
               </View>
               <View style={styles.statItem}>
                 <Text style={styles.statNumber}>5k+</Text>
-                <Text style={styles.statLabel}>Active Courses</Text>
+                <Text style={styles.statLabel}>Curated Recommends</Text>
               </View>
             </View>
           </View>

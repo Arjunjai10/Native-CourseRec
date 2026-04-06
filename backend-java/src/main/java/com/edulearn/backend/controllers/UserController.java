@@ -118,4 +118,20 @@ public class UserController {
         }
         return ResponseEntity.status(404).body(Map.of("message", "User not found"));
     }
+
+    @PutMapping("/profile/{id}")
+    public ResponseEntity<?> updateProfile(@PathVariable String id, @RequestBody Map<String, Object> profileData) {
+        Optional<User> userOpt = userRepository.findById(id);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            if (profileData.containsKey("fullName")) user.setFullName(profileData.get("fullName").toString());
+            if (profileData.containsKey("bio")) user.setBio(profileData.get("bio").toString());
+            if (profileData.containsKey("profilePicture")) user.setProfilePicture(profileData.get("profilePicture").toString());
+            if (profileData.containsKey("interests")) user.setInterests((ArrayList<String>) profileData.get("interests"));
+            
+            userRepository.save(user);
+            return ResponseEntity.ok(Map.of("message", "Profile updated", "user", user));
+        }
+        return ResponseEntity.status(404).body(Map.of("message", "User not found"));
+    }
 }

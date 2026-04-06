@@ -2,23 +2,27 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
+  TextInput,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  TextInput,
+  ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { courseAPI } from './utils/api';
 import Navbar from './components/Navbar';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function Courses() {
   const router = useRouter();
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
 
-  const [courses, setCourses] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const categories = ['All', 'Programming', 'Design', 'Business', 'Marketing', 'Data Science', 'Personal Growth'];
 
   useEffect(() => {
     courseAPI.getAll()
@@ -32,103 +36,107 @@ export default function Courses() {
       });
   }, []);
 
-  const categories = ['All', ...new Set(courses.map(c => c.category))];
-
   const filteredCourses = courses.filter(course => {
-    const instructorName = course.instructor?.name || course.instructor || '';
-    const matchesSearch = course.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         course.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         instructorName.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'All' || course.category === selectedCategory;
+    const matchesSearch = course.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         course.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === 'All' || course.category === selectedCategory || (selectedCategory === 'Programming' && course.category?.includes('Web'));
     return matchesSearch && matchesCategory;
   });
+
+  if (loading) {
+    return (
+      <View style={[styles.container, styles.centered]}>
+        <ActivityIndicator size="large" color="#741ce9" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
       <Navbar />
 
-      <View style={styles.searchSection}>
-        <Text style={styles.pageTitle}>Browse Courses</Text>
-        <Text style={styles.pageSubtitle}>Explore {courses.length}+ courses across multiple categories</Text>
-        
-        <View style={styles.searchContainer}>
-          <Ionicons name="search" size={20} color="#666" />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search courses, instructors, or topics..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-          {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery('')}>
-              <Ionicons name="close-circle" size={20} color="#666" />
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
-
-      <View style={styles.categoriesContainer}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesScroll}>
-          <View style={styles.categoriesWrapper}>
-            {categories.map((category) => (
-              <TouchableOpacity
-                key={category}
-                style={[
-                  styles.categoryButton,
-                  selectedCategory === category && styles.categoryButtonActive
-                ]}
-                onPress={() => setSelectedCategory(category)}
-              >
-                <Text style={[
-                  styles.categoryButtonText,
-                  selectedCategory === category && styles.categoryButtonTextActive
-                ]}>
-                  {category}
-                </Text>
-              </TouchableOpacity>
+      <View style={styles.headerArea}>
+         <View style={styles.searchBox}>
+            <Ionicons name="search" size={20} color="#94a3b8" />
+            <TextInput 
+              style={styles.searchInput}
+              placeholder="Search for any course, skill, or mentor..."
+              placeholderTextColor="#94a3b8"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+         </View>
+         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryList}>
+            {categories.map(cat => (
+               <TouchableOpacity 
+                  key={cat} 
+                  style={[styles.categoryPill, selectedCategory === cat && styles.categoryPillActive]}
+                  onPress={() => setSelectedCategory(cat)}
+               >
+                  <Text style={[styles.categoryText, selectedCategory === cat && styles.categoryTextActive]}>{cat}</Text>
+               </TouchableOpacity>
             ))}
-          </View>
-        </ScrollView>
+         </ScrollView>
       </View>
 
-      <View style={styles.resultsHeader}>
-        <Text style={styles.resultsText}>
-          {filteredCourses.length} {filteredCourses.length === 1 ? 'course' : 'courses'} found
-        </Text>
-      </View>
+      <ScrollView 
+        style={styles.content} 
+        contentContainerStyle={{ padding: 25, paddingBottom: 100 }}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.sectionHeader}>
+           <Text style={styles.resultsTitle}>
+              {searchQuery ? `Searching for "${searchQuery}"` : `${selectedCategory} Courses`}
+           </Text>
+           <Text style={styles.resultsCount}>{filteredCourses.length} results found</Text>
+        </View>
 
-      <ScrollView style={styles.coursesList}>
-        <View style={styles.coursesGrid}>
-          {filteredCourses.map((course) => (
-            <TouchableOpacity
-              key={course._id || course.id}
-              style={styles.courseCard}
-              onPress={() => router.push(`/course/${course._id || course.id}`)}
-            >
-              <View style={[styles.courseThumbnail, { backgroundColor: course.thumbnailColor || '#741ce9' }]}>
-                <Ionicons name={course.thumbnail || 'book'} size={48} color="white" />
-              </View>
-              <View style={styles.courseInfo}>
-                <View style={styles.categoryBadge}>
-                  <Text style={styles.categoryBadgeText}>{course.category}</Text>
-                </View>
-                <Text style={styles.courseTitle} numberOfLines={2}>{course.title}</Text>
-                <Text style={styles.courseInstructor}>by {course.instructor?.name || course.instructor}</Text>
-                <View style={styles.courseRating}>
-                  <Ionicons name="star" size={16} color="#F59E0B" />
-                  <Text style={styles.ratingText}>{course.rating}</Text>
-                  <Text style={styles.studentsText}>({((course.studentsEnrolled || 0) / 1000).toFixed(0)}k students)</Text>
-                </View>
-                <View style={styles.courseMeta}>
-                  <View style={styles.metaItem}>
-                    <Ionicons name="time-outline" size={14} color="#666" />
-                    <Text style={styles.metaText}>{course.duration?.hours ? `${course.duration.hours} hours` : course.duration}</Text>
-                  </View>
-                  <Text style={styles.priceText}>{course.price === 0 ? 'Free' : `$${course.price}`}</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
-          ))}
+        <View style={styles.courseGrid}>
+           {filteredCourses.length > 0 ? (
+             filteredCourses.map(course => (
+                <TouchableOpacity 
+                   key={course._id || course.id}
+                   style={styles.courseCard}
+                   onPress={() => router.push(`/course/${course._id || course.id}`)}
+                >
+                   <View style={[styles.courseThumbnail, { backgroundColor: course.thumbnailColor || '#741ce9' }]}>
+                      <Ionicons name={course.thumbnail || 'book'} size={32} color="#fff" />
+                      <TouchableOpacity style={styles.bookmarkBadge}>
+                         <Ionicons name="bookmark-outline" size={14} color="#1a1a1a" />
+                      </TouchableOpacity>
+                      <View style={styles.badge}>
+                         <Text style={styles.badgeText}>{course.level || 'Beginner'}</Text>
+                      </View>
+                   </View>
+                   <View style={styles.courseInfo}>
+                      <Text style={styles.courseCategory}>{course.category || 'Programming'}</Text>
+                      <Text style={styles.courseTitle} numberOfLines={2}>{course.title}</Text>
+                      <View style={styles.instructorRow}>
+                         <View style={styles.instructorIcon}>
+                            <Ionicons name="person" size={14} color="#64748b" />
+                         </View>
+                         <Text style={styles.instructorName}>{course.instructor?.name || 'EduLearn Pro'}</Text>
+                      </View>
+                      <View style={styles.footerRow}>
+                         <View style={styles.ratingBox}>
+                            <Ionicons name="star" size={12} color="#F59E0B" />
+                            <Text style={styles.ratingText}>{course.rating || '4.8'}</Text>
+                         </View>
+                         <View style={styles.detailsIndicator}>
+                            <Text style={styles.detailsText}>View Recommendation</Text>
+                            <Ionicons name="arrow-forward" size={12} color="#741ce9" />
+                         </View>
+                      </View>
+                   </View>
+                </TouchableOpacity>
+             ))
+           ) : (
+             <View style={styles.emptyState}>
+                <Ionicons name="search-outline" size={64} color="#e2e8f0" />
+                <Text style={styles.emptyTitle}>No courses found</Text>
+                <Text style={styles.emptySubtitle}>Try adjusting your search or filters to find what you're looking for.</Text>
+             </View>
+           )}
         </View>
       </ScrollView>
     </View>
@@ -138,168 +146,215 @@ export default function Courses() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f8fafc',
   },
-  searchSection: {
-    padding: 24,
-    backgroundColor: '#f3ebff',
-  },
-  pageTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-    marginBottom: 8,
-  },
-  pageSubtitle: {
-    fontSize: 15,
-    color: '#666',
-    marginBottom: 20,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    height: 52,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  searchInput: {
-    flex: 1,
-    marginLeft: 10,
-    fontSize: 16,
-    color: '#333',
-  },
-  categoriesContainer: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  categoriesScroll: {
-    paddingVertical: 12,
-  },
-  categoriesWrapper: {
-    flexDirection: 'row',
-    paddingHorizontal: 24,
-  },
-  categoryButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#f5f5f5',
-    marginRight: 10,
-  },
-  categoryButtonActive: {
-    backgroundColor: '#741ce9',
-  },
-  categoryButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#666',
-  },
-  categoryButtonTextActive: {
-    color: '#fff',
-  },
-  resultsHeader: {
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-  },
-  resultsText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1a1a1a',
-  },
-  coursesList: {
-    flex: 1,
-  },
-  coursesGrid: {
-    padding: 24,
-    paddingTop: 0,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  courseCard: {
-    width: '48%',
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    marginBottom: 20,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#f0f0f0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    elevation: 2,
-  },
-  courseThumbnail: {
-    height: 120,
+  centered: {
     justifyContent: 'center',
     alignItems: 'center',
   },
+  headerArea: {
+     paddingTop: 10,
+     paddingHorizontal: 25,
+     backgroundColor: '#f8fafc',
+  },
+  searchBox: {
+     flexDirection: 'row',
+     alignItems: 'center',
+     backgroundColor: '#fff',
+     paddingHorizontal: 20,
+     paddingVertical: 14,
+     borderRadius: 24,
+     borderWidth: 1,
+     borderColor: '#e2e8f0',
+     marginBottom: 20,
+     ...Platform.select({
+        web: {
+           boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
+           outlineStyle: 'none',
+        }
+     })
+  },
+  searchInput: {
+     flex: 1,
+     marginLeft: 12,
+     fontSize: 15,
+     fontWeight: '500',
+     color: '#1e293b',
+  },
+  categoryList: {
+     flexDirection: 'row',
+     marginBottom: 10,
+  },
+  categoryPill: {
+     paddingHorizontal: 18,
+     paddingVertical: 10,
+     borderRadius: 14,
+     backgroundColor: '#fff',
+     marginRight: 10,
+     borderWidth: 1,
+     borderColor: '#e2e8f0',
+  },
+  categoryPillActive: {
+     backgroundColor: '#0a0a0a',
+     borderColor: '#0a0a0a',
+  },
+  categoryText: {
+     fontSize: 14,
+     fontWeight: '600',
+     color: '#64748b',
+  },
+  categoryTextActive: {
+     color: '#fff',
+  },
+  content: {
+     flex: 1,
+  },
+  sectionHeader: {
+     flexDirection: 'row',
+     justifyContent: 'space-between',
+     alignItems: 'flex-end',
+     marginBottom: 20,
+     paddingHorizontal: 4,
+  },
+  resultsTitle: {
+     fontSize: 24,
+     fontWeight: '800',
+     color: '#1e293b',
+     letterSpacing: -0.5,
+  },
+  resultsCount: {
+     fontSize: 14,
+     fontWeight: '600',
+     color: '#94a3b8',
+  },
+  courseGrid: {
+     flexDirection: 'row',
+     flexWrap: 'wrap',
+     justifyContent: 'space-between',
+  },
+  courseCard: {
+     width: '48%',
+     backgroundColor: '#fff',
+     borderRadius: 28,
+     padding: 10,
+     marginBottom: 24,
+     borderWidth: 1,
+     borderColor: '#f1f5f9',
+     ...Platform.select({
+        web: {
+           boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.04)',
+        }
+     })
+  },
+  courseThumbnail: {
+     width: '100%',
+     height: 140,
+     borderRadius: 22,
+     justifyContent: 'center',
+     alignItems: 'center',
+     marginBottom: 12,
+     position: 'relative',
+  },
+  badge: {
+     position: 'absolute',
+     top: 10,
+     right: 10,
+     backgroundColor: 'rgba(255, 255, 255, 0.9)',
+     paddingHorizontal: 8,
+     paddingVertical: 4,
+     borderRadius: 8,
+  },
+  bookmarkBadge: {
+     position: 'absolute',
+     top: 10,
+     left: 10,
+     backgroundColor: 'rgba(255, 255, 255, 0.8)',
+     width: 28,
+     height: 28,
+     borderRadius: 14,
+     justifyContent: 'center',
+     alignItems: 'center',
+  },
+  badgeText: {
+     fontSize: 10,
+     fontWeight: '900',
+     color: '#1e293b',
+  },
   courseInfo: {
-    padding: 12,
+     paddingHorizontal: 6,
   },
-  categoryBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    backgroundColor: '#f3ebff',
-    borderRadius: 4,
-    alignSelf: 'flex-start',
-    marginBottom: 8,
-  },
-  categoryBadgeText: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: '#741ce9',
-    textTransform: 'uppercase',
+  courseCategory: {
+     fontSize: 10,
+     fontWeight: 'bold',
+     color: '#741ce9',
+     textTransform: 'uppercase',
+     marginBottom: 4,
   },
   courseTitle: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-    height: 40,
-    marginBottom: 4,
+     fontSize: 15,
+     fontWeight: '800',
+     color: '#1e293b',
+     lineHeight: 20,
+     height: 40,
   },
-  courseInstructor: {
-    fontSize: 13,
-    color: '#666',
-    marginBottom: 8,
+  instructorRow: {
+     flexDirection: 'row',
+     alignItems: 'center',
+     marginTop: 8,
+     marginBottom: 12,
   },
-  courseRating: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
+  instructorName: {
+     fontSize: 12,
+     fontWeight: '600',
+     color: '#64748b',
+     marginLeft: 6,
+  },
+  footerRow: {
+     flexDirection: 'row',
+     justifyContent: 'space-between',
+     alignItems: 'center',
+     paddingTop: 10,
+     borderTopWidth: 1,
+     borderTopColor: '#f8fafc',
+  },
+  ratingBox: {
+     flexDirection: 'row',
+     alignItems: 'center',
   },
   ratingText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-    marginHorizontal: 4,
+     fontSize: 12,
+     fontWeight: 'bold',
+     color: '#1e293b',
+     marginLeft: 4,
   },
-  studentsText: {
-    fontSize: 12,
-    color: '#666',
+  detailsIndicator: {
+     flexDirection: 'row',
+     alignItems: 'center',
+     gap: 6,
   },
-  courseMeta: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 'auto',
+  detailsText: {
+     fontSize: 11,
+     fontWeight: '800',
+     color: '#741ce9',
+     textTransform: 'uppercase',
   },
-  metaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  emptyState: {
+     width: '100%',
+     alignItems: 'center',
+     justifyContent: 'center',
+     paddingVertical: 100,
   },
-  metaText: {
-    fontSize: 12,
-    color: '#666',
-    marginLeft: 4,
+  emptyTitle: {
+     fontSize: 20,
+     fontWeight: '800',
+     color: '#1e293b',
+     marginTop: 15,
   },
-  priceText: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#741ce9',
+  emptySubtitle: {
+     fontSize: 14,
+     color: '#94a3b8',
+     textAlign: 'center',
+     marginTop: 8,
+     paddingHorizontal: 40,
   }
 });

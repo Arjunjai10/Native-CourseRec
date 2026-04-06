@@ -7,11 +7,13 @@ import {
   ScrollView,
   ActivityIndicator,
   Platform,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { courseAPI, userAPI } from './utils/api';
 import Navbar from './components/Navbar';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function Home() {
   const router = useRouter();
@@ -28,7 +30,6 @@ export default function Home() {
         setLoading(true);
         setError(null);
 
-        // Get user info from local storage (if available) to get the ID
         let userId = null;
         let storedUser = null;
         if (Platform.OS === 'web') {
@@ -50,7 +51,6 @@ export default function Home() {
         setCourses(coursesRes.data);
         setRecommendedCourses(recommendationsRes.data);
 
-        // Fetch full profile if we have an ID
         if (userId) {
           const profileRes = await userAPI.getProfile(userId);
           setUser(profileRes.data);
@@ -75,150 +75,154 @@ export default function Home() {
     );
   }
 
-  if (error) {
-    return (
-      <View style={[styles.container, styles.centered]}>
-        <Text style={styles.errorText}>{error}</Text>
-        <TouchableOpacity style={styles.retryButton} onPress={() => router.replace('/home')}>
-          <Text style={styles.retryButtonText}>Retry</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
   const continueLearningCourses = courses.slice(0, 3);
   const exploreMoreCourses = courses.slice(3, 12);
-  const displayRecommendations = recommendedCourses.length > 0 ? recommendedCourses : courses.slice(12, 18);
-
+  
   return (
     <View style={styles.container}>
       <Navbar />
 
-      <ScrollView style={styles.content}>
-        <View style={styles.hero}>
-          <Text style={styles.heroTitle}>Welcome back, {user ? user.fullName.split(' ')[0] : 'learner'}! 👋</Text>
-          <Text style={styles.heroSubtitle}>Continue your learning journey</Text>
+      <ScrollView 
+        style={styles.content} 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 100 }}
+      >
+        <View style={styles.heroSection}>
+          <LinearGradient
+            colors={['#741ce9', '#9d50bb']}
+            style={styles.heroGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <View style={styles.heroTextContainer}>
+              <Text style={styles.heroBadge}>Welcome Back 👋</Text>
+              <Text style={styles.heroTitle}>Master Your{'\n'}Future Today.</Text>
+              <Text style={styles.heroSubtitle}>
+                {user ? user.fullName.split(' ')[0] : 'Learner'}, we've found 3 new courses that match your career profile perfectly!
+              </Text>
+              <TouchableOpacity 
+                style={styles.heroButton}
+                onPress={() => router.push('/courses')}
+              >
+                <Text style={styles.heroButtonText}>Continue My Learning</Text>
+                <Ionicons name="arrow-forward" size={18} color="#741ce9" />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.heroDecoration}>
+               <Ionicons name="rocket" size={120} color="rgba(255,255,255,0.15)" />
+            </View>
+          </LinearGradient>
         </View>
 
-        <View style={styles.quickActions}>
-          <TouchableOpacity
-            style={styles.actionCard}
+        <View style={styles.quickActionGrid}>
+          <TouchableOpacity 
+            style={styles.actionItem}
             onPress={() => router.push('/recommendations')}
           >
-            <Ionicons name="sparkles" size={32} color="#741ce9" />
-            <Text style={styles.actionTitle}>AI Recommendations</Text>
-            <Text style={styles.actionSubtitle}>Get personalized course suggestions</Text>
+            <View style={[styles.actionIcon, { backgroundColor: '#f3ebff' }]}>
+              <Ionicons name="sparkles" size={24} color="#741ce9" />
+            </View>
+            <Text style={styles.actionLabel}>AI Mentors</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.actionCard}
+          <TouchableOpacity 
+            style={styles.actionItem}
+            onPress={() => router.push('/courses')}
+          >
+            <View style={[styles.actionIcon, { backgroundColor: '#e6fffa' }]}>
+              <Ionicons name="compass" size={24} color="#38b2ac" />
+            </View>
+            <Text style={styles.actionLabel}>Explore</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.actionItem}
             onPress={() => router.push('/profile')}
           >
-            <Ionicons name="person" size={32} color="#741ce9" />
-            <Text style={styles.actionTitle}>My Profile</Text>
-            <Text style={styles.actionSubtitle}>View your learning progress</Text>
+            <View style={[styles.actionIcon, { backgroundColor: '#fff5f5' }]}>
+              <Ionicons name="trophy" size={24} color="#e53e3e" />
+            </View>
+            <Text style={styles.actionLabel}>Goals</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionCard} onPress={() => router.push('/courses')}>
-            <Ionicons name="book" size={32} color="#741ce9" />
-            <Text style={styles.actionTitle}>Browse Courses</Text>
-            <Text style={styles.actionSubtitle}>Explore 700+ courses</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.actionCard}
+          <TouchableOpacity 
+            style={styles.actionItem}
             onPress={() => router.push('/settings')}
           >
-            <Ionicons name="settings" size={32} color="#741ce9" />
-            <Text style={styles.actionTitle}>Settings</Text>
-            <Text style={styles.actionSubtitle}>Manage your account</Text>
+            <View style={[styles.actionIcon, { backgroundColor: '#f0f4f8' }]}>
+              <Ionicons name="settings" size={24} color="#2d3748" />
+            </View>
+            <Text style={styles.actionLabel}>Settings</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Continue Learning</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.coursesList}>
-            {continueLearningCourses.map((course, index) => (
-              <TouchableOpacity
-                key={course._id || course.id}
-                style={styles.courseCard}
-                onPress={() => router.push(`/course/${course._id || course.id}`)}
-              >
-                <View style={[styles.courseThumbnail, { backgroundColor: course.thumbnailColor || '#741ce9' }]}>
-                  <Ionicons name={course.thumbnail || 'book'} size={48} color="white" />
-                </View>
-                <Text style={styles.courseTitle}>{course.title}</Text>
-                <Text style={styles.courseInstructor}>by {course.instructor?.name || course.instructor}</Text>
-                <View style={styles.progressBar}>
-                  <View style={[styles.progressFill, { width: `${[60, 35, 85][index % 3]}%` }]} />
-                </View>
-                <Text style={styles.progressText}>{[60, 35, 85][index % 3]}% Complete</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Explore More Courses</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.coursesList}>
-            {exploreMoreCourses.map((course) => (
-              <TouchableOpacity
-                key={course._id || course.id}
-                style={styles.courseCard}
-                onPress={() => router.push(`/course/${course._id || course.id}`)}
-              >
-                <View style={[styles.courseThumbnail, { backgroundColor: course.thumbnailColor || '#741ce9' }]}>
-                  <Ionicons name={course.thumbnail || 'book'} size={48} color="white" />
-                </View>
-                <Text style={styles.courseTitle}>{course.title}</Text>
-                <Text style={styles.courseInstructor}>by {course.instructor?.name || course.instructor}</Text>
-                <View style={styles.courseRating}>
-                  <Ionicons name="star" size={16} color="#F59E0B" />
-                  <Text style={styles.ratingText}>{course.rating}</Text>
-                  <Text style={styles.studentsText}>({((course.studentsEnrolled || 0) / 1000).toFixed(0)}k students)</Text>
-                </View>
-                <Text style={styles.priceText}>{course.price === 0 ? 'Free' : `$${course.price}`}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Recommended for You</Text>
-          {user ? (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.coursesList}>
-              {displayRecommendations.map((course) => (
-                <TouchableOpacity
-                  key={course._id || course.id}
-                  style={styles.courseCard}
-                  onPress={() => router.push(`/course/${course._id || course.id}`)}
-                >
-                  <View style={[styles.courseThumbnail, { backgroundColor: course.thumbnailColor || '#741ce9' }]}>
-                    <Ionicons name={course.thumbnail || 'sparkles'} size={48} color="white" />
-                  </View>
-                  <Text style={styles.courseTitle}>{course.title}</Text>
-                  <Text style={styles.courseInstructor}>by {course.instructor?.name || course.instructor}</Text>
-                  <View style={styles.courseRating}>
-                    <Ionicons name="star" size={16} color="#F59E0B" />
-                    <Text style={styles.ratingText}>{course.rating}</Text>
-                    <Text style={styles.studentsText}>({((course.studentsEnrolled || 0) / 1000).toFixed(0)}k students)</Text>
-                  </View>
-                  <Text style={styles.priceText}>{course.price === 0 ? 'Free' : `$${course.price}`}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          ) : (
-            <TouchableOpacity
-              style={styles.bigCard}
-              onPress={() => router.push('/recommendations')}
-            >
-              <Ionicons name="sparkles" size={48} color="#741ce9" />
-              <Text style={styles.bigCardTitle}>Try AI Course Assistant</Text>
-              <Text style={styles.bigCardText}>
-                Get personalized path advice, course suggestions, and more.
-              </Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Top AI Recommendations</Text>
+            <TouchableOpacity onPress={() => router.push('/recommendations')}>
+              <Text style={styles.viewAll}>Personalize</Text>
             </TouchableOpacity>
-          )}
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalList}>
+            {continueLearningCourses.map((course) => (
+              <TouchableOpacity 
+                key={course._id || course.id}
+                style={styles.wideCard}
+                onPress={() => router.push(`/course/${course._id || course.id}`)}
+              >
+                <View style={[styles.wideCardThumbnail, { backgroundColor: course.thumbnailColor || '#741ce9' }]}>
+                   <Ionicons name={course.thumbnail || 'sparkles'} size={40} color="#fff" />
+                   <View style={styles.cardBookmark}>
+                      <Ionicons name="bookmark-outline" size={12} color="#1a1a1a" />
+                   </View>
+                </View>
+                <View style={styles.wideCardContent}>
+                   <Text style={styles.wideCardCategory}>{course.category || 'Career Growth'}</Text>
+                   <Text style={styles.wideCardTitle} numberOfLines={1}>{course.title}</Text>
+                   <View style={styles.recommendationBadge}>
+                      <Ionicons name="shield-checkmark" size={12} color="#741ce9" />
+                      <Text style={styles.recommendationText}>Highly Recommended</Text>
+                   </View>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+        <View style={[styles.section, { marginTop: 40 }]}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Explore Recommendations</Text>
+            <TouchableOpacity onPress={() => router.push('/courses')}>
+              <Text style={styles.viewAll}>View All</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.courseGrid}>
+            {exploreMoreCourses.map((course) => (
+              <TouchableOpacity 
+                key={course._id || course.id}
+                style={styles.verticalCard}
+                onPress={() => router.push(`/course/${course._id || course.id}`)}
+              >
+                <View style={[styles.verticalThumbnail, { backgroundColor: course.thumbnailColor || '#741ce9' }]}>
+                   <Ionicons name={course.thumbnail || 'book'} size={32} color="#fff" />
+                   <View style={styles.cardBookmark}>
+                      <Ionicons name="bookmark-outline" size={12} color="#1a1a1a" />
+                   </View>
+                </View>
+                <View style={styles.verticalContent}>
+                   <Text style={styles.verticalTitle} numberOfLines={2}>{course.title}</Text>
+                   <Text style={styles.verticalInstructor}>{course.instructor?.name || 'EduLearn Pro'}</Text>
+                   <View style={styles.verticalFooter}>
+                      <View style={styles.ratingBox}>
+                         <Ionicons name="star" size={14} color="#F59E0B" />
+                         <Text style={styles.ratingText}>{course.rating || '4.8'}</Text>
+                      </View>
+                      <Text style={styles.studentCount}>{(0.4).toFixed(1)}k+ learners</Text>
+                   </View>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
       </ScrollView>
     </View>
@@ -228,7 +232,7 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f7fb',
+    backgroundColor: '#f8fafc',
   },
   centered: {
     justifyContent: 'center',
@@ -237,163 +241,250 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  hero: {
-    padding: 30,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+  heroSection: {
+    paddingHorizontal: 25,
+    paddingTop: 10,
+    marginBottom: 35,
+  },
+  heroGradient: {
+    borderRadius: 32,
+    padding: 35,
+    height: 280,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    overflow: 'hidden',
+    ...Platform.select({
+       web: {
+          boxShadow: '0 20px 40px rgba(116, 28, 233, 0.15)',
+       }
+    })
+  },
+  heroTextContainer: {
+    flex: 1,
+    zIndex: 2,
+  },
+  heroBadge: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+    alignSelf: 'flex-start',
+    marginBottom: 15,
   },
   heroTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
+    fontSize: 42,
+    fontWeight: '900',
+    color: '#fff',
+    lineHeight: 48,
+    letterSpacing: -1,
   },
   heroSubtitle: {
     fontSize: 16,
-    color: '#666',
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginTop: 12,
+    lineHeight: 22,
+    maxWidth: '80%',
   },
-  quickActions: {
+  heroButton: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 16,
+    marginTop: 25,
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    padding: 20,
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+  },
+  heroButtonText: {
+    color: '#741ce9',
+    fontWeight: 'bold',
+    marginRight: 8,
+  },
+  heroDecoration: {
+    position: 'absolute',
+    right: -20,
+    bottom: -20,
+    zIndex: 1,
+  },
+  quickActionGrid: {
+    flexDirection: 'row',
     justifyContent: 'space-between',
+    paddingHorizontal: 25,
+    marginBottom: 40,
   },
-  actionCard: {
-    width: '48%',
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 15,
-    marginBottom: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+  actionItem: {
+    alignItems: 'center',
+    width: '22%',
   },
-  actionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-    marginTop: 10,
-    marginBottom: 4,
-  },
-  actionSubtitle: {
-    fontSize: 12,
-    color: '#666',
-  },
-  section: {
-    padding: 20,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 15,
-  },
-  coursesList: {
-    flexDirection: 'row',
-  },
-  courseCard: {
-    width: 200,
-    backgroundColor: '#fff',
-    borderRadius: 15,
-    marginRight: 15,
-    padding: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  courseThumbnail: {
-    height: 120,
-    borderRadius: 10,
+  actionIcon: {
+    width: 60,
+    height: 60,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 10,
+    ...Platform.select({
+      web: {
+        transition: 'transform 0.2s',
+      }
+    })
   },
-  courseTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 4,
+  actionLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#334155',
   },
-  courseInstructor: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 8,
+  section: {
+    paddingHorizontal: 25,
   },
-  progressBar: {
-    height: 6,
-    backgroundColor: '#eee',
-    borderRadius: 3,
-    marginBottom: 4,
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#741ce9',
-    borderRadius: 3,
-  },
-  progressText: {
-    fontSize: 11,
-    color: '#999',
-    fontWeight: '500',
-  },
-  courseRating: {
+  sectionHeader: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 20,
   },
-  ratingText: {
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#1e293b',
+    letterSpacing: -0.5,
+  },
+  viewAll: {
     fontSize: 14,
-    fontWeight: 'bold',
-    color: '#333',
-    marginLeft: 4,
-    marginRight: 4,
-  },
-  studentsText: {
-    fontSize: 12,
-    color: '#666',
-  },
-  priceText: {
-    fontSize: 16,
     fontWeight: 'bold',
     color: '#741ce9',
   },
-  bigCard: {
-    backgroundColor: '#f3ebff',
-    padding: 30,
-    borderRadius: 20,
+  horizontalList: {
+    paddingBottom: 10,
+  },
+  wideCard: {
+    width: 320,
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    marginRight: 20,
+    padding: 16,
+    flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#741ce933',
+    borderColor: '#f1f5f9',
+    ...Platform.select({
+       web: {
+          boxShadow: '0 4px 15px rgba(0,0,0,0.02)',
+       }
+    })
   },
-  bigCardTitle: {
-    fontSize: 20,
+  wideCardThumbnail: {
+    width: 80,
+    height: 80,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+    position: 'relative',
+  },
+  cardBookmark: {
+     position: 'absolute',
+     top: 5,
+     left: 5,
+     backgroundColor: 'rgba(255, 255, 255, 0.8)',
+     width: 22,
+     height: 22,
+     borderRadius: 11,
+     justifyContent: 'center',
+     alignItems: 'center',
+  },
+  wideCardContent: {
+    flex: 1,
+  },
+  wideCardCategory: {
+    fontSize: 11,
     fontWeight: 'bold',
-    color: '#333',
-    marginTop: 15,
-    marginBottom: 8,
+    color: '#741ce9',
+    textTransform: 'uppercase',
+    marginBottom: 4,
   },
-  bigCardText: {
-    fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
-  },
-  errorText: {
+  wideCardTitle: {
     fontSize: 16,
-    color: '#ef4444',
+    fontWeight: '800',
+    color: '#1e293b',
+    marginBottom: 10,
+  },
+  recommendationBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 4,
+  },
+  recommendationText: {
+    fontSize: 12,
+    color: '#741ce9',
+    fontWeight: '700',
+  },
+  courseGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  verticalCard: {
+    width: '48%',
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    padding: 12,
     marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
   },
-  retryButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    backgroundColor: '#741ce9',
-    borderRadius: 8,
+  verticalThumbnail: {
+    width: '100%',
+    height: 120,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+    position: 'relative',
   },
-  retryButtonText: {
-    color: '#fff',
+  verticalContent: {
+    paddingHorizontal: 4,
+  },
+  verticalTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#1e293b',
+    lineHeight: 20,
+    height: 40,
+  },
+  verticalInstructor: {
+    fontSize: 12,
+    color: '#64748b',
+    marginVertical: 6,
+  },
+  verticalFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  ratingBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff7ed',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  ratingText: {
+    fontSize: 12,
     fontWeight: 'bold',
+    color: '#9a3412',
+    marginLeft: 3,
+  },
+  studentCount: {
+    fontSize: 11,
+    color: '#94a3b8',
+    fontWeight: '500',
   }
 });

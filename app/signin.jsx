@@ -50,9 +50,9 @@ export default function SignIn() {
           </View>
 
           <View style={styles.heroContent}>
-            <Text style={styles.heroTitle}>Master New Skills{'\n'}with EduLearn.</Text>
+            <Text style={styles.heroTitle}>Discover Your{'\n'}Future with EduLearn.</Text>
             <Text style={styles.heroSubtitle}>
-              Personalized course recommendations at your fingertips. Join thousands of learners worldwide.
+              Intelligent course recommendations tailored to your career goals. We find the best content across the web so you don't have to.
             </Text>
           </View>
 
