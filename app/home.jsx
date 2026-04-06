@@ -32,11 +32,13 @@ export default function Home() {
         let storedUser = null;
         if (Platform.OS === 'web') {
           const userStr = localStorage.getItem('user');
-          if (userStr) {
-            storedUser = JSON.parse(userStr);
-            userId = storedUser.id;
-            setUser(storedUser);
+          if (!userStr) {
+            router.replace('/signin');
+            return;
           }
+          storedUser = JSON.parse(userStr);
+          userId = storedUser.id || storedUser._id;
+          setUser(storedUser);
         }
 
         const [coursesRes, recommendationsRes] = await Promise.all([
@@ -107,7 +109,7 @@ export default function Home() {
           <TouchableOpacity onPress={() => router.push('/courses')}>
             <Text style={styles.navLink}>Courses</Text>
           </TouchableOpacity>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push('/recommendations')}>
             <Text style={styles.navLink}>Mentors</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => router.push('/profile')}>
@@ -118,6 +120,9 @@ export default function Home() {
           </TouchableOpacity>
           <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/settings')}>
             <Ionicons name="settings-outline" size={24} color="#333" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.avatar} onPress={() => router.push('/profile')}>
+            <Ionicons name="person" size={20} color="#fff" />
           </TouchableOpacity>
         </View>
       </View>

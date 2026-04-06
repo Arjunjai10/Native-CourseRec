@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,17 +8,39 @@ import {
   Image,
   Linking,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { COURSES } from '../../data/courses';
+import { courseAPI } from '../utils/api';
 
 export default function CourseDetail() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const [expandedModule, setExpandedModule] = useState(0);
 
-  const course = COURSES.find(c => c.id === id);
+  const [course, setCourse] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    courseAPI.getById(id)
+      .then(res => {
+        setCourse(res.data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
+      });
+  }, [id]);
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color="#741ce9" />
+      </View>
+    );
+  }
 
   if (!course) {
     return (
@@ -82,16 +104,16 @@ export default function CourseDetail() {
           <Text style={styles.logoText}>EduLearn</Text>
         </View>
         <View style={styles.headerRight}>
-          <TouchableOpacity><Text style={styles.navLink}>Browse Courses</Text></TouchableOpacity>
-          <TouchableOpacity><Text style={styles.navLink}>My Learning</Text></TouchableOpacity>
-          <TouchableOpacity><Text style={styles.navLink}>Resources</Text></TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push('/courses')}><Text style={styles.navLink}>Browse Courses</Text></TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push('/profile')}><Text style={styles.navLink}>My Learning</Text></TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push('/recommendations')}><Text style={styles.navLink}>Resources</Text></TouchableOpacity>
           <TouchableOpacity style={styles.iconButton}>
             <Ionicons name="notifications-outline" size={24} color="#333" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
-            <Ionicons name="cart-outline" size={24} color="#333" />
+          <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/settings')}>
+            <Ionicons name="settings-outline" size={24} color="#333" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.avatar}>
+          <TouchableOpacity style={styles.avatar} onPress={() => router.push('/profile')}>
             <Ionicons name="person" size={20} color="#fff" />
           </TouchableOpacity>
         </View>
@@ -101,9 +123,9 @@ export default function CourseDetail() {
         <View style={styles.breadcrumb}>
           <Text style={styles.breadcrumbText}>Home</Text>
           <Ionicons name="chevron-forward" size={16} color="#666" />
-          <Text style={styles.breadcrumbText}>{course.category}</Text>
+          <Text style={styles.breadcrumbText}>{course.category || 'Category'}</Text>
           <Ionicons name="chevron-forward" size={16} color="#666" />
-          <Text style={styles.breadcrumbText}>{course.title.substring(0, 20)}...</Text>
+          <Text style={styles.breadcrumbText}>{course.title ? course.title.substring(0, 20) : 'Course'}...</Text>
         </View>
 
         <View style={styles.mainSection}>
@@ -123,11 +145,11 @@ export default function CourseDetail() {
               </View>
               <View style={styles.metaItem}>
                 <Ionicons name="people" size={16} color="#666" />
-                <Text style={styles.metaText}>{course.studentsEnrolled.toLocaleString()} students enrolled</Text>
+                <Text style={styles.metaText}>{(course.studentsEnrolled || 0).toLocaleString()} students enrolled</Text>
               </View>
               <View style={styles.metaItem}>
                 <Ionicons name="calendar" size={16} color="#666" />
-                <Text style={styles.metaText}>Last updated {course.lastUpdated}</Text>
+                <Text style={styles.metaText}>Last updated {course.lastUpdated || 'Recently'}</Text>
               </View>
             </View>
 
@@ -153,17 +175,17 @@ export default function CourseDetail() {
                 <View style={styles.infoBox}>
                   <Ionicons name="time" size={24} color="#741ce9" />
                   <Text style={styles.infoBoxLabel}>Duration</Text>
-                  <Text style={styles.infoBoxValue}>{course.duration}</Text>
+                  <Text style={styles.infoBoxValue}>{course.duration?.hours ? `${course.duration.hours} hours` : course.duration}</Text>
                 </View>
                 <View style={styles.infoBox}>
                   <Ionicons name="book" size={24} color="#741ce9" />
                   <Text style={styles.infoBoxLabel}>Lectures</Text>
-                  <Text style={styles.infoBoxValue}>{course.lectures}</Text>
+                  <Text style={styles.infoBoxValue}>{course.duration?.lectures || course.lectures}</Text>
                 </View>
                 <View style={styles.infoBox}>
                   <Ionicons name="globe" size={24} color="#741ce9" />
                   <Text style={styles.infoBoxLabel}>Language</Text>
-                  <Text style={styles.infoBoxValue}>{course.language}</Text>
+                  <Text style={styles.infoBoxValue}>{course.language || 'English'}</Text>
                 </View>
               </View>
             </View>
@@ -175,16 +197,16 @@ export default function CourseDetail() {
                   <Ionicons name="person" size={40} color="#741ce9" />
                 </View>
                 <View style={styles.instructorInfo}>
-                  <Text style={styles.instructorName}>{course.instructor}</Text>
-                  <Text style={styles.instructorTitle}>Expert Instructor</Text>
+                  <Text style={styles.instructorName}>{course.instructor?.name || course.instructor}</Text>
+                  <Text style={styles.instructorTitle}>{course.instructor?.title || 'Expert Instructor'}</Text>
                   <View style={styles.instructorStats}>
                     <View style={styles.instructorStat}>
                       <Ionicons name="star" size={16} color="#F59E0B" />
-                      <Text style={styles.instructorStatText}>{course.rating} Instructor Rating</Text>
+                      <Text style={styles.instructorStatText}>{course.instructor?.rating || course.rating || 4.8} Instructor Rating</Text>
                     </View>
                     <View style={styles.instructorStat}>
                       <Ionicons name="people" size={16} color="#666" />
-                      <Text style={styles.instructorStatText}>{(course.studentsEnrolled / 1000).toFixed(0)}K+ Students</Text>
+                      <Text style={styles.instructorStatText}>{(((course.instructor?.students || course.studentsEnrolled) || 1000) / 1000).toFixed(0)}K+ Students</Text>
                     </View>
                   </View>
                   <Text style={styles.instructorBio}>
@@ -255,7 +277,7 @@ export default function CourseDetail() {
             <View style={styles.courseCard}>
               <View style={styles.priceSection}>
                 <Text style={styles.priceLabel}>Course Access</Text>
-                <Text style={styles.priceValue}>{course.price}</Text>
+                <Text style={styles.priceValue}>{course.price === 0 ? 'Free' : `$${course.price || 49.99}`}</Text>
               </View>
 
               <TouchableOpacity style={styles.goCourseButton} onPress={handleGoToCourse}>
@@ -266,7 +288,12 @@ export default function CourseDetail() {
               <Text style={styles.externalLinkText}>Opens in external platform</Text>
 
               <Text style={styles.cardSectionTitle}>This course includes:</Text>
-              {course.includes.map((item, index) => (
+              {(course.includes || [
+                {icon: 'videocam-outline', text: 'On-demand video'}, 
+                {icon: 'download-outline', text: 'Downloadable resources'}, 
+                {icon: 'phone-portrait-outline', text: 'Access on mobile and TV'}, 
+                {icon: 'ribbon-outline', text: 'Certificate of completion'}
+              ]).map((item, index) => (
                 <View key={index} style={styles.includeItem}>
                   <Ionicons name={item.icon} size={16} color="#741ce9" />
                   <Text style={styles.includeText}>{item.text}</Text>
@@ -281,15 +308,15 @@ export default function CourseDetail() {
               </View>
               <View style={styles.infoRow}>
                 <Text style={styles.infoLabel}>Language</Text>
-                <Text style={styles.infoValue}>{course.language}</Text>
+                <Text style={styles.infoValue}>{course.language || 'English'}</Text>
               </View>
               <View style={styles.infoRow}>
                 <Text style={styles.infoLabel}>Duration</Text>
-                <Text style={styles.infoValue}>{course.duration}</Text>
+                <Text style={styles.infoValue}>{course.duration?.hours ? `${course.duration.hours} hours` : course.duration}</Text>
               </View>
               <View style={styles.infoRow}>
                 <Text style={styles.infoLabel}>Lectures</Text>
-                <Text style={styles.infoValue}>{course.lectures} Lectures</Text>
+                <Text style={styles.infoValue}>{course.duration?.lectures || course.lectures} Lectures</Text>
               </View>
 
               <View style={styles.certBanner}>

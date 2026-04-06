@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,18 +10,60 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { userAPI } from './utils/api';
+import { Platform } from 'react-native';
 
 export default function Settings() {
   const router = useRouter();
-  const [firstName, setFirstName] = useState('Alex');
-  const [lastName, setLastName] = useState('Johnson');
-  const [email, setEmail] = useState('alex.johnson@edulearn.com');
-  const [bio, setBio] = useState("I'm a lifelong learner interested in data science, creative coding, and the psychology of learning. I'm currently working towards a pivot into UX design!");
+  const [userContext, setUserContext] = useState(null);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [bio, setBio] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
 
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const parsedUser = JSON.parse(userStr);
+        setUserContext(parsedUser);
+        
+        userAPI.getProfile(parsedUser.id || parsedUser._id).then(res => {
+            const data = res.data;
+            const names = (data.fullName || '').split(' ');
+            setFirstName(names[0] || '');
+            setLastName(names.slice(1).join(' ') || '');
+            setEmail(data.email || '');
+            setBio(data.bio || '');
+        }).catch(err => console.error(err));
+      }
+    }
+  }, []);
+
   const handleSave = () => {
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 3000);
+    if (!userContext) return;
+    const userId = userContext.id || userContext._id;
+    const fullName = `${firstName} ${lastName}`.trim();
+    
+    userAPI.updateProfile(userId, { fullName, bio })
+       .then(res => {
+         setShowSuccess(true);
+         setTimeout(() => setShowSuccess(false), 3000);
+         
+         if (Platform.OS === 'web') {
+             const userStr = localStorage.getItem('user');
+             if (userStr) {
+                 const u = JSON.parse(userStr);
+                 u.fullName = fullName;
+                 localStorage.setItem('user', JSON.stringify(u));
+             }
+         }
+       })
+       .catch(err => {
+         alert('Failed to update profile!');
+         console.error(err);
+       });
   };
 
   return (
@@ -35,9 +77,9 @@ export default function Settings() {
           <Text style={styles.logoText}>EduLearn</Text>
         </View>
         <View style={styles.nav}>
-          <TouchableOpacity><Text style={styles.navLink}>Explore</Text></TouchableOpacity>
-          <TouchableOpacity><Text style={styles.navLink}>My Courses</Text></TouchableOpacity>
-          <TouchableOpacity><Text style={styles.navLink}>Recommendations</Text></TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push('/courses')}><Text style={styles.navLink}>Explore</Text></TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push('/profile')}><Text style={styles.navLink}>My Courses</Text></TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push('/recommendations')}><Text style={styles.navLink}>Recommendations</Text></TouchableOpacity>
         </View>
         <View style={styles.headerRight}>
           <TouchableOpacity style={styles.searchButton}>
@@ -47,10 +89,10 @@ export default function Settings() {
           <TouchableOpacity style={styles.iconButton}>
             <Ionicons name="notifications-outline" size={24} color="#333" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
+          <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/settings')}>
             <Ionicons name="settings-outline" size={24} color="#333" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.avatar}>
+          <TouchableOpacity style={styles.avatar} onPress={() => router.push('/profile')}>
             <Image
               source={{ uri: 'https://via.placeholder.com/40' }}
               style={styles.avatarImage}

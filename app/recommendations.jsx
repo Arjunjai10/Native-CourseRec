@@ -14,7 +14,7 @@ import { useRouter } from 'expo-router';
 import { userAPI, courseAPI } from './utils/api';
 
 const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
 export default function Recommendations() {
   const router = useRouter();
@@ -35,17 +35,19 @@ export default function Recommendations() {
 
 
   useEffect(() => {
-    const initializeData = async () => {
+    const initializeChat = async () => {
       try {
-        setIsInitializing(true);
+        let storedUser = null;
         let userId = null;
-
         if (Platform.OS === 'web') {
           const userStr = localStorage.getItem('user');
-          if (userStr) {
-            const storedUser = JSON.parse(userStr);
-            userId = storedUser.id;
+          if (!userStr) {
+            router.replace('/signin');
+            return;
           }
+          storedUser = JSON.parse(userStr);
+          setUser(storedUser);
+          userId = storedUser.id;
         }
 
         const promises = [courseAPI.getAll()];
@@ -90,7 +92,7 @@ export default function Recommendations() {
       }
     };
 
-    initializeData();
+    initializeChat();
   }, []);
 
 
@@ -126,6 +128,16 @@ export default function Recommendations() {
     setMessages(prev => [...prev, userMessageObj]);
     setMessage('');
     setIsLoading(true);
+
+    if (!GEMINI_API_KEY || GEMINI_API_KEY === 'undefined' || GEMINI_API_KEY === 'your_gemini_api_key_here') {
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        type: 'ai',
+        text: "It looks like the AI API Key is missing. Please ask your developer to set 'EXPO_PUBLIC_GEMINI_API_KEY' in the project's .env file.",
+      }]);
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const conversationHistory = messages

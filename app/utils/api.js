@@ -32,6 +32,7 @@ export const authAPI = {
 
 export const userAPI = {
     getProfile: (userId) => api.get(`/users/profile/${userId}`),
+    updateProfile: (userId, data) => api.put(`/users/profile/${userId}`, data),
 };
 
 export const courseAPI = {

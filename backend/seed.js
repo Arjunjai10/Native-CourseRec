@@ -43,11 +43,11 @@ const categories = {
     ],
     'Data Science': [
         { name: 'Machine Learning', color: '#ff6f00', icon: 'analytics' },
-        { name: 'Deep Learning', color: '#ee4c2c', icon: 'git-network' },
+        { name: 'Deep Learning', color: '#ee4c2c', icon: 'git-network-outline' },
         { name: 'Data Analysis', color: '#150458', icon: 'bar-chart' },
         { name: 'Pandas', color: '#150458', icon: 'grid' },
         { name: 'NumPy', color: '#013243', icon: 'calculator' },
-        { name: 'TensorFlow', color: '#ff6f00', icon: 'git-network' },
+        { name: 'TensorFlow', color: '#ff6f00', icon: 'git-network-outline' },
         { name: 'PyTorch', color: '#ee4c2c', icon: 'flame' },
         { name: 'Scikit-learn', color: '#f7931e', icon: 'analytics' },
     ],
@@ -58,7 +58,7 @@ const categories = {
         { name: 'Docker', color: '#2496ed', icon: 'cube' },
         { name: 'Kubernetes', color: '#326ce5', icon: 'grid' },
         { name: 'Jenkins', color: '#d24939', icon: 'git-branch' },
-        { name: 'Terraform', color: '#7b42bc', icon: 'git-network' },
+        { name: 'Terraform', color: '#7b42bc', icon: 'git-network-outline' },
         { name: 'CI/CD', color: '#fc6d26', icon: 'git-merge' },
     ],
     'Database': [
@@ -88,7 +88,7 @@ const categories = {
     'Security': [
         { name: 'Cybersecurity', color: '#dc2626', icon: 'shield-checkmark' },
         { name: 'Ethical Hacking', color: '#000000', icon: 'bug' },
-        { name: 'Network Security', color: '#1e40af', icon: 'network' },
+        { name: 'Network Security', color: '#1e40af', icon: 'globe-outline' },
         { name: 'Penetration Testing', color: '#b91c1c', icon: 'key' },
     ],
     'Game Development': [

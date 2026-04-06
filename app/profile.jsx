@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ScrollView,
   Image,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -13,25 +14,56 @@ import { useRouter } from 'expo-router';
 export default function Profile() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('profile');
+  const [user, setUser] = useState(null);
+
+  const [userProfile, setUserProfile] = useState({
+    name: 'Loading...',
+    studentId: '',
+    bio: '',
+    courses: 0,
+    coursesChange: '',
+    learningHours: 0,
+    learningRank: '',
+    certificates: 0,
+    interests: [],
+    recentCertificates: [],
+  });
+
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const u = JSON.parse(userStr);
+        setUser(u);
+        
+        // Dynamic fetch from backend
+        import('./utils/api').then(({ userAPI }) => {
+            userAPI.getProfile(u.id || u._id).then(res => {
+               const data = res.data;
+               setUserProfile({
+                  name: data.fullName || 'User',
+                  studentId: data.id ? `#EDU-${data.id.substring(data.id.length - 5)}` : (data._id ? `#EDU-${data._id.substring(data._id.length - 5)}` : ''),
+                  bio: data.bio || '',
+                  courses: (data.enrolledCourses || []).length + (data.completedCourses || []).length,
+                  coursesChange: 'Active Learner',
+                  learningHours: data.learningHours || 0,
+                  learningRank: 'Top 10% of learners',
+                  certificates: (data.certificates || []).length,
+                  interests: data.interests || [],
+                  recentCertificates: data.certificates || [],
+               });
+            }).catch(err => console.error(err));
+        });
+      }
+    }
+  }, []);
 
   const handleSignOut = () => {
+    if (Platform.OS === 'web') {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    }
     router.replace('/signin');
-  };
-
-  const userData = {
-    name: 'Alex',
-    studentId: '#EDU-88291',
-    bio: 'Aspiring Data Scientist with a passion for building AI-driven solutions. Currently focused on mastering Python and Natural Language Processing. Always looking for new challenges in the tech space.',
-    courses: 12,
-    coursesChange: '+2 this month',
-    learningHours: 145,
-    learningRank: 'Top 5% of learners',
-    certificates: 8,
-    interests: ['Data Science', 'Machine Learning', 'Python', 'UI/UX Design', 'Statistics'],
-    recentCertificates: [
-      { id: 1, title: 'Python for Beginners', date: 'October 14, 2023' },
-      { id: 2, title: 'Advanced ML Algorithms', date: 'September 28, 2023' },
-    ],
   };
 
   return (
@@ -51,10 +83,10 @@ export default function Profile() {
           <TouchableOpacity onPress={() => router.push('/home')}>
             <Text style={styles.navLink}>Dashboard</Text>
           </TouchableOpacity>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push('/courses')}>
             <Text style={styles.navLink}>Courses</Text>
           </TouchableOpacity>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push('/recommendations')}>
             <Text style={styles.navLink}>Mentors</Text>
           </TouchableOpacity>
           <TouchableOpacity>
@@ -66,7 +98,7 @@ export default function Profile() {
           <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/settings')}>
             <Ionicons name="settings-outline" size={24} color="#333" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.avatar}>
+          <TouchableOpacity style={styles.avatar} onPress={() => router.push('/profile')}>
             <Image
               source={{ uri: 'https://via.placeholder.com/40' }}
               style={styles.avatarImage}
@@ -121,9 +153,9 @@ export default function Profile() {
                 />
               </View>
               <View style={styles.profileInfo}>
-                <Text style={styles.profileName}>{userData.name}</Text>
-                <Text style={styles.studentId}>Student ID: {userData.studentId}</Text>
-                <Text style={styles.bio}>{userData.bio}</Text>
+                <Text style={styles.profileName}>{userProfile.name}</Text>
+                <Text style={styles.studentId}>Student ID: {userProfile.studentId}</Text>
+                <Text style={styles.bio}>{userProfile.bio}</Text>
               </View>
               <TouchableOpacity style={styles.editButton}>
                 <Text style={styles.editButtonText}>Edit Profile</Text>
@@ -134,25 +166,25 @@ export default function Profile() {
               <View style={styles.statCard}>
                 <View style={styles.statHeader}>
                   <Ionicons name="book" size={24} color="#741ce9" />
-                  <Text style={styles.statValue}>{userData.courses}</Text>
+                  <Text style={styles.statValue}>{userProfile.courses}</Text>
                 </View>
                 <Text style={styles.statLabel}>COURSES</Text>
-                <Text style={styles.statChange}>{userData.coursesChange}</Text>
+                <Text style={styles.statChange}>{userProfile.coursesChange}</Text>
               </View>
 
               <View style={styles.statCard}>
                 <View style={styles.statHeader}>
                   <Ionicons name="time" size={24} color="#741ce9" />
-                  <Text style={styles.statValue}>{userData.learningHours}</Text>
+                  <Text style={styles.statValue}>{userProfile.learningHours}</Text>
                 </View>
                 <Text style={styles.statLabel}>LEARNING HOURS</Text>
-                <Text style={styles.statChange}>{userData.learningRank}</Text>
+                <Text style={styles.statChange}>{userProfile.learningRank}</Text>
               </View>
 
               <View style={styles.statCard}>
                 <View style={styles.statHeader}>
                   <Ionicons name="ribbon" size={24} color="#741ce9" />
-                  <Text style={styles.statValue}>{userData.certificates}</Text>
+                  <Text style={styles.statValue}>{userProfile.certificates}</Text>
                 </View>
                 <Text style={styles.statLabel}>CERTIFICATES</Text>
                 <Text style={styles.statChange}>Verified credentials</Text>
@@ -167,12 +199,11 @@ export default function Profile() {
                 </TouchableOpacity>
               </View>
               <View style={styles.interestsContainer}>
-                {userData.interests.map((interest, index) => (
-                  <View key={index} style={styles.interestChip}>
+                {userProfile.interests.length > 0 ? userProfile.interests.map((interest, index) => (
+                  <View key={index} style={styles.interestTag}>
                     <Text style={styles.interestText}>{interest}</Text>
-                    <Ionicons name="analytics" size={16} color="#666" />
                   </View>
-                ))}
+                )) : <Text style={{marginLeft: 10, color: '#666'}}>No interests added yet.</Text>}
                 <TouchableOpacity style={styles.addInterestButton}>
                   <Ionicons name="add" size={20} color="#741ce9" />
                   <Text style={styles.addInterestText}>Add Interest</Text>
@@ -188,22 +219,20 @@ export default function Profile() {
                 </TouchableOpacity>
               </View>
               <View style={styles.certificatesGrid}>
-                {userData.recentCertificates.map((cert) => (
-                  <View key={cert.id} style={styles.certificateCard}>
-                    <View style={styles.certificateIcon}>
-                      <Ionicons name="shield-checkmark" size={40} color="#741ce9" />
+                {userProfile.recentCertificates.length > 0 ? userProfile.recentCertificates.map(cert => (
+                  <View key={cert.id || cert.courseId} style={styles.certCard}>
+                    <View style={styles.certIcon}>
+                      <Ionicons name="ribbon" size={24} color="#741ce9" />
                     </View>
-                    <View style={styles.certificateProgress} />
-                    <Text style={styles.certificateTitle}>{cert.title}</Text>
-                    <Text style={styles.certificateDate}>Completed {cert.date}</Text>
-                    <TouchableOpacity style={styles.viewCertButton}>
-                      <Text style={styles.viewCertButtonText}>View Certificate</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.downloadIcon}>
+                    <View style={styles.certInfo}>
+                      <Text style={styles.certTitle}>{cert.title || cert.courseName}</Text>
+                      <Text style={styles.certDate}>Issued on {cert.date || new Date(cert.completedDate).toLocaleDateString()}</Text>
+                    </View>
+                    <TouchableOpacity>
                       <Ionicons name="download-outline" size={20} color="#666" />
                     </TouchableOpacity>
                   </View>
-                ))}
+                )) : <Text style={{marginLeft: 10, color: '#666', marginBottom: 20}}>No certificates earned yet.</Text>}
               </View>
             </View>
           </View>

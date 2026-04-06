@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,19 +9,35 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { COURSES } from '../data/courses';
+import { courseAPI } from './utils/api';
 
 export default function Courses() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
 
-  const categories = ['All', ...new Set(COURSES.map(c => c.category))];
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredCourses = COURSES.filter(course => {
-    const matchesSearch = course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         course.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         course.instructor.toLowerCase().includes(searchQuery.toLowerCase());
+  useEffect(() => {
+    courseAPI.getAll()
+      .then(res => {
+        setCourses(res.data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
+      });
+  }, []);
+
+  const categories = ['All', ...new Set(courses.map(c => c.category))];
+
+  const filteredCourses = courses.filter(course => {
+    const instructorName = course.instructor?.name || course.instructor || '';
+    const matchesSearch = course.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         course.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         instructorName.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === 'All' || course.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -57,7 +73,7 @@ export default function Courses() {
 
       <View style={styles.searchSection}>
         <Text style={styles.pageTitle}>Browse Courses</Text>
-        <Text style={styles.pageSubtitle}>Explore {COURSES.length}+ courses across multiple categories</Text>
+        <Text style={styles.pageSubtitle}>Explore {courses.length}+ courses across multiple categories</Text>
         
         <View style={styles.searchContainer}>
           <Ionicons name="search" size={20} color="#666" />
@@ -109,9 +125,9 @@ export default function Courses() {
         <View style={styles.coursesGrid}>
           {filteredCourses.map((course) => (
             <TouchableOpacity
-              key={course.id}
+              key={course._id || course.id}
               style={styles.courseCard}
-              onPress={() => router.push(`/course/${course.id}`)}
+              onPress={() => router.push(`/course/${course._id || course.id}`)}
             >
               <View style={[styles.courseThumbnail, { backgroundColor: course.thumbnailColor }]}>
                 <Ionicons name={course.thumbnail} size={48} color="white" />
@@ -121,23 +137,23 @@ export default function Courses() {
                   <Text style={styles.categoryBadgeText}>{course.category}</Text>
                 </View>
                 <Text style={styles.courseTitle} numberOfLines={2}>{course.title}</Text>
-                <Text style={styles.courseInstructor}>by {course.instructor}</Text>
+                <Text style={styles.courseInstructor}>by {course.instructor?.name || course.instructor}</Text>
                 <View style={styles.courseRating}>
                   <Ionicons name="star" size={16} color="#F59E0B" />
                   <Text style={styles.ratingText}>{course.rating}</Text>
-                  <Text style={styles.studentsText}>({(course.studentsEnrolled / 1000).toFixed(0)}k)</Text>
+                  <Text style={styles.studentsText}>({((course.studentsEnrolled || 0) / 1000).toFixed(0)}k)</Text>
                 </View>
                 <View style={styles.courseMeta}>
                   <View style={styles.metaItem}>
                     <Ionicons name="time-outline" size={14} color="#666" />
-                    <Text style={styles.metaText}>{course.duration}</Text>
+                    <Text style={styles.metaText}>{course.duration?.hours ? `${course.duration.hours} hours` : course.duration}</Text>
                   </View>
                   <View style={styles.metaItem}>
                     <Ionicons name="book-outline" size={14} color="#666" />
-                    <Text style={styles.metaText}>{course.lectures} lectures</Text>
+                    <Text style={styles.metaText}>{course.duration?.lectures || course.lectures} lectures</Text>
                   </View>
                 </View>
-                <Text style={styles.priceText}>{course.price}</Text>
+                <Text style={styles.priceText}>{course.price === 0 ? 'Free' : `$${course.price}`}</Text>
               </View>
             </TouchableOpacity>
           ))}
