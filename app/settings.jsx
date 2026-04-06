@@ -21,6 +21,7 @@ export default function Settings() {
   const [email, setEmail] = useState('');
   const [bio, setBio] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
+  const [activeTab, setActiveTab] = useState('profile');
 
   useEffect(() => {
     if (Platform.OS === 'web') {
@@ -109,36 +110,57 @@ export default function Settings() {
           </View>
 
           <View style={styles.sidebarSection}>
-            <TouchableOpacity style={[styles.sidebarItem, styles.sidebarItemActive]}>
-              <Ionicons name="person" size={20} color="#741ce9" />
-              <Text style={[styles.sidebarText, styles.sidebarTextActive]}>Profile Info</Text>
+            <TouchableOpacity 
+              style={[styles.sidebarItem, activeTab === 'profile' && styles.sidebarItemActive]}
+              onPress={() => setActiveTab('profile')}
+            >
+              <Ionicons name="person" size={20} color={activeTab === 'profile' ? '#741ce9' : '#666'} />
+              <Text style={[styles.sidebarText, activeTab === 'profile' && styles.sidebarTextActive]}>Profile Info</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.sidebarItem}>
-              <Ionicons name="notifications" size={20} color="#666" />
-              <Text style={styles.sidebarText}>Notifications</Text>
+            
+            <TouchableOpacity 
+              style={[styles.sidebarItem, activeTab === 'notifications' && styles.sidebarItemActive]}
+              onPress={() => setActiveTab('notifications')}
+            >
+              <Ionicons name="notifications" size={20} color={activeTab === 'notifications' ? '#741ce9' : '#666'} />
+              <Text style={[styles.sidebarText, activeTab === 'notifications' && styles.sidebarTextActive]}>Notifications</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.sidebarItem}>
-              <Ionicons name="shield" size={20} color="#666" />
-              <Text style={styles.sidebarText}>Security</Text>
+            
+            <TouchableOpacity 
+              style={[styles.sidebarItem, activeTab === 'security' && styles.sidebarItemActive]}
+              onPress={() => setActiveTab('security')}
+            >
+              <Ionicons name="shield" size={20} color={activeTab === 'security' ? '#741ce9' : '#666'} />
+              <Text style={[styles.sidebarText, activeTab === 'security' && styles.sidebarTextActive]}>Security</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.sidebarItem}>
-              <Ionicons name="eye" size={20} color="#666" />
-              <Text style={styles.sidebarText}>Privacy</Text>
+            
+            <TouchableOpacity 
+              style={[styles.sidebarItem, activeTab === 'privacy' && styles.sidebarItemActive]}
+              onPress={() => setActiveTab('privacy')}
+            >
+              <Ionicons name="eye" size={20} color={activeTab === 'privacy' ? '#741ce9' : '#666'} />
+              <Text style={[styles.sidebarText, activeTab === 'privacy' && styles.sidebarTextActive]}>Privacy</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.sidebarItem}>
-              <Ionicons name="globe" size={20} color="#666" />
-              <Text style={styles.sidebarText}>Language & Region</Text>
+            
+            <TouchableOpacity 
+              style={[styles.sidebarItem, activeTab === 'language' && styles.sidebarItemActive]}
+              onPress={() => setActiveTab('language')}
+            >
+              <Ionicons name="globe" size={20} color={activeTab === 'language' ? '#741ce9' : '#666'} />
+              <Text style={[styles.sidebarText, activeTab === 'language' && styles.sidebarTextActive]}>Language & Region</Text>
             </TouchableOpacity>
           </View>
         </View>
 
         <ScrollView style={styles.content}>
-          <View style={styles.contentHeader}>
-            <Text style={styles.contentTitle}>Profile Information</Text>
-            <Text style={styles.contentSubtitle}>
-              Update your personal details and how others see you on the platform.
-            </Text>
-          </View>
+          {activeTab === 'profile' ? (
+            <>
+              <View style={styles.contentHeader}>
+                <Text style={styles.contentTitle}>Profile Information</Text>
+                <Text style={styles.contentSubtitle}>
+                  Update your personal details and how others see you on the platform.
+                </Text>
+              </View>
 
           <View style={styles.profilePictureSection}>
             <View style={styles.profilePictureContainer}>
@@ -239,6 +261,16 @@ export default function Settings() {
               <TouchableOpacity onPress={() => setShowSuccess(false)}>
                 <Ionicons name="close" size={20} color="#666" />
               </TouchableOpacity>
+            </View>
+          )}
+            </>
+          ) : (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 50 }}>
+              <Ionicons name="hammer-outline" size={64} color="#ccc" style={{ marginBottom: 20 }} />
+              <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#333', marginBottom: 10 }}>Under Construction</Text>
+              <Text style={{ fontSize: 16, color: '#666', textAlign: 'center' }}>
+                The {activeTab} settings panel is currently being updated. Please check back later!
+              </Text>
             </View>
           )}
         </ScrollView>

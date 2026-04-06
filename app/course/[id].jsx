@@ -76,7 +76,7 @@ export default function CourseDetail() {
     { stars: 1, percentage: 1 },
   ];
 
-  const sampleReviews = [
+  const courseReviews = course.reviews && course.reviews.length > 0 ? course.reviews : [
     {
       id: 1,
       userName: 'Alex Johnson',
@@ -242,8 +242,8 @@ export default function CourseDetail() {
                 </View>
               </View>
 
-              {sampleReviews.map((review) => (
-                <View key={review.id} style={styles.reviewCard}>
+              {courseReviews.map((review, index) => (
+                <View key={review.id || index} style={styles.reviewCard}>
                   <View style={styles.reviewHeader}>
                     <View style={styles.reviewerAvatar}>
                       <Ionicons name="person" size={20} color="#666" />

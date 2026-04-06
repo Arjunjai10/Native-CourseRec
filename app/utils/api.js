@@ -1,7 +1,13 @@
 import axios from 'axios';
 import { Platform } from 'react-native';
 
-const API_URL = 'http://localhost:5000/api';
+// Toggle this to switch between Node (5000) and Java (8080) backends
+const USE_JAVA_BACKEND = false; 
+
+const NODE_API_URL = 'http://localhost:5000/api';
+const JAVA_API_URL = 'http://localhost:8080/api';
+
+const API_URL = USE_JAVA_BACKEND ? JAVA_API_URL : NODE_API_URL;
 
 const api = axios.create({
     baseURL: API_URL,
