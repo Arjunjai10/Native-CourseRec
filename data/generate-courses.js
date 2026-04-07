@@ -2,7 +2,7 @@ const categories = {
   'Programming': [
     { name: 'Python', color: '#741ce9', icon: 'logo-python' },
     { name: 'JavaScript', color: '#f7df1e', icon: 'logo-javascript' },
-    { name: 'Java', color: '#007396', icon: 'logo-java' },
+    { name: 'Java', color: '#007396', icon: 'cafe' },
     { name: 'C++', color: '#00599c', icon: 'code-slash' },
     { name: 'C#', color: '#239120', icon: 'code-working' },
     { name: 'Ruby', color: '#cc342d', icon: 'diamond' },

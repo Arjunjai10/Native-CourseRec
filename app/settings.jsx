@@ -122,7 +122,7 @@ export default function Settings() {
                 </View>
 
                 <View style={styles.photoBox}>
-                    <Image source={{ uri: 'https://via.placeholder.com/100' }} style={styles.bigAvatar} />
+                    <Image source={{ uri: 'https://ui-avatars.com/api/?name=User&background=741ce9&color=fff&size=100' }} style={styles.bigAvatar} />
                     <View style={styles.photoActions}>
                         <TouchableOpacity style={styles.uploadBtn}>
                         <Text style={styles.uploadText}>New Photo</Text>

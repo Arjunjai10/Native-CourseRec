@@ -95,7 +95,10 @@ export default function Home() {
             end={{ x: 1, y: 1 }}
           >
             <View style={styles.heroTextContainer}>
-              <Text style={styles.heroBadge}>Welcome Back 👋</Text>
+            <View style={styles.heroBadgeRow}>
+              <Ionicons name="sparkles" size={14} color="#fff" />
+              <Text style={styles.heroBadgeText}>Welcome Back</Text>
+            </View>
               <Text style={styles.heroTitle}>Master Your{'\n'}Future Today.</Text>
               <Text style={styles.heroSubtitle}>
                 {user ? user.fullName.split(' ')[0] : 'Learner'}, we've found 3 new courses that match your career profile perfectly!
@@ -264,16 +267,21 @@ const styles = StyleSheet.create({
     flex: 1,
     zIndex: 2,
   },
-  heroBadge: {
+  heroBadgeRow: {
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingVertical: 8,
     borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    marginBottom: 15,
+    gap: 8,
+  },
+  heroBadgeText: {
     color: '#fff',
     fontSize: 12,
     fontWeight: 'bold',
-    alignSelf: 'flex-start',
-    marginBottom: 15,
   },
   heroTitle: {
     fontSize: 42,

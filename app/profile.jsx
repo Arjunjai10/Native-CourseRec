@@ -70,7 +70,7 @@ export default function Profile() {
               <View style={styles.profileHeaderContent}>
                  <View style={styles.profilePicBox}>
                     <Image
-                      source={{ uri: 'https://via.placeholder.com/150' }}
+                      source={{ uri: 'https://ui-avatars.com/api/?name=User&background=741ce9&color=fff&size=150' }}
                       style={styles.profilePic}
                     />
                     <TouchableOpacity style={styles.editPicBtn}>
@@ -120,7 +120,10 @@ export default function Profile() {
           </View>
 
           <View style={styles.section}>
-             <Text style={styles.sectionTitle}>My Interests</Text>
+              <View style={styles.sectionHead}>
+                 <Ionicons name="star" size={20} color="#741ce9" />
+                 <Text style={styles.sectionTitle}>My Interests</Text>
+              </View>
              <View style={styles.interestsGrid}>
                 {userProfile.interests.length > 0 ? (
                    userProfile.interests.map((interest, i) => (
@@ -139,12 +142,15 @@ export default function Profile() {
           </View>
 
           <View style={styles.section}>
-             <View style={styles.sectionHead}>
-                <Text style={styles.sectionTitle}>Saved Recommendations</Text>
-                <TouchableOpacity>
-                   <Text style={styles.seeAllText}>Manage Library</Text>
-                </TouchableOpacity>
-             </View>
+              <View style={styles.sectionHead}>
+                 <View style={styles.sectionTitleRow}>
+                    <Ionicons name="bookmark" size={20} color="#741ce9" />
+                    <Text style={styles.sectionTitle}>Saved Recommendations</Text>
+                 </View>
+                 <TouchableOpacity>
+                    <Text style={styles.seeAllText}>Manage Library</Text>
+                 </TouchableOpacity>
+              </View>
              
              {userProfile.recentCertificates.length > 0 ? (
                 userProfile.recentCertificates.map((cert, index) => (
@@ -154,7 +160,13 @@ export default function Profile() {
                       </View>
                       <View style={styles.certInfo}>
                          <Text style={styles.certTitle}>Full Stack Web Development</Text>
-                         <Text style={styles.certMeta}>Platform: Coursera • Matched: {new Date().toLocaleDateString()}</Text>
+                          <View style={styles.certMetaRow}>
+                             <Ionicons name="business" size={12} color="#94a3b8" />
+                             <Text style={styles.certMeta}>Coursera</Text>
+                             <View style={styles.metaDot} />
+                             <Ionicons name="calendar" size={12} color="#94a3b8" />
+                             <Text style={styles.certMeta}>{new Date().toLocaleDateString()}</Text>
+                          </View>
                       </View>
                       <TouchableOpacity style={styles.viewCertBtn}>
                          <Ionicons name="arrow-forward-outline" size={20} color="#666" />
@@ -382,11 +394,28 @@ const styles = StyleSheet.create({
      fontWeight: '800',
      color: '#1e293b',
   },
+  certMetaRow: {
+     flexDirection: 'row',
+     alignItems: 'center',
+     gap: 6,
+     marginTop: 6,
+  },
   certMeta: {
      fontSize: 12,
      color: '#94a3b8',
-     marginTop: 4,
-     fontWeight: '500',
+     fontWeight: '600',
+  },
+  metaDot: {
+     width: 4,
+     height: 4,
+     borderRadius: 2,
+     backgroundColor: '#cbd5e1',
+     marginHorizontal: 4,
+  },
+  sectionTitleRow: {
+     flexDirection: 'row',
+     alignItems: 'center',
+     gap: 12,
   },
   viewCertBtn: {
      width: 40,

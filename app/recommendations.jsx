@@ -16,7 +16,7 @@ import Navbar from './components/Navbar';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
 export default function Recommendations() {
   const router = useRouter();
@@ -137,23 +137,48 @@ export default function Recommendations() {
     setMessage('');
     setIsLoading(true);
 
+    if (!GEMINI_API_KEY || GEMINI_API_KEY === 'your_gemini_api_key_here') {
+      const aiResponse = "I need a valid Gemini API key to assist you. Please set EXPO_PUBLIC_GEMINI_API_KEY in your .env file.";
+      const finalMessages = [...updatedMessages, { id: Date.now() + 1, type: 'ai', text: aiResponse }];
+      setMessages(finalMessages);
+      setIsLoading(false);
+      return;
+    }
+
+    const callAI = async (modelName) => {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
+        const resp = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{
+                parts: [{ text: `You are an AI at EduLearn. Catalog: ${availableCoursesText}. Respond to: ${userMessage}` }]
+              }]
+            }),
+        });
+        return resp;
+    };
+
     try {
-      const response = await fetch(GEMINI_API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{ text: `You are an AI at EduLearn. Catalog: ${availableCoursesText}. Respond to: ${userMessage}` }]
-          }]
-        }),
-      });
+      let response = await callAI('gemini-1.5-flash');
+
+      if (response.status === 404) {
+          console.warn("Flash model 404, trying gemini-pro fallback...");
+          response = await callAI('gemini-pro');
+      }
+
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      }
+
       const data = await response.json();
       const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm sorry, I'm having trouble right now.";
       const finalMessages = [...updatedMessages, { id: Date.now() + 1, type: 'ai', text: aiResponse }];
       setMessages(finalMessages);
       saveToHistory(finalMessages);
     } catch (error) {
-       console.error(error);
+       console.error("AI Assistant Error:", error);
+       setMessages([...updatedMessages, { id: Date.now() + 1, type: 'ai', text: "The AI AI is unavailable right now. Please check if your API key is correctly enabled in Google AI Studio." }]);
     } finally {
        setIsLoading(false);
     }

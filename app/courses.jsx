@@ -105,6 +105,7 @@ export default function Courses() {
                          <Ionicons name="bookmark-outline" size={14} color="#1a1a1a" />
                       </TouchableOpacity>
                       <View style={styles.badge}>
+                         <Ionicons name="stats-chart" size={10} color="#1e293b" />
                          <Text style={styles.badgeText}>{course.level || 'Beginner'}</Text>
                       </View>
                    </View>
@@ -261,8 +262,11 @@ const styles = StyleSheet.create({
      right: 10,
      backgroundColor: 'rgba(255, 255, 255, 0.9)',
      paddingHorizontal: 8,
-     paddingVertical: 4,
-     borderRadius: 8,
+     paddingVertical: 5,
+     borderRadius: 10,
+     flexDirection: 'row',
+     alignItems: 'center',
+     gap: 5,
   },
   bookmarkBadge: {
      position: 'absolute',

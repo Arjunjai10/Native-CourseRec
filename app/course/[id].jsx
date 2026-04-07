@@ -60,7 +60,10 @@ export default function CourseDetail() {
         <View style={styles.heroSection}>
            <LinearGradient colors={['#0a0a0a', '#1a1a1a']} style={styles.heroGradient}>
               <View style={styles.heroContent}>
-                 <Text style={styles.categoryBadge}>{course.category || 'Professional Recommendation'}</Text>
+                  <View style={styles.categoryBadgeRow}>
+                    <Ionicons name="ribbon" size={14} color="#741ce9" />
+                    <Text style={styles.categoryBadge}>{course.category || 'Professional Recommendation'}</Text>
+                  </View>
                  <Text style={styles.titleText}>{course.title}</Text>
                  <Text style={styles.descText}>{course.description}</Text>
                  
@@ -194,12 +197,17 @@ const styles = StyleSheet.create({
   heroContent: {
     maxWidth: 800,
   },
+  categoryBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 20,
+  },
   categoryBadge: {
     fontSize: 12,
     fontWeight: '900',
     color: '#741ce9',
     textTransform: 'uppercase',
-    marginBottom: 15,
     letterSpacing: 1.5,
   },
   titleText: {
