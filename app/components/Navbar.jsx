@@ -199,10 +199,20 @@ const styles = StyleSheet.create({
   },
   activeNavLink: {
     backgroundColor: '#2a2a2a',
-    shadowColor: '#741ce9',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#741ce9',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.2,
+        shadowRadius: 10,
+      },
+      android: {
+        elevation: 4,
+      },
+      web: {
+        boxShadow: '0 0 10px rgba(116, 28, 233, 0.2)',
+      }
+    }),
   },
   navIcon: {
     marginRight: 6,

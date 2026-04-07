@@ -387,9 +387,20 @@ const styles = StyleSheet.create({
   },
   menuItemActive: {
     backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowRadius: 10,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOpacity: 0.04,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 4 },
+      },
+      android: {
+        elevation: 2,
+      },
+      web: {
+        boxShadow: '0 4px 10px rgba(0, 0, 0, 0.04)',
+      }
+    }),
   },
   menuIconBox: {
     width: 36,

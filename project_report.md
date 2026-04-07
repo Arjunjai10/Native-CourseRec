@@ -73,12 +73,143 @@ With the explosion of online education, students often struggle to find the righ
 
 ---
 
-## 6. SYSTEM DESIGN (OOAD)
+## 5. SYSTEM DESIGN (OOAD)
 
-### 6.1. System Workflow
-1.  **AI Orchestration**: The AI Mentor takes user prompts, correlates them with the MongoDB Course Discovery engine, and outputs a structured learning path.
-2.  **Hybrid Auth Handshake**: Users can register via Node.js; the Java server securely validates these users using the shared BCrypt implementation.
-3.  **Cross-Platform Rendering**: The UI uses flexible Flexbox layouts to ensure premium accessibility on both small mobile screens and large desktop viewports.
+### 5.1. Use Case Diagram
+The Use Case diagram illustrates the core functional boundaries where the Learner interacts with the discovery and AI engines.
+
+```mermaid
+useCaseDiagram
+    actor "Learner (User)" as U
+    actor "System / Admin" as A
+    
+    package "EduLearn Platform" {
+        usecase "Authenticate (BCrypt Sync)" as UC1
+        usecase "Ask AI Mentor for Advice" as UC2
+        usecase "Discover Global Courses" as UC3
+        usecase "Save Recommendation" as UC4
+        usecase "Switch Backend (Node/Java)" as UC5
+        usecase "Update Career Bio" as UC6
+    }
+    
+    U --> UC1
+    U --> UC2
+    U --> UC3
+    U --> UC4
+    U --> UC6
+    
+    A --> UC1
+    A --> UC3
+    A --> UC5
+```
+
+### 5.2. Class Diagram
+The Class diagram documents the unified documentation of User and Course domains across the Hybrid Backend.
+
+```mermaid
+classDiagram
+    class User {
+        +String id
+        +String email
+        +String fullName
+        +String bio
+        +List<String> interests
+        +ArrayList<Course> enrolledCourses
+        +saveRecommendation()
+        +updateProfile()
+    }
+    
+    class Course {
+        +String id
+        +String title
+        +String category
+        +String level
+        +String externalLink
+        +Double rating
+        +Instructor instructor
+    }
+    
+    class Instructor {
+        +String name
+        +String avatar
+        +String title
+    }
+    
+    class HybridAPI {
+        +String activePort
+        +switchToServer(port)
+        +fetchProfile()
+        +fetchDiscovery()
+    }
+    
+    User "1" -- "*" Course : saves
+    Course "1" -- "1" Instructor : belongs to
+    App "1" -- "1" HybridAPI : orchestrates
+```
+
+### 5.3. Activity Diagram
+This diagram outlines the logical decision-making process within the AI Mentorship module.
+
+```mermaid
+activityDiagram
+    start
+    :User enters career goal in AI Chat;
+    :App gathers Discovery Courses from MongoDB;
+    :App sends prompt + metadata to Gemini;
+    if (Gemini finds direct match?) then (yes)
+        :Gemini returns tailored curriculum;
+        :App highlights matching Courses;
+        :User views Discovery path;
+        :User clicks "Save to Library";
+        :Background sync to MongoDB;
+    else (no)
+        :Gemini provides general path;
+    endif
+    stop
+```
+
+### 5.4. Sequence Diagram
+Documents the unified BCrypt login authentication handshake between servers.
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend
+    participant Java_Backend (8080)
+    participant Node_Backend (5000)
+    participant MongoDB
+
+    User->>Frontend: Register account (Node Active)
+    Frontend->>Node_Backend: POST /signup
+    Node_Backend->>Node_Backend: Hash Password (BCrypt)
+    Node_Backend->>MongoDB: Save User Document
+    Node_Backend-->>Frontend: JWT Issued
+    
+    Note over User, MongoDB: [Switching to Java Port 8080 in Settings]
+    
+    User->>Frontend: Login account (Java Active)
+    Frontend->>Java_Backend: POST /login
+    Java_Backend->>MongoDB: GET Hash from Database
+    Java_Backend->>Java_Backend: BCrypt.checkMatches()
+    Java_Backend-->>Frontend: Success Response (Shared Port Identity)
+```
+
+### 5.5. State Diagram
+Illustrates the lifecycle of a Course Recommendation within the user experience.
+
+```mermaid
+stateDiagram-v2
+    [*] --> Discovered: Init
+    Discovered --> AI_Evaluating: Chat Prompt
+    AI_Evaluating --> Matched: High Affinity
+    AI_Evaluating --> Suggested: Secondary Match
+    
+    Matched --> Saved: User click
+    Suggested --> Saved: User click
+    
+    Saved --> Archived: User remove
+    Saved --> [*]
+```
 
 ---
 

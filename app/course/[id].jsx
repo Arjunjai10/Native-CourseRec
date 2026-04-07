@@ -349,12 +349,22 @@ const styles = StyleSheet.create({
      backgroundColor: '#fff',
      borderRadius: 32,
      overflow: 'hidden',
-     shadowColor: '#000',
-     shadowOpacity: 0.1,
-     shadowRadius: 30,
-     elevation: 20,
-     position: 'sticky',
-     top: 100,
+     ...Platform.select({
+       ios: {
+         shadowColor: '#000',
+         shadowOpacity: 0.1,
+         shadowRadius: 30,
+         shadowOffset: { width: 0, height: 10 },
+       },
+       android: {
+         elevation: 20,
+       },
+       web: {
+         boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
+         position: 'sticky',
+         top: 100,
+       }
+     }),
   },
   previewBox: {
      width: '100%',

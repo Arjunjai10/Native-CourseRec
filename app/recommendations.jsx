@@ -317,9 +317,20 @@ const styles = StyleSheet.create({
   },
   chatItemActive: {
      backgroundColor: '#fff',
-     shadowColor: '#000',
-     shadowOpacity: 0.05,
-     shadowRadius: 10,
+     ...Platform.select({
+       ios: {
+         shadowColor: '#000',
+         shadowOpacity: 0.05,
+         shadowRadius: 10,
+         shadowOffset: { width: 0, height: 4 },
+       },
+       android: {
+         elevation: 2,
+       },
+       web: {
+         boxShadow: '0 4px 10px rgba(0, 0, 0, 0.05)',
+       }
+     }),
   },
   chatDot: {
      width: 8,

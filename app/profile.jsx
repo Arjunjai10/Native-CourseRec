@@ -218,9 +218,20 @@ const styles = StyleSheet.create({
     borderRadius: 17,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+        shadowOffset: { width: 0, height: 2 },
+      },
+      android: {
+        elevation: 3,
+      },
+      web: {
+        boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
+      }
+    }),
   },
   nameSection: {
     flex: 1,
@@ -259,11 +270,20 @@ const styles = StyleSheet.create({
      backgroundColor: '#fff',
      borderRadius: 30,
      paddingVertical: 25,
-     shadowColor: '#000',
-     shadowOffset: { width: 0, height: 10 },
      shadowOpacity: 0.1,
      shadowRadius: 20,
-     elevation: 10,
+     ...Platform.select({
+       ios: {
+         shadowColor: '#000',
+         shadowOffset: { width: 0, height: 10 },
+       },
+       android: {
+         elevation: 10,
+       },
+       web: {
+         boxShadow: '0 10px 20px rgba(0, 0, 0, 0.1)',
+       }
+     }),
      alignItems: 'center',
   },
   statBox: {
