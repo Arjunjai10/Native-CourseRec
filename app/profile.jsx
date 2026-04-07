@@ -270,12 +270,12 @@ const styles = StyleSheet.create({
      backgroundColor: '#fff',
      borderRadius: 30,
      paddingVertical: 25,
-     shadowOpacity: 0.1,
-     shadowRadius: 20,
      ...Platform.select({
        ios: {
          shadowColor: '#000',
          shadowOffset: { width: 0, height: 10 },
+         shadowOpacity: 0.1,
+         shadowRadius: 20,
        },
        android: {
          elevation: 10,
