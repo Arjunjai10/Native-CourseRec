@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -127,7 +128,16 @@ public class UserController {
             if (profileData.containsKey("fullName")) user.setFullName(profileData.get("fullName").toString());
             if (profileData.containsKey("bio")) user.setBio(profileData.get("bio").toString());
             if (profileData.containsKey("profilePicture")) user.setProfilePicture(profileData.get("profilePicture").toString());
-            if (profileData.containsKey("interests")) user.setInterests((ArrayList<String>) profileData.get("interests"));
+            if (profileData.containsKey("interests")) {
+                List<?> rawInterests = (List<?>) profileData.get("interests");
+                ArrayList<String> interests = new ArrayList<>();
+                if (rawInterests != null) {
+                    for (Object item : rawInterests) {
+                        interests.add(item.toString());
+                    }
+                }
+                user.setInterests(interests);
+            }
             
             userRepository.save(user);
             return ResponseEntity.ok(Map.of("message", "Profile updated", "user", user));

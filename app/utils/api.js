@@ -1,9 +1,11 @@
 import axios from 'axios';
 import { Platform } from 'react-native';
 
-// Default URLs
-const NODE_API_URL = 'http://localhost:5000/api';
-const JAVA_API_URL = 'http://localhost:8080/api';
+// Modern IP-based addressing for mobile access (replace with your local IP if changed)
+const LOCAL_IP = '172.17.27.226'; 
+
+const NODE_API_URL = Platform.OS === 'web' ? 'http://localhost:5000/api' : `http://${LOCAL_IP}:5000/api`;
+const JAVA_API_URL = Platform.OS === 'web' ? 'http://localhost:8080/api' : `http://${LOCAL_IP}:8080/api`;
 
 // Dynamic selection
 let activeUrl = NODE_API_URL;
@@ -12,6 +14,8 @@ if (Platform.OS === 'web') {
     if (savedBackend === 'java') {
         activeUrl = JAVA_API_URL;
     }
+} else {
+    // Force IP for andoird/ios dev
 }
 
 const api = axios.create({

@@ -8,6 +8,7 @@ import {
    ScrollView,
    Image,
    Platform,
+   useWindowDimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -20,6 +21,8 @@ const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/
 
 export default function Settings() {
    const router = useRouter();
+   const { width } = useWindowDimensions();
+   const isMobile = width < 768;
    const [userContext, setUserContext] = useState(null);
    const [firstName, setFirstName] = useState('');
    const [lastName, setLastName] = useState('');
@@ -155,26 +158,35 @@ export default function Settings() {
       <View style={styles.container}>
          <Navbar />
 
-         <View style={styles.appArea}>
-            <View style={styles.sidebar}>
-               <Text style={styles.sidebarTitle}>Control Center</Text>
-               <View style={styles.menuList}>
+         <View style={[styles.appArea, isMobile && styles.appAreaMobile]}>
+            <View style={[styles.sidebar, isMobile && styles.sidebarMobile]}>
+               {!isMobile && <Text style={styles.sidebarTitle}>Control Center</Text>}
+               <ScrollView 
+                  horizontal={isMobile} 
+                  showsHorizontalScrollIndicator={false} 
+                  contentContainerStyle={isMobile ? styles.menuListMobile : styles.menuList}
+               >
                   {menuItems.map(item => (
                      <TouchableOpacity
                         key={item.id}
-                        style={[styles.menuItem, activeTab === item.id && styles.menuItemActive]}
+                        style={[
+                           styles.menuItem, 
+                           activeTab === item.id && styles.menuItemActive,
+                           isMobile && styles.menuItemMobile
+                        ]}
                         onPress={() => setActiveTab(item.id)}
                      >
                         <View style={[styles.menuIconBox, activeTab === item.id && styles.menuIconBoxActive]}>
                            <Ionicons name={item.icon} size={18} color={activeTab === item.id ? '#741ce9' : '#64748b'} />
                         </View>
-                        <Text style={[styles.menuText, activeTab === item.id && styles.menuTextActive]}>{item.label}</Text>
+                        {!isMobile && <Text style={[styles.menuText, activeTab === item.id && styles.menuTextActive]}>{item.label}</Text>}
+                        {isMobile && activeTab === item.id && <Text style={[styles.menuText, styles.menuTextActive]}>{item.label}</Text>}
                      </TouchableOpacity>
                   ))}
-               </View>
+               </ScrollView>
             </View>
 
-            <ScrollView style={styles.contentArea} contentContainerStyle={{ padding: 40 }}>
+            <ScrollView style={styles.contentArea} contentContainerStyle={{ padding: isMobile ? 20 : 40 }}>
                {activeTab === 'profile' && (
                   <>
                      <View style={styles.formHeader}>
@@ -434,12 +446,22 @@ const styles = StyleSheet.create({
       flex: 1,
       flexDirection: 'row',
    },
+   appAreaMobile: {
+      flexDirection: 'column',
+   },
    sidebar: {
       width: 300,
       backgroundColor: '#f8fafc',
       padding: 30,
       borderRightWidth: 1,
       borderRightColor: '#f1f5f9',
+   },
+   sidebarMobile: {
+      width: '100%',
+      padding: 15,
+      borderRightWidth: 0,
+      borderBottomWidth: 1,
+      borderBottomColor: '#f1f5f9',
    },
    sidebarTitle: {
       fontSize: 22,
@@ -451,12 +473,20 @@ const styles = StyleSheet.create({
    menuList: {
       gap: 10,
    },
+   menuListMobile: {
+      gap: 12,
+      flexDirection: 'row',
+      paddingBottom: 5,
+   },
    menuItem: {
       flexDirection: 'row',
       alignItems: 'center',
       padding: 12,
       borderRadius: 16,
       backgroundColor: 'transparent',
+   },
+   menuItemMobile: {
+      paddingHorizontal: 15,
    },
    menuItemActive: {
       backgroundColor: '#fff',
@@ -561,9 +591,11 @@ const styles = StyleSheet.create({
       flexDirection: 'row',
       gap: 20,
       marginBottom: 25,
+      flexWrap: 'wrap',
    },
    inputGroup: {
       flex: 1,
+      minWidth: 250,
       marginBottom: 25,
    },
    label: {
@@ -665,12 +697,14 @@ const styles = StyleSheet.create({
    },
    switchGrid: {
       flexDirection: 'row',
+      flexWrap: 'wrap',
       gap: 20,
       marginTop: 5,
       marginBottom: 20,
    },
    switchOption: {
       flex: 1,
+      minWidth: 200,
       backgroundColor: '#fff',
       borderWidth: 1,
       borderColor: '#e2e8f0',

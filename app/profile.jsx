@@ -7,6 +7,7 @@ import {
   ScrollView,
   Image,
   Platform,
+  useWindowDimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -14,8 +15,12 @@ import { userAPI } from './utils/api';
 import Navbar from './components/Navbar';
 import { LinearGradient } from 'expo-linear-gradient';
 
+import { useFocusEffect } from 'expo-router';
+
 export default function Profile() {
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const isMobile = width < 768;
   const [user, setUser] = useState(null);
 
   const [userProfile, setUserProfile] = useState({
@@ -25,13 +30,14 @@ export default function Profile() {
     courses: 0,
     coursesChange: '',
     learningHours: 0,
+    skillMatch: '0%',
     learningRank: '',
     certificates: 0,
     interests: [],
     recentCertificates: [],
   });
 
-  useEffect(() => {
+  const loadProfile = () => {
     if (Platform.OS === 'web') {
       const userStr = localStorage.getItem('user');
       if (userStr) {
@@ -40,22 +46,38 @@ export default function Profile() {
         
         userAPI.getProfile(u.id || u._id).then(res => {
            const data = res.data;
+           const enrolled = data.enrolledCourses || [];
+           const skillPerc = enrolled.length > 0 ? Math.min(65 + (enrolled.length * 5), 98) : 42;
+
            setUserProfile({
-              name: data.fullName || 'User',
+              name: data.fullName || u.fullName || u.username || 'User',
               studentId: data.id ? `#EDU-${data.id.substring(data.id.length - 5)}` : (data._id ? `#EDU-${data._id.substring(data._id.length - 5)}` : ''),
               bio: data.bio || '',
-              courses: (data.enrolledCourses || []).length + (data.completedCourses || []).length,
+              courses: enrolled.length,
               coursesChange: 'Active Learner',
               learningHours: data.learningHours || 0,
+              skillMatch: `${skillPerc}%`,
               learningRank: 'Top 10% of learners',
-              certificates: (data.certificates || []).length,
-              interests: data.interests || [],
-              recentCertificates: data.certificates || [],
+              certificates: (data.certificates || []).length + enrolled.length,
+              interests: (data.interests && data.interests.length > 0) ? data.interests : ['Data Science', 'Development', 'Business', 'Design'],
+              recentCertificates: enrolled,
            });
-        }).catch(err => console.error(err));
+        }).catch(err => {
+           setUserProfile(prev => ({
+               ...prev,
+               name: u.fullName || 'User',
+               bio: u.bio || '',
+           }));
+        });
       }
     }
-  }, []);
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      loadProfile();
+    }, [])
+  );
 
   return (
     <View style={styles.container}>
@@ -95,12 +117,12 @@ export default function Profile() {
               </View>
               <View style={styles.statBoxDivider} />
               <View style={styles.statBox}>
-                 <Text style={styles.statNum}>84%</Text>
+                 <Text style={styles.statNum}>{userProfile.skillMatch || '42%'}</Text>
                  <Text style={styles.statLabel}>Skill Match</Text>
               </View>
               <View style={styles.statBoxDivider} />
               <View style={styles.statBox}>
-                 <Text style={styles.statNum}>{userProfile.certificates}</Text>
+                 <Text style={styles.statNum}>{userProfile.recentCertificates.length}</Text>
                  <Text style={styles.statLabel}>Saved</Text>
               </View>
            </View>
@@ -125,19 +147,11 @@ export default function Profile() {
                  <Text style={styles.sectionTitle}>My Interests</Text>
               </View>
              <View style={styles.interestsGrid}>
-                {userProfile.interests.length > 0 ? (
-                   userProfile.interests.map((interest, i) => (
-                      <View key={i} style={styles.interestPill}>
-                         <Text style={styles.interestText}>{interest}</Text>
-                      </View>
-                   ))
-                ) : (
-                  ['Web Development', 'UI/UX Design', 'Data Analysis', 'React Native'].map((interest, i) => (
-                    <View key={i} style={styles.interestPill}>
-                       <Text style={styles.interestText}>{interest}</Text>
-                    </View>
-                 ))
-                )}
+                {userProfile.interests.map((interest, i) => (
+                   <View key={i} style={styles.interestPill}>
+                      <Text style={styles.interestText}>{interest}</Text>
+                   </View>
+                ))}
              </View>
           </View>
 
@@ -147,31 +161,31 @@ export default function Profile() {
                     <Ionicons name="bookmark" size={20} color="#741ce9" />
                     <Text style={styles.sectionTitle}>Saved Recommendations</Text>
                  </View>
-                 <TouchableOpacity>
+                 <TouchableOpacity onPress={() => router.push('/courses')}>
                     <Text style={styles.seeAllText}>Manage Library</Text>
                  </TouchableOpacity>
               </View>
              
              {userProfile.recentCertificates.length > 0 ? (
-                userProfile.recentCertificates.map((cert, index) => (
-                   <View key={index} style={styles.certificateCard}>
+                userProfile.recentCertificates.map((course, index) => (
+                   <TouchableOpacity key={index} style={styles.certificateCard} onPress={() => router.push(`/course/${course._id || course.id}`)}>
                       <View style={styles.certIcon}>
-                         <Ionicons name="bookmark" size={24} color="#741ce9" />
+                         <Ionicons name="book" size={24} color="#741ce9" />
                       </View>
                       <View style={styles.certInfo}>
-                         <Text style={styles.certTitle}>Full Stack Web Development</Text>
+                         <Text style={styles.certTitle}>{course.title || 'In Progress Course'}</Text>
                           <View style={styles.certMetaRow}>
-                             <Ionicons name="business" size={12} color="#94a3b8" />
-                             <Text style={styles.certMeta}>Coursera</Text>
+                             <Ionicons name="ribbon" size={12} color="#94a3b8" />
+                             <Text style={styles.certMeta}>{course.category || 'Professional'}</Text>
                              <View style={styles.metaDot} />
-                             <Ionicons name="calendar" size={12} color="#94a3b8" />
-                             <Text style={styles.certMeta}>{new Date().toLocaleDateString()}</Text>
+                             <Ionicons name="time" size={12} color="#94a3b8" />
+                             <Text style={styles.certMeta}>{course.level || 'All Levels'}</Text>
                           </View>
                       </View>
-                      <TouchableOpacity style={styles.viewCertBtn}>
+                      <View style={styles.viewCertBtn}>
                          <Ionicons name="arrow-forward-outline" size={20} color="#666" />
-                      </TouchableOpacity>
-                   </View>
+                      </View>
+                   </TouchableOpacity>
                 ))
              ) : (
                 <View style={styles.emptyActivity}>
@@ -277,7 +291,7 @@ const styles = StyleSheet.create({
   },
   statsOverlay: {
      flexDirection: 'row',
-     marginHorizontal: 40,
+     marginHorizontal: Platform.select({ web: 40, default: 20 }),
      marginTop: -45,
      backgroundColor: '#fff',
      borderRadius: 30,
