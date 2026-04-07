@@ -213,7 +213,7 @@ export default function Recommendations() {
     const recommended = msg.type === 'ai' ? extractRecommendedCourses(msg.text) : [];
     
     return (
-      <View style={[styles.msgContainer, msg.type === 'user' ? styles.userMsgCont : styles.aiMsgCont]}>
+      <View key={msg.id} style={[styles.msgContainer, msg.type === 'user' ? styles.userMsgCont : styles.aiMsgCont]}>
         {msg.type === 'ai' && (
           <LinearGradient colors={['#741ce9', '#9d50bb']} style={styles.aiAvatar}>
             <Ionicons name="sparkles" size={16} color="white" />
