@@ -72,7 +72,7 @@ export default function Recommendations() {
         }, {});
 
         const formattedCatalog = Object.entries(catalogString)
-          .map(([category, courses]) => `${category}:\n${courses.slice(0, 5).join('\n')}`)
+          .map(([category, courses]) => `${category} (${courses.length} courses):\n${courses.slice(0, 40).join('\n')}`)
           .join('\n\n');
 
         setAvailableCoursesText(formattedCatalog);
@@ -152,7 +152,17 @@ export default function Recommendations() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               contents: [{
-                parts: [{ text: `You are an AI at EduLearn. Catalog: ${availableCoursesText}. Respond to: ${userMessage}` }]
+                parts: [{ text: `You are the Senior EduTech Advisor at EduLearn. You have a deep catalog of courses: ${availableCoursesText}. 
+            
+            When a user asks for a recommendation or a career goal (like "fullstack developer" or "data scientist"), you MUST create a structured, multi-staged learning path using EXACT COURSE TITLES from the catalog. 
+            
+            Format your response clearly with:
+            1. An encouraging introduction.
+            2. A clear learning path (table or numbered list).
+            3. Why you chose those specific courses.
+            4. If a major topic is NOT in the catalog (e.g. if you can't find 'React'), say "Consider looking for [Topic] externally while you complete our related [Topic] course".
+            
+            User says: "${userMessage}"` }]
               }]
             }),
         });
@@ -160,11 +170,11 @@ export default function Recommendations() {
     };
 
     try {
-      let response = await callAI('gemini-1.5-flash');
+      let response = await callAI('gemini-2.5-flash');
 
       if (response.status === 404) {
-          console.warn("Flash model 404, trying gemini-pro fallback...");
-          response = await callAI('gemini-pro');
+          console.warn("Flash 2.5 fail, trying Gemini 3.1 fallback...");
+          response = await callAI('gemini-3.1-flash');
       }
 
       if (!response.ok) {
@@ -186,6 +196,11 @@ export default function Recommendations() {
 
   const scrollViewRef = useRef(null);
 
+  const extractRecommendedCourses = (text) => {
+    if (!text) return [];
+    return allCourses.filter(course => text.toLowerCase().includes(course.title.toLowerCase())).slice(0, 4);
+  };
+
   if (isInitializing) {
     return (
       <View style={[styles.container, styles.centered]}>
@@ -193,6 +208,55 @@ export default function Recommendations() {
       </View>
     );
   }
+
+  const renderMessageContent = (msg) => {
+    const recommended = msg.type === 'ai' ? extractRecommendedCourses(msg.text) : [];
+    
+    return (
+      <View style={[styles.msgContainer, msg.type === 'user' ? styles.userMsgCont : styles.aiMsgCont]}>
+        {msg.type === 'ai' && (
+          <LinearGradient colors={['#741ce9', '#9d50bb']} style={styles.aiAvatar}>
+            <Ionicons name="sparkles" size={16} color="white" />
+          </LinearGradient>
+        )}
+        <View style={msg.type === 'user' ? styles.userContainer : styles.aiContainer}>
+          <View style={[styles.msgBubble, msg.type === 'user' ? styles.userBubble : styles.aiBubble]}>
+            <Text style={[styles.msgText, msg.type === 'user' ? styles.userMsgText : styles.aiMsgText]}>{msg.text}</Text>
+          </View>
+          
+          {recommended.length > 0 && (
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false} 
+              style={styles.recommendedScroll}
+              contentContainerStyle={styles.recommendedContent}
+            >
+              {recommended.map(course => (
+                <TouchableOpacity 
+                  key={course._id || course.id} 
+                  style={styles.recCard}
+                  onPress={() => router.push(`/course/${course._id || course.id}`)}
+                >
+                  <View style={[styles.recIconBox, { backgroundColor: course.thumbnailColor || '#741ce9' }]}>
+                    <Ionicons name={course.thumbnail || 'book'} size={18} color="white" />
+                  </View>
+                  <View style={styles.recInfo}>
+                    <Text style={styles.recTitle} numberOfLines={1}>{course.title}</Text>
+                    <View style={styles.recMeta}>
+                      <Text style={styles.recLevel}>{course.level}</Text>
+                      <View style={styles.recDot} />
+                      <Text style={styles.recRating}>★ {course.rating}</Text>
+                    </View>
+                  </View>
+                  <Ionicons name="arrow-forward" size={14} color="#741ce9" />
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )}
+        </View>
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -237,25 +301,14 @@ export default function Recommendations() {
         </View>
 
         <View style={styles.mainContent}>
-          <ScrollView
-            style={styles.chatArea}
-            ref={scrollViewRef}
-            onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
-            contentContainerStyle={{ padding: 25 }}
-          >
-            {messages.map((msg) => (
-              <View key={msg.id} style={[styles.msgContainer, msg.type === 'user' ? styles.userMsgCont : styles.aiMsgCont]}>
-                {msg.type === 'ai' && (
-                  <LinearGradient colors={['#741ce9', '#9d50bb']} style={styles.aiAvatar}>
-                    <Ionicons name="sparkles" size={16} color="white" />
-                  </LinearGradient>
-                )}
-                <View style={[styles.msgBubble, msg.type === 'user' ? styles.userBubble : styles.aiBubble]}>
-                  <Text style={[styles.msgText, msg.type === 'user' ? styles.userMsgText : styles.aiMsgText]}>{msg.text}</Text>
-                </View>
-              </View>
-            ))}
-            {isLoading && (
+            <ScrollView
+              style={styles.chatArea}
+              ref={scrollViewRef}
+              onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+              contentContainerStyle={{ padding: 25 }}
+            >
+              {messages.map((msg) => renderMessageContent(msg))}
+              {isLoading && (
                <View style={styles.loadingBox}>
                   <ActivityIndicator size="small" color="#741ce9" />
                   <Text style={styles.loadingText}>Analyzing path...</Text>
@@ -453,6 +506,73 @@ const styles = StyleSheet.create({
   aiBubble: {
      backgroundColor: '#f1f5f9',
      borderBottomLeftRadius: 4,
+  },
+  userContainer: {
+    alignItems: 'flex-end',
+    maxWidth: '85%',
+  },
+  aiContainer: {
+    alignItems: 'flex-start',
+    maxWidth: '85%',
+  },
+  recommendedScroll: {
+    marginTop: 12,
+    flexDirection: 'row',
+  },
+  recommendedContent: {
+    paddingRight: 20,
+    gap: 12,
+  },
+  recCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    padding: 10,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    width: 240,
+    ...Platform.select({
+      web: { boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }
+    })
+  },
+  recIconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  recInfo: {
+    flex: 1,
+  },
+  recTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#1e293b',
+    marginBottom: 2,
+  },
+  recMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  recLevel: {
+    fontSize: 10,
+    color: '#64748b',
+    fontWeight: '700',
+  },
+  recDot: {
+    width: 3,
+    height: 3,
+    borderRadius: 1.5,
+    backgroundColor: '#cbd5e1',
+    marginHorizontal: 6,
+  },
+  recRating: {
+    fontSize: 10,
+    color: '#f59e0b',
+    fontWeight: '800',
   },
   msgText: {
      fontSize: 15,
