@@ -75,8 +75,36 @@ export default function Home() {
     );
   }
 
-  const continueLearningCourses = courses.slice(0, 3);
-  const exploreMoreCourses = courses.slice(3, 12);
+  const interestMap = {
+    'development': ['Programming', 'Web Development', 'Mobile Development', 'Game Development'],
+    'data-science': ['Data Science', 'Database'],
+    'ai': ['AI & LLMs', 'Data Science'],
+    'design': ['Design'],
+    'business': ['Business', 'Soft Skills'],
+    'finance': ['Finance & Fintech', 'Business'],
+    'engineering': ['Programming', 'Cloud & DevOps', 'Security'],
+    'math': ['Mathematics', 'Data Science'],
+  };
+
+  const getFilteredRecommendations = (allCourses, userInterests) => {
+    if (!userInterests || userInterests.length === 0) return allCourses.slice(0, 12);
+
+    const targetCategories = userInterests.flatMap(id => interestMap[id] || []);
+    
+    // Prioritize courses matching interests
+    const personalized = allCourses.filter(c => targetCategories.includes(c.category));
+    const others = allCourses.filter(c => !targetCategories.includes(c.category));
+
+    // Sort personalized by rating
+    personalized.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+
+    // Combine and return top picks
+    return [...personalized, ...others].slice(0, 15);
+  };
+
+  const filtered = getFilteredRecommendations(courses, user?.interests || []);
+  const continueLearningCourses = filtered.slice(0, 3);
+  const exploreMoreCourses = filtered.slice(3, 15);
   
   return (
     <View style={styles.container}>

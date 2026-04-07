@@ -92,7 +92,7 @@ export default function Profile() {
               <View style={styles.profileHeaderContent}>
                  <View style={styles.profilePicBox}>
                     <Image
-                      source={{ uri: 'https://ui-avatars.com/api/?name=User&background=741ce9&color=fff&size=150' }}
+                      source={{ uri: user?.profilePicture || `https://ui-avatars.com/api/?name=${userProfile.name.replace(' ', '+')}&background=741ce9&color=fff&size=150` }}
                       style={styles.profilePic}
                     />
                     <TouchableOpacity style={styles.editPicBtn}>

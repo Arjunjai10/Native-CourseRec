@@ -100,12 +100,23 @@ export default function Navbar({ showBackButton = false }) {
             style={styles.avatar} 
             onPress={() => router.push('/profile')}
           >
-            <LinearGradient
-              colors={['#1a1a1a', '#2a2a2a']}
-              style={styles.avatarInner}
-            >
-              <Ionicons name="person" size={14} color="#741ce9" />
-            </LinearGradient>
+            {Platform.OS === 'web' && (() => {
+              const userStr = localStorage.getItem('user');
+              if (userStr) {
+                 const u = JSON.parse(userStr);
+                 if (u.profilePicture) {
+                    return <Image source={{ uri: u.profilePicture }} style={{ width: '100%', height: '100%' }} />;
+                 }
+              }
+              return (
+                <LinearGradient
+                  colors={['#1a1a1a', '#2a2a2a']}
+                  style={styles.avatarInner}
+                >
+                  <Ionicons name="person" size={14} color="#741ce9" />
+                </LinearGradient>
+              );
+            })()}
           </TouchableOpacity>
         </View>
       </View>

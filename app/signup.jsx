@@ -14,10 +14,14 @@ import { useRouter } from 'expo-router';
 import { authAPI } from './utils/api';
 
 const INTERESTS = [
+  { id: 'development', label: 'Development', icon: 'code-slash' },
   { id: 'data-science', label: 'Data Science', icon: 'analytics' },
+  { id: 'ai', label: 'Artificial Intelligence', icon: 'sparkles' },
   { id: 'design', label: 'Design', icon: 'color-palette' },
   { id: 'business', label: 'Business', icon: 'briefcase' },
-  { id: 'development', label: 'Development', icon: 'code-slash' },
+  { id: 'finance', label: 'Finance', icon: 'trending-up' },
+  { id: 'engineering', label: 'Engineering', icon: 'construct' },
+  { id: 'math', label: 'Mathematics', icon: 'infinite' },
 ];
 
 export default function SignUp() {

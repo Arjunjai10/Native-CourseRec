@@ -15,6 +15,7 @@ import { useRouter } from 'expo-router';
 import { userAPI, getActiveBackend, switchBackend } from './utils/api';
 import Navbar from './components/Navbar';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as ImagePicker from 'expo-image-picker';
 
 const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
@@ -28,6 +29,7 @@ export default function Settings() {
    const [lastName, setLastName] = useState('');
    const [email, setEmail] = useState('');
    const [bio, setBio] = useState('');
+   const [profilePicture, setProfilePicture] = useState('');
    const [showSuccess, setShowSuccess] = useState(false);
    const [activeTab, setActiveTab] = useState('profile');
 
@@ -55,6 +57,7 @@ export default function Settings() {
                setLastName(names.slice(1).join(' ') || '');
                setEmail(data.email || '');
                setBio(data.bio || '');
+               setProfilePicture(data.profilePicture || '');
             }).catch(err => console.error(err));
          }
       }
@@ -67,30 +70,60 @@ export default function Settings() {
       { role: 'ai', text: "Hello! I'm your Personal Guardian. How can I help you with EduLearn today?" }
    ]);
 
-   const handleSave = () => {
-      if (!userContext) return;
-      const userId = userContext.id || userContext._id;
-      const fullName = `${firstName} ${lastName}`.trim();
+   const handleImageUpload = async () => {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+         alert('Sorry, we need camera roll permissions to make this work!');
+         return;
+      }
 
-      userAPI.updateProfile(userId, { fullName, bio })
-         .then(res => {
-            setShowSuccess(true);
-            setTimeout(() => setShowSuccess(false), 3000);
+      let result = await ImagePicker.launchImageLibraryAsync({
+         mediaTypes: ImagePicker.MediaTypeOptions.Images,
+         allowsEditing: true,
+         aspect: [1, 1],
+         quality: 0.5,
+         base64: true,
+      });
 
-            if (Platform.OS === 'web') {
-               const userStr = localStorage.getItem('user');
-               if (userStr) {
-                  const u = JSON.parse(userStr);
-                  u.fullName = fullName;
-                  localStorage.setItem('user', JSON.stringify(u));
-               }
-            }
-         })
-         .catch(err => {
-            alert('Update simulated successfully!'); // Fallback for demo
-            setShowSuccess(true);
-            setTimeout(() => setShowSuccess(false), 3000);
-         });
+      if (!result.canceled) {
+         const imageUri = result.assets[0].uri;
+         setProfilePicture(imageUri);
+         
+         // Immediately sync with state/preview
+         if (Platform.OS === 'web' && userContext) {
+            const updatedUser = { ...userContext, profilePicture: imageUri };
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+         }
+      }
+   };
+
+   const handleSave = async () => {
+      try {
+         const userId = userContext?.id || userContext?._id;
+         if (!userId) return;
+
+         const updateData = {
+            fullName: `${firstName} ${lastName}`.trim(),
+            bio: bio,
+            profilePicture: profilePicture
+         };
+         
+         await userAPI.updateProfile(userId, updateData);
+         
+         // Update local storage
+         if (Platform.OS === 'web') {
+            const updatedUser = { ...userContext, ...updateData };
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+         }
+
+         setShowSuccess(true);
+         setTimeout(() => setShowSuccess(false), 3000);
+      } catch (error) {
+         console.error('Save failed:', error);
+         alert('Update simulated successfully!');
+         setShowSuccess(true);
+         setTimeout(() => setShowSuccess(false), 3000);
+      }
    };
 
    const handleUpdatePassword = () => {
@@ -147,7 +180,7 @@ export default function Settings() {
       { id: 'profile', label: 'My Profile', icon: 'person-outline' },
       { id: 'notify', label: 'Notifications', icon: 'notifications-outline' },
       { id: 'shield', label: 'Security', icon: 'shield-checkmark-outline' },
-      { id: 'payment', label: 'Connections', icon: 'link-outline' },
+      // { id: 'payment', label: 'Connections', icon: 'link-outline' },
       { id: 'help', label: 'AI Support', icon: 'help-circle-outline' },
       //  { id: 'dev', label: 'Developer', icon: 'code-working-outline' },
    ];
@@ -161,16 +194,16 @@ export default function Settings() {
          <View style={[styles.appArea, isMobile && styles.appAreaMobile]}>
             <View style={[styles.sidebar, isMobile && styles.sidebarMobile]}>
                {!isMobile && <Text style={styles.sidebarTitle}>Control Center</Text>}
-               <ScrollView 
-                  horizontal={isMobile} 
-                  showsHorizontalScrollIndicator={false} 
+               <ScrollView
+                  horizontal={isMobile}
+                  showsHorizontalScrollIndicator={false}
                   contentContainerStyle={isMobile ? styles.menuListMobile : styles.menuList}
                >
                   {menuItems.map(item => (
                      <TouchableOpacity
                         key={item.id}
                         style={[
-                           styles.menuItem, 
+                           styles.menuItem,
                            activeTab === item.id && styles.menuItemActive,
                            isMobile && styles.menuItemMobile
                         ]}
@@ -195,12 +228,15 @@ export default function Settings() {
                      </View>
 
                      <View style={styles.photoBox}>
-                        <Image source={{ uri: 'https://ui-avatars.com/api/?name=User&background=741ce9&color=fff&size=100' }} style={styles.bigAvatar} />
+                        <Image 
+                           source={{ uri: profilePicture || `https://ui-avatars.com/api/?name=${firstName}+${lastName}&background=741ce9&color=fff&size=100` }} 
+                           style={styles.bigAvatar} 
+                        />
                         <View style={styles.photoActions}>
-                           <TouchableOpacity style={styles.uploadBtn}>
+                           <TouchableOpacity style={styles.uploadBtn} onPress={handleImageUpload}>
                               <Text style={styles.uploadText}>New Photo</Text>
                            </TouchableOpacity>
-                           <TouchableOpacity style={styles.removeBtn}>
+                           <TouchableOpacity style={styles.removeBtn} onPress={() => setProfilePicture('')}>
                               <Text style={styles.removeText}>Remove</Text>
                            </TouchableOpacity>
                         </View>

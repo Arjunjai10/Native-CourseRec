@@ -91,6 +91,33 @@ const categories = {
     { name: 'Godot', color: '#478cbf', icon: 'game-controller' },
     { name: 'Game Design', color: '#8b5cf6', icon: 'sparkles' },
   ],
+  'AI & LLMs': [
+    { name: 'ChatGPT & LLMs', color: '#74aa9c', icon: 'sparkles' },
+    { name: 'Prompt Engineering', color: '#ff9900', icon: 'terminal' },
+    { name: 'NLP', color: '#3b82f6', icon: 'language' },
+    { name: 'Computer Vision', color: '#ef4444', icon: 'eye' },
+    { name: 'Generative AI', color: '#8b5cf6', icon: 'color-palette' },
+  ],
+  'Finance & Fintech': [
+    { name: 'Stock Market', color: '#10b981', icon: 'trending-up' },
+    { name: 'Cryptocurrency', color: '#f59e0b', icon: 'logo-bitcoin' },
+    { name: 'Personal Finance', color: '#3b82f6', icon: 'wallet' },
+    { name: 'Accounting', color: '#6b7280', icon: 'calculator' },
+    { name: 'Fintech Fundamentals', color: '#4ade80', icon: 'card' },
+  ],
+  'Soft Skills': [
+    { name: 'Leadership', color: '#1e40af', icon: 'people' },
+    { name: 'Communication', color: '#fb923c', icon: 'chatbubbles' },
+    { name: 'Time Management', color: '#6366f1', icon: 'time' },
+    { name: 'Public Speaking', color: '#e11d48', icon: 'mic' },
+    { name: 'Emotional Intelligence', color: '#ec4899', icon: 'heart' },
+  ],
+  'Mathematics': [
+    { name: 'Calculus', color: '#0f172a', icon: 'infinite' },
+    { name: 'Linear Algebra', color: '#312e81', icon: 'grid' },
+    { name: 'Statistics', color: '#3730a3', icon: 'stats-chart' },
+    { name: 'Geometry', color: '#4338ca', icon: 'triangle' },
+  ],
 };
 
 const instructors = [
@@ -116,7 +143,7 @@ function generateCourses() {
 
   for (const [category, topics] of Object.entries(categories)) {
     for (const topic of topics) {
-      const numCourses = Math.floor(Math.random() * 8) + 5;
+      const numCourses = Math.floor(Math.random() * 10) + 10;
       
       for (let i = 0; i < numCourses; i++) {
         const level = levels[Math.floor(Math.random() * levels.length)];

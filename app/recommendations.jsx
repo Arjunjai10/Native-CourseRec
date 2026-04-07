@@ -33,7 +33,7 @@ export default function Recommendations() {
     {
       id: Date.now(),
       type: 'ai',
-      text: "Hello! I'm your EduLearn AI assistant. I can help you discover courses in programming, design, data science, business, and more. What would you like to learn today?",
+      text: "Hello! I'm your EduLearn AI assistant. I'm ready to help you discover the perfect courses for your journey. What would you like to learn today?",
     },
   ]);
 
@@ -76,6 +76,19 @@ export default function Recommendations() {
           .join('\n\n');
 
         setAvailableCoursesText(formattedCatalog);
+
+        // Personalize the first message if it's a new session and user has interests
+        if (!activeSessionId) {
+          const interestsStr = (results[1].data.interests || []).join(', ');
+          if (interestsStr) {
+            setMessages(prev => [
+              {
+                ...prev[0],
+                text: `Hello ${results[1].data.fullName.split(' ')[0]}! I see you're interested in ${interestsStr}. How can I help you build your custom learning path today?`
+              }
+            ]);
+          }
+        }
 
       } catch (error) {
         console.error("Failed to initialize assistant:", error);
@@ -154,12 +167,14 @@ export default function Recommendations() {
               contents: [{
                 parts: [{ text: `You are the Senior EduTech Advisor at EduLearn. You have a deep catalog of courses: ${availableCoursesText}. 
             
-            When a user asks for a recommendation or a career goal (like "fullstack developer" or "data scientist"), you MUST create a structured, multi-staged learning path using EXACT COURSE TITLES from the catalog. 
+            The user has explicitly selected these career interests: ${user?.interests?.join(', ') || 'Not specified yet'}.
+            
+            When a user asks for a recommendation or a career goal (like "fullstack developer" or "data scientist"), you MUST create a structured, multi-staged learning path using EXACT COURSE TITLES from the catalog that align with their interests where possible. 
             
             Format your response clearly with:
-            1. An encouraging introduction.
+            1. An encouraging introduction mentioning their known interests if relevant.
             2. A clear learning path (table or numbered list).
-            3. Why you chose those specific courses.
+            3. Why you chose those specific courses based on their profile.
             4. If a major topic is NOT in the catalog (e.g. if you can't find 'React'), say "Consider looking for [Topic] externally while you complete our related [Topic] course".
             
             User says: "${userMessage}"` }]
