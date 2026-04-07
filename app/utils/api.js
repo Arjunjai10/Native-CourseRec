@@ -54,9 +54,12 @@ export const authAPI = {
 export const userAPI = {
     getProfile: (userId) => api.get(`/users/profile/${userId}`),
     updateProfile: (userId, data) => api.put(`/users/profile/${userId}`, data),
+    updatePassword: (userId, data) => api.put(`/users/security/${userId}`, data),
+    updateNotifications: (userId, data) => api.put(`/users/notifications/${userId}`, data),
     enroll: (courseId) => api.post(`/users/enroll/${courseId}`),
     complete: (courseId) => api.post(`/users/complete/${courseId}`),
     updateProgress: (hours) => api.post('/users/progress', { hours }),
+    submitSupport: (data) => api.post('/users/support', data),
 };
 
 export const courseAPI = {
