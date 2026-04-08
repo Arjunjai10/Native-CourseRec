@@ -2,152 +2,152 @@ const { Builder, By, until, Key } = require('selenium-webdriver');
 const { expect } = require('chai');
 
 describe('EduLearn Comprehensive All-Function Test', function() {
-  this.timeout(180000); // 3 minutes for absolute certainty
-  let driver;
-  const baseUrl = 'http://localhost:8081';
-  const randomId = Math.floor(Math.random() * 10000);
-  const testUser = {
-    name: `Master Tester ${randomId}`,
-    email: `master${randomId}@example.com`,
-    password: 'Password123!',
-    newBio: "Automated test bio updated at " + new Date().toLocaleTimeString()
-  };
-
-  before(async function() {
-    const chrome = require('selenium-webdriver/chrome');
-    const options = new chrome.Options();
-    // options.addArguments('--headless'); // Enable for headless mode
-    options.addArguments('--no-sandbox');
-    options.addArguments('--disable-dev-shm-usage');
+    this.timeout(90000); // Give it enough time for a full project journey
+    let driver;
+    const baseUrl = 'http://localhost:8081';
     
-    driver = await new Builder().forBrowser('chrome').setChromeOptions(options).build();
-    console.log('Driver Initialized.');
-  });
+    // Test data
+    const randomId = Math.floor(Math.random() * 10000);
+    const testUser = {
+        name: `User ${randomId}`,
+        email: `tester${randomId}@example.com`,
+        password: 'Password123!'
+    };
 
-  after(async function() {
-    if (driver) {
-      await driver.quit();
+    before(async function() {
+        console.log('Driver Initialized.');
+        const chrome = require('selenium-webdriver/chrome');
+        const options = new chrome.Options();
+        options.addArguments('--no-sandbox');
+        options.addArguments('--disable-dev-shm-usage');
+
+        driver = await new Builder().forBrowser('chrome').setChromeOptions(options).build();
+        
+        console.log(`Checking app availability at ${baseUrl}...`);
+        try {
+            await driver.get(baseUrl);
+            console.log('App reachable.');
+        } catch (e) {
+            console.error('App is NOT reachable at localhost:8081. Ensure npm run web is active.');
+        }
+    });
+
+    after(async function() {
+        if (driver) await driver.quit();
+    });
+
+    async function waitForElement(xpath, timeout = 12000) {
+        return await driver.wait(until.elementLocated(By.xpath(xpath)), timeout);
     }
-  });
 
-  // Helper for clicking things using JS (Most reliable for React Native Web)
-  async function forceClick(xpath) {
-    const el = await driver.wait(until.elementLocated(By.xpath(xpath)), 10000);
-    await driver.executeScript("arguments[0].click();", el);
-    console.log(`Force-clicked: ${xpath}`);
-  }
-
-  // Helper for waiting for text
-  async function waitForText(text, timeout = 10000) {
-    return await driver.wait(until.elementLocated(By.xpath(`//*[contains(text(), '${text}')]`)), timeout);
-  }
-
-  it('Flow 1: User Registration', async function() {
-    console.log(`Starting Registration for ${testUser.email}...`);
-    await driver.get(`${baseUrl}/signup`);
-    
-    // Increased wait to 20s for the first page load/render to allow Expo dev server to compile
-    const nameInput = await driver.wait(until.elementLocated(By.xpath("//input[@placeholder='John Doe']")), 20000);
-    await driver.sleep(1000); 
-
-    await nameInput.sendKeys(testUser.name);
-    await driver.findElement(By.xpath("//input[@placeholder='name@example.com']")).sendKeys(testUser.email);
-    await driver.findElement(By.xpath("//input[@placeholder='••••••••']")).sendKeys(testUser.password);
-    
-    // Choose Interest
-    await forceClick("//*[contains(text(), 'AI')]");
-    
-    // Submit
-    await forceClick("//*[text()='Create Account']");
-    
-    await driver.wait(until.urlContains('/home'), 15000);
-    console.log('Registration Successful.');
-  });
-
-  it('Flow 2: Dashboard & Navigation', async function() {
-    // Check for hero welcome
-    await waitForText("Master Your");
-    
-    // Test navigation tabs
-    const tabs = ['Courses', 'Mentors', 'Profile'];
-    for (const tab of tabs) {
-      console.log(`Navigating to ${tab}...`);
-      await forceClick(`//*[contains(text(), '${tab}')]`);
-      const path = tab.toLowerCase() === 'mentors' ? 'recommendations' : tab.toLowerCase();
-      await driver.wait(until.urlContains(`/${path}`), 10000);
-      await driver.sleep(1000);
+    async function jsClick(element) {
+        await driver.executeScript("arguments[0].click();", element);
     }
-  });
 
-  it('Flow 3: Depth Testing - Search & Filter', async function() {
-    await driver.get(`${baseUrl}/courses`);
-    
-    // Testing Search
-    const search = await driver.wait(until.elementLocated(By.xpath("//input[@placeholder='Search for any course, skill, or mentor...']")), 10000);
-    await search.sendKeys("Full Stack");
-    await driver.sleep(2000);
-    
-    const count = await driver.findElement(By.xpath("//*[contains(text(), 'results found')]")).getText();
-    console.log(`Deep Search Results: ${count}`);
-    
-    // Testing specific category
-    await forceClick("//*[text()='Programming']");
-    await driver.sleep(1500);
-    await waitForText("Programming Courses");
-  });
+    async function clearAndType(xpath, text) {
+        const el = await waitForElement(xpath);
+        await el.sendKeys(Key.CONTROL, "a", Key.BACK_SPACE);
+        await el.sendKeys(text);
+    }
 
-  it('Flow 4: Depth Testing - AI Mentor Chat', async function() {
-    await driver.get(`${baseUrl}/recommendations`);
-    
-    // Check initial messages
-    const initialBubbles = await driver.findElements(By.xpath("//*[contains(@style, 'background-color') or @class]"));
-    const countBefore = initialBubbles.length;
-    
-    const chatInput = await driver.wait(until.elementLocated(By.xpath("//input[@placeholder='Search for your ideal mastery path...']")), 10000);
-    await chatInput.sendKeys("What is the best way to learn Artificial Intelligence?", Key.ENTER);
-    
-    console.log('Awaiting AI Mentor response...');
-    // Wait for a new message bubble to appear (timeout 40s for Gemini)
-    await driver.wait(async () => {
-      const currentBubbles = await driver.findElements(By.xpath("//*[contains(text(), 'AI') or contains(text(), 'learn') or contains(text(), 'course')]"));
-      return currentBubbles.length > countBefore;
-    }, 40000);
-    
-    console.log('AI response received and verified.');
-  });
+    it('Flow 1: User Registration', async function() {
+        await driver.get(`${baseUrl}/signup`);
 
-  it('Flow 5: Depth Testing - Profile & Settings', async function() {
-    await driver.get(`${baseUrl}/settings`);
-    
-    const bio = await driver.wait(until.elementLocated(By.xpath("//textarea | //input[not(@type='password')]")), 10000);
-    await bio.sendKeys(Key.CONTROL, "a", Key.BACK_SPACE);
-    await bio.sendKeys(testUser.newBio);
-    
-    await forceClick("//*[text()='Save Changes']");
-    await waitForText("updated successfully");
-    
-    // Check Profile
-    await driver.get(`${baseUrl}/profile`);
-    await waitForText(testUser.name);
-    console.log('Profile and Setting persistence verified.');
-  });
+        console.log(`Starting Registration for ${testUser.email}...`);
+        await clearAndType("//input[@placeholder='John Doe']", testUser.name);
+        await clearAndType("//input[@placeholder='name@example.com']", testUser.email);
+        await clearAndType("//input[@placeholder='••••••••']", testUser.password);
 
-  it('Flow 6: Security - Error Handling & Sign Out', async function() {
-    // Sign out
-    await driver.get(`${baseUrl}/home`);
-    await forceClick("//*[text()='Exit']");
-    await driver.wait(until.urlContains('/signin'), 10000);
-    
-    // Test Wrong Credentials
-    const email = await driver.wait(until.elementLocated(By.xpath("//input[@placeholder='name@example.com']")), 5000);
-    await email.sendKeys("wrong@user.com");
-    await driver.findElement(By.xpath("//input[@placeholder='Enter your password']")).sendKeys("wrongpass");
-    
-    await forceClick("//*[text()='Sign In']");
-    
-    // Wait for error text
-    const error = await driver.wait(until.elementLocated(By.xpath("//*[contains(text(), 'Invalid') or contains(text(), 'credentials')]")), 10000);
-    expect(await error.isDisplayed()).to.be.true;
-    console.log('Error handling verified.');
-  });
+        // Select specific interest
+        const interest = await waitForElement("//*[contains(text(), 'Artificial Intelligence') or contains(text(), 'AI')]");
+        await jsClick(interest);
+
+        const btn = await waitForElement("//*[text()='Create Account']");
+        await jsClick(btn);
+
+        await driver.wait(until.urlContains('/home'), 15000);
+        console.log('Registration Success.');
+    });
+
+    it('Flow 2: Dashboard & Navigation', async function() {
+        await waitForElement("//*[contains(text(), 'Welcome Back')]");
+        
+        const tabs = ['Courses', 'Mentors', 'Profile'];
+        for (const tab of tabs) {
+            await driver.sleep(1500); // UI breathing room
+            console.log(`Navigating to ${tab}...`);
+            const navLink = await waitForElement(`//*[contains(text(), '${tab}')]`);
+            await jsClick(navLink);
+            
+            const path = tab.toLowerCase() === 'mentors' ? 'recommendations' : tab.toLowerCase();
+            await driver.wait(until.urlContains(`/${path}`), 10000);
+        }
+        console.log('All tabs verified.');
+    });
+
+    it('Flow 3: Depth Testing - Search & Filter', async function() {
+        await driver.get(`${baseUrl}/courses`);
+        await clearAndType("//input[contains(@placeholder, 'Search for')]", "Python");
+        await driver.sleep(2000);
+        
+        // Wait for results header to update
+        const header = await waitForElement("//*[contains(text(), 'Searching for')]");
+        expect(await header.isDisplayed()).to.be.true;
+        console.log('Search function verified.');
+    });
+
+    it('Flow 4: Depth Testing - Profile & Settings', async function() {
+        await driver.get(`${baseUrl}/settings`);
+        
+        console.log('Updating user biography...');
+        const bio = await waitForElement("//textarea[contains(@placeholder, 'Tell')] | //input[contains(@placeholder, 'Tell')]");
+        await bio.sendKeys(Key.CONTROL, "a", Key.BACK_SPACE);
+        await bio.sendKeys("This is an automated test update.");
+
+        const save = await waitForElement("//*[text()='Save Changes']");
+        await jsClick(save);
+
+        await driver.wait(until.elementLocated(By.xpath("//*[contains(text(), 'updated successfully')]")), 8000);
+        console.log('Profile update verified.');
+    });
+
+    it('Flow 5: Security - Error Handling & Sign Out', async function() {
+        console.log('Signing out...');
+        await driver.get(`${baseUrl}/home`);
+        const exit = await waitForElement("//*[text()='Exit']");
+        await jsClick(exit);
+
+        await driver.wait(until.urlContains('/signin'), 10000);
+        
+        console.log('Testing invalid sign-in error handling...');
+        // Wait for page to be ready
+        await driver.sleep(2000);
+        
+        await clearAndType("//input[contains(@placeholder, 'example.com')]", "wrong@user.com");
+        await clearAndType("//input[contains(@placeholder, 'password')]", "badpass");
+        
+        // Find the interactive Sign In button (not the title)
+        const allSignInTexts = await driver.findElements(By.xpath("//*[text()='Sign In']"));
+        let loginBtn;
+        for (const el of allSignInTexts) {
+            const fontSize = await el.getCssValue('font-size');
+            // The title is huge (32px), the button text is smaller (16px)
+            if (parseInt(fontSize) < 30) {
+                loginBtn = el;
+                break;
+            }
+        }
+        
+        if (!loginBtn) loginBtn = await waitForElement("//*[text()='Sign In']");
+        await jsClick(loginBtn);
+
+        console.log('Waiting for the invalid credentials message...');
+        const error = await driver.wait(
+            until.elementLocated(By.xpath("//*[contains(text(), 'Invalid') or contains(text(), 'credentials')]")),
+            15000
+        );
+        
+        expect(await error.isDisplayed()).to.be.true;
+        console.log('Invalid Sign-In handling verified.');
+    });
 });

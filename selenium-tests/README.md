@@ -41,12 +41,6 @@ The following packages have been added to `devDependencies`:
     - Tab Navigation (Home, Courses, Mentors, Profile)
     - Settings updates (Bio change)
     - Logout flow
-- `selenium-tests/deep_features.test.js`: Detailed functional testing:
-    - AI Mentor Chat (Verifying Gemini API response)
-    - Course Search (Real-time filtering)
-    - Category Filtering
-    - Course Detail Navigation
-    - Profile Statistics
 
 ## Best Practices for Selection
 
