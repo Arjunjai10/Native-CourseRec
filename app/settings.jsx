@@ -18,7 +18,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
 
 const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
 export default function Settings() {
    const router = useRouter();
@@ -210,7 +210,7 @@ export default function Settings() {
                         onPress={() => setActiveTab(item.id)}
                      >
                         <View style={[styles.menuIconBox, activeTab === item.id && styles.menuIconBoxActive]}>
-                           <Ionicons name={item.icon} size={18} color={activeTab === item.id ? '#741ce9' : '#64748b'} />
+                           <Ionicons name={item.icon} size={18} color={activeTab === item.id ? '#7C3AED' : '#64748b'} />
                         </View>
                         {!isMobile && <Text style={[styles.menuText, activeTab === item.id && styles.menuTextActive]}>{item.label}</Text>}
                         {isMobile && activeTab === item.id && <Text style={[styles.menuText, styles.menuTextActive]}>{item.label}</Text>}
@@ -354,7 +354,7 @@ export default function Settings() {
                         </View>
 
                         <TouchableOpacity style={styles.saveBtn} onPress={handleUpdatePassword}>
-                           <LinearGradient colors={['#741ce9', '#9d50bb']} style={styles.saveGradient}>
+                           <LinearGradient colors={['#7C3AED', '#3B82F6']} style={styles.saveGradient}>
                               <Text style={styles.saveText}>Update Password</Text>
                            </LinearGradient>
                         </TouchableOpacity>
@@ -398,7 +398,7 @@ export default function Settings() {
                      </View>
 
                      <View style={styles.supportBox}>
-                        <LinearGradient colors={['#741ce9', '#9d50bb']} style={styles.supportGradient}>
+                        <LinearGradient colors={['#7C3AED', '#3B82F6']} style={styles.supportGradient}>
                            <Ionicons name="sparkles" size={40} color="#fff" />
                            <Text style={styles.supportHeroText}>How can I help you today?</Text>
                            <Text style={styles.supportSubText}>Explain your problem and our AI will troubleshoot in real-time.</Text>
@@ -421,7 +421,7 @@ export default function Settings() {
                                  onSubmitEditing={handleSupportChat}
                               />
                               <TouchableOpacity style={styles.sendIconBox} onPress={handleSupportChat}>
-                                 <Ionicons name="send" size={20} color="#741ce9" />
+                                 <Ionicons name="send" size={20} color="#7C3AED" />
                               </TouchableOpacity>
                            </View>
                         </View>
@@ -437,7 +437,7 @@ export default function Settings() {
                      </View>
 
                      <View style={styles.activeInfoCard}>
-                        <Ionicons name="server" size={24} color="#741ce9" />
+                        <Ionicons name="server" size={24} color="#7C3AED" />
                         <View>
                            <Text style={styles.activeLabel}>CURRENTLY ACTIVE BACKEND</Text>
                            <Text style={styles.activeValue}>{currentBackend}</Text>
@@ -601,7 +601,7 @@ const styles = StyleSheet.create({
       gap: 12,
    },
    uploadBtn: {
-      backgroundColor: '#0a0a0a',
+      backgroundColor: '#7C3AED',
       paddingHorizontal: 20,
       paddingVertical: 12,
       borderRadius: 14,
@@ -750,8 +750,8 @@ const styles = StyleSheet.create({
       gap: 10,
    },
    switchOptionActive: {
-      backgroundColor: '#0a0a0a',
-      borderColor: '#0a0a0a',
+      backgroundColor: '#7C3AED',
+      borderColor: '#7C3AED',
    },
    switchOptionText: {
       fontSize: 15,
@@ -855,7 +855,7 @@ const styles = StyleSheet.create({
    connBtnText: {
       fontSize: 12,
       fontWeight: '700',
-      color: '#741ce9',
+      color: '#7C3AED',
    },
    supportBox: {
       backgroundColor: '#f8fafc',
@@ -901,7 +901,7 @@ const styles = StyleSheet.create({
       borderColor: '#e2e8f0',
    },
    supportUserMsg: {
-      backgroundColor: '#741ce9',
+      backgroundColor: '#7C3AED',
       alignSelf: 'flex-end',
    },
    supportMsgText: {

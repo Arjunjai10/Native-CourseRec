@@ -147,7 +147,7 @@ export default function Courses() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#F8FAFC',
   },
   centered: {
     justifyContent: 'center',
@@ -165,12 +165,12 @@ const styles = StyleSheet.create({
      paddingHorizontal: 20,
      paddingVertical: 14,
      borderRadius: 24,
-     borderWidth: 1,
-     borderColor: '#e2e8f0',
+     borderWidth: 1.5,
+     borderColor: '#E2E8F0',
      marginBottom: 20,
      ...Platform.select({
         web: {
-           boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
+           boxShadow: '0 2px 8px rgba(124, 58, 237, 0.06)',
            outlineStyle: 'none',
         }
      })
@@ -196,8 +196,8 @@ const styles = StyleSheet.create({
      borderColor: '#e2e8f0',
   },
   categoryPillActive: {
-     backgroundColor: '#0a0a0a',
-     borderColor: '#0a0a0a',
+     backgroundColor: '#7C3AED',
+     borderColor: '#7C3AED',
   },
   categoryText: {
      fontSize: 14,
@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
   courseCategory: {
      fontSize: 10,
      fontWeight: 'bold',
-     color: '#741ce9',
+     color: '#7C3AED',
      textTransform: 'uppercase',
      marginBottom: 4,
   },
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
   detailsText: {
      fontSize: 11,
      fontWeight: '800',
-     color: '#741ce9',
+     color: '#7C3AED',
      textTransform: 'uppercase',
   },
   emptyState: {

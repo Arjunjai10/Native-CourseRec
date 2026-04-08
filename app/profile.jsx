@@ -86,13 +86,13 @@ export default function Profile() {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.headerSection}>
            <LinearGradient
-             colors={['#4f46e5', '#3b82f6']}
+             colors={['#7C3AED', '#3B82F6']}
              style={styles.headerGradient}
            >
               <View style={styles.profileHeaderContent}>
                  <View style={styles.profilePicBox}>
                     <Image
-                      source={{ uri: user?.profilePicture || `https://ui-avatars.com/api/?name=${userProfile.name.replace(' ', '+')}&background=741ce9&color=fff&size=150` }}
+                      source={{ uri: user?.profilePicture || `https://ui-avatars.com/api/?name=${userProfile.name.replace(' ', '+')}&background=7C3AED&color=fff&size=150` }}
                       style={styles.profilePic}
                     />
                     <TouchableOpacity style={styles.editPicBtn}>
@@ -133,7 +133,7 @@ export default function Profile() {
              <View style={styles.sectionHead}>
                 <Text style={styles.sectionTitle}>About Me</Text>
                 <TouchableOpacity onPress={() => router.push('/settings')}>
-                  <Ionicons name="create-outline" size={20} color="#741ce9" />
+                  <Ionicons name="create-outline" size={20} color="#7C3AED" />
                 </TouchableOpacity>
              </View>
              <Text style={styles.bioText}>
@@ -143,7 +143,7 @@ export default function Profile() {
 
           <View style={styles.section}>
               <View style={styles.sectionHead}>
-                 <Ionicons name="star" size={20} color="#741ce9" />
+                 <Ionicons name="star" size={20} color="#7C3AED" />
                  <Text style={styles.sectionTitle}>My Interests</Text>
               </View>
              <View style={styles.interestsGrid}>
@@ -158,7 +158,7 @@ export default function Profile() {
           <View style={styles.section}>
               <View style={styles.sectionHead}>
                  <View style={styles.sectionTitleRow}>
-                    <Ionicons name="bookmark" size={20} color="#741ce9" />
+                    <Ionicons name="bookmark" size={20} color="#7C3AED" />
                     <Text style={styles.sectionTitle}>Saved Recommendations</Text>
                  </View>
                  <TouchableOpacity onPress={() => router.push('/courses')}>
@@ -170,7 +170,7 @@ export default function Profile() {
                 userProfile.recentCertificates.map((course, index) => (
                    <TouchableOpacity key={index} style={styles.certificateCard} onPress={() => router.push(`/course/${course._id || course.id}`)}>
                       <View style={styles.certIcon}>
-                         <Ionicons name="book" size={24} color="#741ce9" />
+                         <Ionicons name="book" size={24} color="#7C3AED" />
                       </View>
                       <View style={styles.certInfo}>
                          <Text style={styles.certTitle}>{course.title || 'In Progress Course'}</Text>
@@ -362,24 +362,24 @@ const styles = StyleSheet.create({
      flexWrap: 'wrap',
   },
   interestPill: {
-     backgroundColor: '#f8fafc',
+     backgroundColor: '#F5F3FF',
      paddingHorizontal: 16,
      paddingVertical: 10,
      borderRadius: 14,
      marginRight: 10,
      marginBottom: 10,
      borderWidth: 1,
-     borderColor: '#f1f5f9',
+     borderColor: '#DDD6FE',
   },
   interestText: {
      fontSize: 14,
      fontWeight: '700',
-     color: '#475569',
+     color: '#7C3AED',
   },
   seeAllText: {
      fontSize: 14,
      fontWeight: 'bold',
-     color: '#741ce9',
+     color: '#7C3AED',
   },
   certificateCard: {
      flexDirection: 'row',
@@ -395,7 +395,7 @@ const styles = StyleSheet.create({
      width: 50,
      height: 50,
      borderRadius: 18,
-     backgroundColor: '#f3ebff',
+     backgroundColor: '#F5F3FF',
      justifyContent: 'center',
      alignItems: 'center',
      marginRight: 15,

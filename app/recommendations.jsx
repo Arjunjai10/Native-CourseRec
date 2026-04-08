@@ -150,64 +150,84 @@ export default function Recommendations() {
     setMessage('');
     setIsLoading(true);
 
-    if (!GEMINI_API_KEY || GEMINI_API_KEY === 'your_gemini_api_key_here') {
-      const aiResponse = "I need a valid Gemini API key to assist you. Please set EXPO_PUBLIC_GEMINI_API_KEY in your .env file.";
-      const finalMessages = [...updatedMessages, { id: Date.now() + 1, type: 'ai', text: aiResponse }];
-      setMessages(finalMessages);
+    const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
+
+    if (!apiKey || apiKey === 'your_gemini_api_key_here') {
+      setMessages([...updatedMessages, { id: Date.now() + 1, type: 'ai', text: "⚠️ No Gemini API key found. Please add EXPO_PUBLIC_GEMINI_API_KEY to your .env file and restart the server." }]);
       setIsLoading(false);
       return;
     }
 
-    const callAI = async (modelName) => {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
-        const resp = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{
-                parts: [{ text: `You are the Senior EduTech Advisor at EduLearn. You have a deep catalog of courses: ${availableCoursesText}. 
-            
-            The user has explicitly selected these career interests: ${user?.interests?.join(', ') || 'Not specified yet'}.
-            
-            When a user asks for a recommendation or a career goal (like "fullstack developer" or "data scientist"), you MUST create a structured, multi-staged learning path using EXACT COURSE TITLES from the catalog that align with their interests where possible. 
-            
-            Format your response clearly with:
-            1. An encouraging introduction mentioning their known interests if relevant.
-            2. A clear learning path (table or numbered list).
-            3. Why you chose those specific courses based on their profile.
-            4. If a major topic is NOT in the catalog (e.g. if you can't find 'React'), say "Consider looking for [Topic] externally while you complete our related [Topic] course".
-            
-            User says: "${userMessage}"` }]
-              }]
-            }),
-        });
-        return resp;
+    const systemPrompt = `You are the Senior EduTech Advisor at EduLearn. You have a deep catalog of courses: ${availableCoursesText}. 
+    
+The user has explicitly selected these career interests: ${user?.interests?.join(', ') || 'Not specified yet'}.
+
+When a user asks for a recommendation or a career goal (like "fullstack developer" or "data scientist"), create a structured, multi-staged learning path using course titles from the catalog that align with their interests where possible. 
+
+Format your response clearly with:
+1. An encouraging introduction mentioning their known interests if relevant.
+2. A clear learning path (numbered list).
+3. Why you chose those specific courses based on their profile.
+
+User says: "${userMessage}"`;
+
+    const tryModel = async (modelName) => {
+      // gemini-1.5-flash works on v1, newer models on v1beta
+      const apiVersion = modelName.includes('1.5') ? 'v1' : 'v1beta';
+      const url = `https://generativelanguage.googleapis.com/${apiVersion}/models/${modelName}:generateContent?key=${apiKey}`;
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: systemPrompt }] }]
+        }),
+      });
+      return resp;
     };
 
     try {
-      let response = await callAI('gemini-2.5-flash');
+      // gemini-1.5-flash first (free tier, stable), then 2.0-flash
+      const modelsToTry = ['gemini-1.5-flash', 'gemini-2.0-flash'];
+      let response = null;
+      let lastError = null;
 
-      if (response.status === 404) {
-          console.warn("Flash 2.5 fail, trying Gemini 3.1 fallback...");
-          response = await callAI('gemini-3.1-flash');
+      for (const model of modelsToTry) {
+        try {
+          response = await tryModel(model);
+          console.log(`[AI] ${model} responded with status: ${response.status}`);
+          if (response.ok) break;
+          const errBody = await response.clone().json();
+          lastError = errBody?.error?.message || `HTTP ${response.status}`;
+          console.warn(`[AI] ${model} failed: ${lastError}`);
+          response = null;
+        } catch (e) {
+          console.warn(`[AI] ${model} threw: ${e.message}`);
+          lastError = e.message;
+          response = null;
+        }
       }
 
-      if (!response.ok) {
-        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      if (!response || !response.ok) {
+        throw new Error(lastError || 'All AI models failed');
       }
 
       const data = await response.json();
-      const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm sorry, I'm having trouble right now.";
+      const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm sorry, I couldn't generate a response. Please try again.";
       const finalMessages = [...updatedMessages, { id: Date.now() + 1, type: 'ai', text: aiResponse }];
       setMessages(finalMessages);
       saveToHistory(finalMessages);
     } catch (error) {
-       console.error("AI Assistant Error:", error);
-       setMessages([...updatedMessages, { id: Date.now() + 1, type: 'ai', text: "The AI AI is unavailable right now. Please check if your API key is correctly enabled in Google AI Studio." }]);
+      console.error("AI Assistant Error:", error.message);
+      setMessages([...updatedMessages, { 
+        id: Date.now() + 1, 
+        type: 'ai', 
+        text: `⚠️ AI Error: ${error.message}. Please ensure your Gemini API key is enabled at aistudio.google.com.` 
+      }]);
     } finally {
-       setIsLoading(false);
+      setIsLoading(false);
     }
   };
+
 
   const scrollViewRef = useRef(null);
 
@@ -219,7 +239,7 @@ export default function Recommendations() {
   if (isInitializing) {
     return (
       <View style={[styles.container, styles.centered]}>
-        <ActivityIndicator size="large" color="#741ce9" />
+        <ActivityIndicator size="large" color="#7C3AED" />
       </View>
     );
   }
@@ -230,7 +250,7 @@ export default function Recommendations() {
     return (
       <View key={msg.id} style={[styles.msgContainer, msg.type === 'user' ? styles.userMsgCont : styles.aiMsgCont]}>
         {msg.type === 'ai' && (
-          <LinearGradient colors={['#741ce9', '#9d50bb']} style={styles.aiAvatar}>
+          <LinearGradient colors={['#7C3AED', '#3B82F6']} style={styles.aiAvatar}>
             <Ionicons name="sparkles" size={16} color="white" />
           </LinearGradient>
         )}
@@ -263,7 +283,7 @@ export default function Recommendations() {
                       <Text style={styles.recRating}>★ {course.rating}</Text>
                     </View>
                   </View>
-                  <Ionicons name="arrow-forward" size={14} color="#741ce9" />
+                  <Ionicons name="arrow-forward" size={14} color="#7C3AED" />
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -280,7 +300,7 @@ export default function Recommendations() {
         <View style={styles.sidebar}>
           <View style={styles.sidebarHeader}>
             <TouchableOpacity style={styles.newChatButton} onPress={handleNewChat}>
-              <LinearGradient colors={['#741ce9', '#9d50bb']} style={styles.newChatGradient}>
+              <LinearGradient colors={['#7C3AED', '#3B82F6']} style={styles.newChatGradient}>
                  <Ionicons name="add" size={20} color="white" />
                  <Text style={styles.newChatButtonText}>New Session</Text>
               </LinearGradient>
@@ -325,7 +345,7 @@ export default function Recommendations() {
               {messages.map((msg) => renderMessageContent(msg))}
               {isLoading && (
                <View style={styles.loadingBox}>
-                  <ActivityIndicator size="small" color="#741ce9" />
+                  <ActivityIndicator size="small" color="#7C3AED" />
                   <Text style={styles.loadingText}>Analyzing path...</Text>
                </View>
             )}
@@ -342,7 +362,7 @@ export default function Recommendations() {
                  onSubmitEditing={sendMessage}
                />
                <TouchableOpacity style={styles.sendBtn} onPress={sendMessage}>
-                 <LinearGradient colors={['#741ce9', '#9d50bb']} style={styles.sendGradient}>
+                 <LinearGradient colors={['#7C3AED', '#3B82F6']} style={styles.sendGradient}>
                     <Ionicons name="paper-plane" size={18} color="white" />
                  </LinearGradient>
                </TouchableOpacity>
@@ -357,7 +377,7 @@ export default function Recommendations() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#F8FAFC',
   },
   centered: {
     justifyContent: 'center',
@@ -433,7 +453,7 @@ const styles = StyleSheet.create({
      marginRight: 12,
   },
   chatDotActive: {
-     backgroundColor: '#741ce9',
+     backgroundColor: '#7C3AED',
   },
   chatItemText: {
     fontSize: 14,
@@ -441,7 +461,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   chatItemTextActive: {
-     color: '#0a0a0a',
+     color: '#1E293B',
   },
   emptyHistory: {
      fontSize: 12,
@@ -515,7 +535,7 @@ const styles = StyleSheet.create({
      borderRadius: 24,
   },
   userBubble: {
-     backgroundColor: '#0a0a0a',
+     backgroundColor: '#7C3AED',
      borderBottomRightRadius: 4,
   },
   aiBubble: {

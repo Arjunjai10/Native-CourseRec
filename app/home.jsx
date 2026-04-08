@@ -439,7 +439,7 @@ const styles = StyleSheet.create({
   wideCardCategory: {
     fontSize: 11,
     fontWeight: 'bold',
-    color: '#741ce9',
+    color: '#7C3AED',
     textTransform: 'uppercase',
     marginBottom: 4,
   },
@@ -457,7 +457,7 @@ const styles = StyleSheet.create({
   },
   recommendationText: {
     fontSize: 12,
-    color: '#741ce9',
+    color: '#7C3AED',
     fontWeight: '700',
   },
   courseGrid: {
