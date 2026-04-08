@@ -86,7 +86,7 @@ export default function Profile() {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.headerSection}>
            <LinearGradient
-             colors={['#741ce9', '#9d50bb']}
+             colors={['#4f46e5', '#3b82f6']}
              style={styles.headerGradient}
            >
               <View style={styles.profileHeaderContent}>

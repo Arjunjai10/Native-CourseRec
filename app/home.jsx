@@ -117,7 +117,7 @@ export default function Home() {
       >
         <View style={styles.heroSection}>
           <LinearGradient
-            colors={['#741ce9', '#9d50bb']}
+            colors={['#4f46e5', '#06b6d4']}
             style={styles.heroGradient}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}

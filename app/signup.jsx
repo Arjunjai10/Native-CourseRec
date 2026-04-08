@@ -72,7 +72,7 @@ export default function SignUp() {
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <LinearGradient
-          colors={['#9333EA', '#741ce9']}
+          colors={['#4f46e5', '#3b82f6']}
           style={styles.leftPanel}
         >
           <View style={styles.logoContainer}>

@@ -551,7 +551,7 @@ const styles = StyleSheet.create({
       marginRight: 15,
    },
    menuIconBoxActive: {
-      backgroundColor: '#f3ebff',
+      backgroundColor: '#eef2ff',
    },
    menuText: {
       fontSize: 15,

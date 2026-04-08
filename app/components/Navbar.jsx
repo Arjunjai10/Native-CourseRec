@@ -42,7 +42,7 @@ export default function Navbar({ showBackButton = false }) {
             activeOpacity={0.7}
           >
             <LinearGradient
-              colors={['#741ce9', '#9d50bb']}
+              colors={['#4f46e5', '#06b6d4']}
               style={styles.logoIcon}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
         elevation: 4,
       },
       web: {
-        boxShadow: '0 0 10px rgba(116, 28, 233, 0.2)',
+        boxShadow: '0 0 10px rgba(79, 70, 229, 0.2)',
       }
     }),
   },
