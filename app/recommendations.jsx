@@ -172,9 +172,8 @@ Format your response clearly with:
 User says: "${userMessage}"`;
 
     const tryModel = async (modelName) => {
-      // gemini-1.5-flash works on v1, newer models on v1beta
-      const apiVersion = modelName.includes('1.5') ? 'v1' : 'v1beta';
-      const url = `https://generativelanguage.googleapis.com/${apiVersion}/models/${modelName}:generateContent?key=${apiKey}`;
+      // All Gemini models use v1beta for generateContent
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
       const resp = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -186,8 +185,8 @@ User says: "${userMessage}"`;
     };
 
     try {
-      // gemini-1.5-flash first (free tier, stable), then 2.0-flash
-      const modelsToTry = ['gemini-1.5-flash', 'gemini-2.0-flash'];
+      // Use current stable models (v1beta endpoint)
+      const modelsToTry = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash'];
       let response = null;
       let lastError = null;
 
@@ -272,7 +271,7 @@ User says: "${userMessage}"`;
                   style={styles.recCard}
                   onPress={() => router.push(`/course/${course._id || course.id}`)}
                 >
-                  <View style={[styles.recIconBox, { backgroundColor: course.thumbnailColor || '#741ce9' }]}>
+                  <View style={[styles.recIconBox, { backgroundColor: course.thumbnailColor || '#7C3AED' }]}>
                     <Ionicons name={course.thumbnail || 'book'} size={18} color="white" />
                   </View>
                   <View style={styles.recInfo}>

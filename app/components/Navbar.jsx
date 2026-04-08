@@ -135,14 +135,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 8,
-    backgroundColor: T.card,
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
     borderRadius: 100,
     borderWidth: 1,
-    borderColor: T.border,
+    borderColor: 'rgba(226, 232, 240, 0.6)',
     ...Platform.select({
       web: {
-        boxShadow: '0 4px 24px rgba(124, 58, 237, 0.08)',
-        backdropFilter: 'blur(12px)',
+        boxShadow: '0 8px 32px rgba(124, 58, 237, 0.12)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
       },
       ios:     { shadowColor: '#7C3AED', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 16 },
       android: { elevation: 6 },
@@ -171,17 +172,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 8, borderRadius: 100,
   },
   activeNavLink: {
-    backgroundColor: T.primaryBg,
-    ...Platform.select({ web: { boxShadow: '0 0 12px rgba(124, 58, 237, 0.12)' } }),
+    backgroundColor: '#F5F3FF',
+    ...Platform.select({ web: { boxShadow: '0 2px 12px rgba(124, 58, 237, 0.15)' } }),
   },
-  navLinkText:       { fontSize: 13, fontWeight: '600', color: T.muted },
+  navLinkText:       { fontSize: 13, fontWeight: '600', color: '#64748B' },
   activeNavLinkText: { color: T.primary },
 
   headerRight:    { flexDirection: 'row', alignItems: 'center', gap: 6 },
   iconButton: {
-    width: 34, height: 34, borderRadius: 17,
-    backgroundColor: T.bg, alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: T.border,
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: 'rgba(248, 250, 252, 0.8)', alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, borderColor: '#E2E8F0',
   },
   vDivider: { width: 1, height: 18, backgroundColor: T.border, marginHorizontal: 2 },
   signOutButton: {
@@ -192,8 +193,8 @@ const styles = StyleSheet.create({
   },
   signOutText: { color: T.red, fontSize: 12, fontWeight: '700' },
   avatar: {
-    width: 34, height: 34, borderRadius: 17,
-    overflow: 'hidden', borderWidth: 2, borderColor: T.border,
+    width: 36, height: 36, borderRadius: 18,
+    overflow: 'hidden', borderWidth: 2, borderColor: '#F5F3FF',
   },
   avatarInner: { width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' },
 });

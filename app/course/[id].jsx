@@ -38,7 +38,7 @@ export default function CourseDetail() {
   if (loading) {
     return (
       <View style={[styles.container, styles.centered]}>
-        <ActivityIndicator size="large" color="#741ce9" />
+        <ActivityIndicator size="large" color="#7C3AED" />
       </View>
     );
   }
@@ -58,10 +58,10 @@ export default function CourseDetail() {
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.heroSection}>
-           <LinearGradient colors={['#0a0a0a', '#1a1a1a']} style={styles.heroGradient}>
+           <LinearGradient colors={['#7C3AED', '#3B82F6']} style={styles.heroGradient}>
               <View style={styles.heroContent}>
                   <View style={styles.categoryBadgeRow}>
-                    <Ionicons name="ribbon" size={14} color="#741ce9" />
+                    <Ionicons name="ribbon" size={14} color="#7C3AED" />
                     <Text style={styles.categoryBadge}>{course.category || 'Professional Recommendation'}</Text>
                   </View>
                  <Text style={styles.titleText}>{course.title}</Text>
@@ -104,7 +104,7 @@ export default function CourseDetail() {
                          onPress={() => setExpandedModule(expandedModule === i ? -1 : i)}
                        >
                           <View style={styles.moduleHeadLeft}>
-                             <Ionicons name={expandedModule === i ? "remove-circle-outline" : "add-circle-outline"} size={22} color="#741ce9" />
+                             <Ionicons name={expandedModule === i ? "remove-circle-outline" : "add-circle-outline"} size={22} color="#7C3AED" />
                              <View>
                                 <Text style={styles.moduleTitle}>{module.moduleName || `Module ${i+1}`}</Text>
                                 <Text style={styles.moduleMeta}>{module.topics?.length || 4} topics included</Text>
@@ -133,7 +133,7 @@ export default function CourseDetail() {
            <View style={styles.rightCol}>
               <View style={styles.recommendationCard}>
                  <View style={styles.previewBox}>
-                    <LinearGradient colors={['#741ce9', '#9d50bb']} style={styles.previewPlaceholder}>
+                    <LinearGradient colors={['#7C3AED', '#3B82F6']} style={styles.previewPlaceholder}>
                        <Ionicons name="film-outline" size={48} color="#fff" />
                     </LinearGradient>
                  </View>
@@ -144,7 +144,7 @@ export default function CourseDetail() {
                     </Text>
 
                     <TouchableOpacity style={styles.visitBtn} onPress={handleGoToCourse}>
-                       <LinearGradient colors={['#741ce9', '#9d50bb']} style={styles.visitGradient}>
+                       <LinearGradient colors={['#7C3AED', '#3B82F6']} style={styles.visitGradient}>
                           <Text style={styles.visitText}>View Course on Source</Text>
                           <Ionicons name="open-outline" size={18} color="#fff" />
                        </LinearGradient>
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   heroSection: {
-    backgroundColor: '#0a0a0a',
+    backgroundColor: '#F8FAFC',
   },
   heroGradient: {
     paddingTop: 40,
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
   categoryBadge: {
     fontSize: 12,
     fontWeight: '900',
-    color: '#741ce9',
+    color: '#7C3AED',
     textTransform: 'uppercase',
     letterSpacing: 1.5,
   },
@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#741ce9',
+    backgroundColor: '#7C3AED',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,

@@ -70,7 +70,7 @@ export default function Home() {
   if (loading) {
     return (
       <View style={[styles.container, styles.centered]}>
-        <ActivityIndicator size="large" color="#741ce9" />
+        <ActivityIndicator size="large" color="#7C3AED" />
       </View>
     );
   }
@@ -117,7 +117,7 @@ export default function Home() {
       >
         <View style={styles.heroSection}>
           <LinearGradient
-            colors={['#4f46e5', '#06b6d4']}
+            colors={['#7C3AED', '#3B82F6']}
             style={styles.heroGradient}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
@@ -136,7 +136,7 @@ export default function Home() {
                 onPress={() => router.push('/courses')}
               >
                 <Text style={styles.heroButtonText}>Continue My Learning</Text>
-                <Ionicons name="arrow-forward" size={18} color="#741ce9" />
+                <Ionicons name="arrow-forward" size={18} color="#7C3AED" />
               </TouchableOpacity>
             </View>
             <View style={styles.heroDecoration}>
@@ -151,7 +151,7 @@ export default function Home() {
             onPress={() => router.push('/recommendations')}
           >
             <View style={[styles.actionIcon, { backgroundColor: '#f3ebff' }]}>
-              <Ionicons name="sparkles" size={24} color="#741ce9" />
+              <Ionicons name="sparkles" size={24} color="#7C3AED" />
             </View>
             <Text style={styles.actionLabel}>AI Mentors</Text>
           </TouchableOpacity>
@@ -201,7 +201,7 @@ export default function Home() {
                 style={styles.wideCard}
                 onPress={() => router.push(`/course/${course._id || course.id}`)}
               >
-                <View style={[styles.wideCardThumbnail, { backgroundColor: course.thumbnailColor || '#741ce9' }]}>
+                <View style={[styles.wideCardThumbnail, { backgroundColor: course.thumbnailColor || '#7C3AED' }]}>
                    <Ionicons name={course.thumbnail || 'sparkles'} size={40} color="#fff" />
                    <View style={styles.cardBookmark}>
                       <Ionicons name="bookmark-outline" size={12} color="#1a1a1a" />
@@ -211,7 +211,7 @@ export default function Home() {
                    <Text style={styles.wideCardCategory}>{course.category || 'Career Growth'}</Text>
                    <Text style={styles.wideCardTitle} numberOfLines={1}>{course.title}</Text>
                    <View style={styles.recommendationBadge}>
-                      <Ionicons name="shield-checkmark" size={12} color="#741ce9" />
+                      <Ionicons name="shield-checkmark" size={12} color="#7C3AED" />
                       <Text style={styles.recommendationText}>Highly Recommended</Text>
                    </View>
                 </View>
@@ -234,7 +234,7 @@ export default function Home() {
                 style={styles.verticalCard}
                 onPress={() => router.push(`/course/${course._id || course.id}`)}
               >
-                <View style={[styles.verticalThumbnail, { backgroundColor: course.thumbnailColor || '#741ce9' }]}>
+                <View style={[styles.verticalThumbnail, { backgroundColor: course.thumbnailColor || '#7C3AED' }]}>
                    <Ionicons name={course.thumbnail || 'book'} size={32} color="#fff" />
                    <View style={styles.cardBookmark}>
                       <Ionicons name="bookmark-outline" size={12} color="#1a1a1a" />
@@ -336,7 +336,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   heroButtonText: {
-    color: '#741ce9',
+    color: '#7C3AED',
     fontWeight: 'bold',
     marginRight: 8,
   },
@@ -392,7 +392,7 @@ const styles = StyleSheet.create({
   viewAll: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#741ce9',
+    color: '#7C3AED',
   },
   horizontalList: {
     paddingBottom: 10,

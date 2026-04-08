@@ -72,7 +72,7 @@ export default function SignUp() {
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <LinearGradient
-          colors={['#4f46e5', '#3b82f6']}
+          colors={['#7C3AED', '#3B82F6']}
           style={styles.leftPanel}
         >
           <View style={styles.logoContainer}>
@@ -101,7 +101,7 @@ export default function SignUp() {
         <View style={styles.rightPanel}>
           <View style={styles.formContainer}>
             <View style={styles.header}>
-              <Ionicons name="school" size={32} color="#741ce9" />
+              <Ionicons name="school" size={32} color="#7C3AED" />
               <Text style={styles.logoText}>EduLearn</Text>
               <TouchableOpacity onPress={() => router.push('/signin')} style={styles.loginButton}>
                 <Text style={styles.loginButtonText}>Log in</Text>
@@ -170,7 +170,7 @@ export default function SignUp() {
                     <Ionicons
                       name={interest.icon}
                       size={20}
-                      color={selectedInterests.includes(interest.id) ? '#741ce9' : '#666'}
+                      color={selectedInterests.includes(interest.id) ? '#7C3AED' : '#666'}
                     />
                     <Text style={[
                       styles.interestText,

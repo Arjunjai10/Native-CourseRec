@@ -46,7 +46,7 @@ export default function Courses() {
   if (loading) {
     return (
       <View style={[styles.container, styles.centered]}>
-        <ActivityIndicator size="large" color="#741ce9" />
+        <ActivityIndicator size="large" color="#7C3AED" />
       </View>
     );
   }
@@ -99,7 +99,7 @@ export default function Courses() {
                    style={styles.courseCard}
                    onPress={() => router.push(`/course/${course._id || course.id}`)}
                 >
-                   <View style={[styles.courseThumbnail, { backgroundColor: course.thumbnailColor || '#741ce9' }]}>
+                   <View style={[styles.courseThumbnail, { backgroundColor: course.thumbnailColor || '#7C3AED' }]}>
                       <Ionicons name={course.thumbnail || 'book'} size={32} color="#fff" />
                       <TouchableOpacity style={styles.bookmarkBadge}>
                          <Ionicons name="bookmark-outline" size={14} color="#1a1a1a" />
@@ -125,7 +125,7 @@ export default function Courses() {
                          </View>
                          <View style={styles.detailsIndicator}>
                             <Text style={styles.detailsText}>View Recommendation</Text>
-                            <Ionicons name="arrow-forward" size={12} color="#741ce9" />
+                            <Ionicons name="arrow-forward" size={12} color="#7C3AED" />
                          </View>
                       </View>
                    </View>

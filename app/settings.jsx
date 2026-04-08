@@ -18,7 +18,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
 
 const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
 export default function Settings() {
    const router = useRouter();
@@ -229,7 +229,7 @@ export default function Settings() {
 
                      <View style={styles.photoBox}>
                         <Image 
-                           source={{ uri: profilePicture || `https://ui-avatars.com/api/?name=${firstName}+${lastName}&background=741ce9&color=fff&size=100` }} 
+                           source={{ uri: profilePicture || `https://ui-avatars.com/api/?name=${firstName}+${lastName}&background=7C3AED&color=fff&size=100` }} 
                            style={styles.bigAvatar} 
                         />
                         <View style={styles.photoActions}>
@@ -292,7 +292,7 @@ export default function Settings() {
                      )}
 
                      <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
-                        <LinearGradient colors={['#741ce9', '#9d50bb']} style={styles.saveGradient}>
+                        <LinearGradient colors={['#7C3AED', '#3B82F6']} style={styles.saveGradient}>
                            <Text style={styles.saveText}>Save Changes</Text>
                         </LinearGradient>
                      </TouchableOpacity>
