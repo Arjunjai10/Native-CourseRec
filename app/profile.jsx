@@ -104,28 +104,28 @@ export default function Profile() {
                     <View style={styles.idRow}>
                        <Text style={styles.idText}>{userProfile.studentId}</Text>
                        <View style={styles.idDivider} />
-                       <Text style={styles.rankText}>Gold Member</Text>
-                    </View>
-                 </View>
-              </View>
-           </LinearGradient>
-           
-           <View style={styles.statsOverlay}>
-              <View style={styles.statBox}>
-                 <Text style={styles.statNum}>{userProfile.courses}</Text>
-                 <Text style={styles.statLabel}>Recommends</Text>
-              </View>
-              <View style={styles.statBoxDivider} />
-              <View style={styles.statBox}>
-                 <Text style={styles.statNum}>{userProfile.skillMatch || '42%'}</Text>
-                 <Text style={styles.statLabel}>Skill Match</Text>
-              </View>
-              <View style={styles.statBoxDivider} />
-              <View style={styles.statBox}>
-                 <Text style={styles.statNum}>{userProfile.recentCertificates.length}</Text>
-                 <Text style={styles.statLabel}>Saved</Text>
-              </View>
-           </View>
+                        <Text style={styles.rankText}>{user?.role === 'admin' ? 'Super Admin' : 'Gold Member'}</Text>
+                     </View>
+                  </View>
+               </View>
+            </LinearGradient>
+            
+            <View style={styles.statsOverlay}>
+               <View style={styles.statBox}>
+                  <Text style={styles.statNum}>{userProfile.courses}</Text>
+                  <Text style={styles.statLabel}>{user?.role === 'admin' ? 'Managed' : 'Recommends'}</Text>
+               </View>
+               <View style={styles.statBoxDivider} />
+               <View style={styles.statBox}>
+                  <Text style={styles.statNum}>{user?.role === 'admin' ? 'Active' : (userProfile.skillMatch || '42%')}</Text>
+                  <Text style={styles.statLabel}>{user?.role === 'admin' ? 'System Status' : 'Skill Match'}</Text>
+               </View>
+               <View style={styles.statBoxDivider} />
+               <View style={styles.statBox}>
+                  <Text style={styles.statNum}>{userProfile.recentCertificates.length}</Text>
+                  <Text style={styles.statLabel}>{user?.role === 'admin' ? 'Saved' : 'Certificates'}</Text>
+               </View>
+            </View>
         </View>
 
         <View style={styles.mainContent}>
@@ -136,9 +136,9 @@ export default function Profile() {
                   <Ionicons name="create-outline" size={20} color="#7C3AED" />
                 </TouchableOpacity>
              </View>
-             <Text style={styles.bioText}>
-                {userProfile.bio || "No biography provided yet. Tell us about your learning goals and professional background to personalize your experience."}
-             </Text>
+              <Text style={styles.bioText}>
+                 {userProfile.bio || (user?.role === 'admin' ? "System Administrator of EduLearn. Managing the next generation of professional learning paths." : "No biography provided yet. Tell us about your learning goals and professional background to personalize your experience.")}
+              </Text>
           </View>
 
           <View style={styles.section}>

@@ -16,7 +16,7 @@ import Navbar from './components/Navbar';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
 export default function Recommendations() {
   const router = useRouter();
@@ -64,6 +64,7 @@ export default function Recommendations() {
         setAllCourses(coursesData);
         setUser(results[1].data);
 
+        const userInterests = results[1].data.interests || [];
         const catalogString = coursesData.reduce((acc, course) => {
           const category = course.category || 'Uncategorized';
           if (!acc[category]) acc[category] = [];
@@ -72,7 +73,12 @@ export default function Recommendations() {
         }, {});
 
         const formattedCatalog = Object.entries(catalogString)
-          .map(([category, courses]) => `${category} (${courses.length} courses):\n${courses.slice(0, 40).join('\n')}`)
+          .map(([category, courses]) => {
+            // If category matches user interest, show more courses, else show a snippet
+            const isInterest = userInterests.some(interest => category.toLowerCase().includes(interest.toLowerCase()));
+            const sliceCount = isInterest ? 25 : 5;
+            return `${category} (${courses.length} courses):\n${courses.slice(0, sliceCount).join('\n')}${courses.length > sliceCount ? '\n...and more' : ''}`;
+          })
           .join('\n\n');
 
         setAvailableCoursesText(formattedCatalog);
@@ -186,7 +192,13 @@ User says: "${userMessage}"`;
 
     try {
       // Use current stable models (v1beta endpoint)
-      const modelsToTry = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash'];
+      const modelsToTry = [
+        'gemini-1.5-flash', 
+        'gemini-flash-latest',
+        'gemini-2.0-flash',
+        'gemini-1.5-pro',
+        'gemini-2.5-flash'
+      ];
       let response = null;
       let lastError = null;
 
@@ -394,6 +406,9 @@ const styles = StyleSheet.create({
   },
   sidebarHeader: {
     padding: 24,
+  },
+  newChatButton: {
+    width: '100%',
   },
   newChatGradient: {
      flexDirection: 'row',

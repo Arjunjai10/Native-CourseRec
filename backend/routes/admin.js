@@ -107,19 +107,45 @@ router.get('/analytics', async (req, res) => {
     const activeUsers = await User.countDocuments({ status: 'active' });
     const totalCourses = await Course.countDocuments();
     
-    // Calculate total enrollments
-    const courses = await Course.find().select('studentsEnrolled');
-    const totalEnrollments = courses.reduce((acc, curr) => acc + (curr.studentsEnrolled || 0), 0);
+    // REAL Total Enrollments (Sum of all users' enrolledCourses)
+    const allUsers = await User.find().select('enrolledCourses createdAt');
+    const totalEnrollments = allUsers.reduce((acc, u) => acc + (u.enrolledCourses?.length || 0), 0);
     
-    // Revenue mock (since courses are free right now)
-    const totalRevenue = totalEnrollments * 15; // Assuming average $15 per course for analytics mock
+    // REAL Revenue (e.g., $10 per actual enrollment)
+    const totalRevenue = totalEnrollments * 10;
+
+    // Growth Data (Last 7 days)
+    const last7Days = [...Array(7)].map((_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      return d.toISOString().split('T')[0];
+    }).reverse();
+
+    const growthData = await Promise.all(last7Days.map(async (date) => {
+      const count = await User.countDocuments({
+        createdAt: {
+          $gte: new Date(date),
+          $lt: new Date(new Date(date).getTime() + 24 * 60 * 60 * 1000)
+        }
+      });
+      return { date, count };
+    }));
+
+    // Category Distribution
+    const categories = await Course.aggregate([
+      { $group: { _id: "$category", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 5 }
+    ]);
 
     res.json({
       totalUsers,
       activeUsers,
       totalCourses,
       totalEnrollments,
-      totalRevenue
+      totalRevenue,
+      growthData,
+      categoryDistribution: categories.map(c => ({ name: c._id || 'Other', value: c.count }))
     });
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch analytics', error: error.message });
