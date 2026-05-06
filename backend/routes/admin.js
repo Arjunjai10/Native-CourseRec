@@ -111,8 +111,7 @@ router.get('/analytics', async (req, res) => {
     const allUsers = await User.find().select('enrolledCourses createdAt');
     const totalEnrollments = allUsers.reduce((acc, u) => acc + (u.enrolledCourses?.length || 0), 0);
     
-    // REAL Revenue (e.g., $10 per actual enrollment)
-    const totalRevenue = totalEnrollments * 10;
+
 
     // Growth Data (Last 7 days)
     const last7Days = [...Array(7)].map((_, i) => {
@@ -143,7 +142,6 @@ router.get('/analytics', async (req, res) => {
       activeUsers,
       totalCourses,
       totalEnrollments,
-      totalRevenue,
       growthData,
       categoryDistribution: categories.map(c => ({ name: c._id || 'Other', value: c.count }))
     });

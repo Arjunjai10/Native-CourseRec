@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { adminAPI } from './utils/adminAPI';
 import Navbar from './components/Navbar';
 import { LinearGradient } from 'expo-linear-gradient';
+import { switchBackend, getActiveBackend } from './utils/api';
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -169,19 +170,41 @@ export default function AdminDashboard() {
                   <Text style={styles.statSub}>Published Library</Text>
                 </LinearGradient>
 
-                <LinearGradient colors={['#10B981', '#059669']} style={styles.statCard}>
-                  <Ionicons name="school" size={32} color="#fff" style={styles.statIcon} />
-                  <Text style={styles.statLabel}>Enrollments</Text>
-                  <Text style={styles.statValue}>{analytics.totalEnrollments}</Text>
-                  <Text style={styles.statSub}>All Time Total</Text>
-                </LinearGradient>
 
-                <LinearGradient colors={['#F59E0B', '#D97706']} style={styles.statCard}>
-                  <Ionicons name="cash" size={32} color="#fff" style={styles.statIcon} />
-                  <Text style={styles.statLabel}>Est. Revenue</Text>
-                  <Text style={styles.statValue}>${analytics.totalRevenue?.toLocaleString()}</Text>
-                  <Text style={styles.statSub}>Gross Platform Yield</Text>
-                </LinearGradient>
+
+
+              </View>
+
+              {/* CHARTS SECTION */}
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 20, marginTop: 40 }}>
+                {/* User Growth Chart */}
+                <View style={{ flex: 2, minWidth: 300, backgroundColor: '#fff', borderRadius: 24, padding: 25, borderWidth: 1, borderColor: '#e2e8f0' }}>
+                  <Text style={{ fontSize: 18, fontWeight: '800', color: '#1e293b', marginBottom: 25 }}>7-Day User Growth</Text>
+                  <View style={{ height: 180, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', paddingBottom: 20 }}>
+                    {analytics.growthData?.map((d, i) => (
+                      <View key={i} style={{ alignItems: 'center', flex: 1 }}>
+                        <View style={{ width: '60%', height: Math.max((d.count / (Math.max(...analytics.growthData.map(gd => gd.count)) || 1)) * 120, 10), backgroundColor: '#7C3AED', borderRadius: 4 }} />
+                        <Text style={{ fontSize: 10, color: '#94a3b8', marginTop: 10 }}>{d.date.split('-')[2]}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+
+                {/* Category Distribution */}
+                <View style={{ flex: 1, minWidth: 250, backgroundColor: '#fff', borderRadius: 24, padding: 25, borderWidth: 1, borderColor: '#e2e8f0' }}>
+                   <Text style={{ fontSize: 18, fontWeight: '800', color: '#1e293b', marginBottom: 25 }}>Top Categories</Text>
+                   {analytics.categoryDistribution?.map((cat, i) => (
+                     <View key={i} style={{ marginBottom: 15 }}>
+                       <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
+                         <Text style={{ fontSize: 13, fontWeight: '700', color: '#64748b' }}>{cat.name}</Text>
+                         <Text style={{ fontSize: 13, fontWeight: '800', color: '#1e293b' }}>{cat.value}</Text>
+                       </View>
+                       <View style={{ height: 6, backgroundColor: '#f1f5f9', borderRadius: 3, overflow: 'hidden' }}>
+                         <View style={{ width: `${(cat.value / analytics.totalCourses) * 100}%`, height: '100%', backgroundColor: '#3B82F6' }} />
+                       </View>
+                     </View>
+                   ))}
+                </View>
               </View>
             </View>
           )}
@@ -359,16 +382,24 @@ export default function AdminDashboard() {
               </View>
 
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 20, marginBottom: 20 }}>
-                <TouchableOpacity style={[styles.statCard, { backgroundColor: '#7C3AED' }]}>
-                  <Ionicons name="logo-nodejs" size={24} color="#fff" />
-                  <Text style={[styles.statLabel, { marginTop: 15 }]}>Node.js Backend</Text>
-                  <Text style={styles.statSub}>Port 5000 • Express</Text>
+                <TouchableOpacity 
+                  onPress={() => switchBackend('node')}
+                  style={[styles.statCard, { backgroundColor: getActiveBackend().includes('Node') ? '#7C3AED' : '#fff', borderWidth: 1, borderColor: '#e2e8f0' }]}
+                >
+                  <Ionicons name="logo-nodejs" size={24} color={getActiveBackend().includes('Node') ? '#fff' : '#7C3AED'} />
+                  <Text style={[styles.statLabel, { marginTop: 15, color: getActiveBackend().includes('Node') ? '#fff' : '#1e293b' }]}>Node.js Backend</Text>
+                  <Text style={[styles.statSub, { color: getActiveBackend().includes('Node') ? 'rgba(255,255,255,0.8)' : '#64748b' }]}>Port 5000 • Express</Text>
+                  {getActiveBackend().includes('Node') && <View style={{ position: 'absolute', top: 15, right: 15, backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10 }}><Text style={{ color: '#fff', fontSize: 10, fontWeight: '800' }}>ACTIVE</Text></View>}
                 </TouchableOpacity>
 
-                <TouchableOpacity style={[styles.statCard, { backgroundColor: '#fff', borderWidth: 1, borderColor: '#e2e8f0' }]}>
-                  <Ionicons name="cafe" size={24} color="#64748b" />
-                  <Text style={[styles.statLabel, { marginTop: 15, color: '#1e293b' }]}>Java Backend</Text>
-                  <Text style={[styles.statSub, { color: '#64748b' }]}>Port 8080 • Spring Boot</Text>
+                <TouchableOpacity 
+                  onPress={() => switchBackend('java')}
+                  style={[styles.statCard, { backgroundColor: getActiveBackend().includes('Java') ? '#7C3AED' : '#fff', borderWidth: 1, borderColor: '#e2e8f0' }]}
+                >
+                  <Ionicons name="cafe" size={24} color={getActiveBackend().includes('Java') ? '#fff' : '#7C3AED'} />
+                  <Text style={[styles.statLabel, { marginTop: 15, color: getActiveBackend().includes('Java') ? '#fff' : '#1e293b' }]}>Java Backend</Text>
+                  <Text style={[styles.statSub, { color: getActiveBackend().includes('Java') ? 'rgba(255,255,255,0.8)' : '#64748b' }]}>Port 8080 • Spring Boot</Text>
+                  {getActiveBackend().includes('Java') && <View style={{ position: 'absolute', top: 15, right: 15, backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10 }}><Text style={{ color: '#fff', fontSize: 10, fontWeight: '800' }}>ACTIVE</Text></View>}
                 </TouchableOpacity>
               </View>
               <Text style={{ fontSize: 13, color: '#94a3b8', fontStyle: 'italic' }}>* Switching triggers a platform reload.</Text>
