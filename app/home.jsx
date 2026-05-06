@@ -44,11 +44,11 @@ export default function Home() {
         }
 
         const [coursesRes, recommendationsRes] = await Promise.all([
-          courseAPI.getAll(),
+          courseAPI.getAll({ limit: 50 }),
           userId ? courseAPI.getRecommendations(userId) : Promise.resolve({ data: [] })
         ]);
 
-        setCourses(coursesRes.data);
+        setCourses(coursesRes.data.courses || []);
         setRecommendedCourses(recommendationsRes.data);
 
         if (userId) {
@@ -66,6 +66,22 @@ export default function Home() {
 
     fetchData();
   }, []);
+
+  const handleToggleBookmark = async (courseId) => {
+    try {
+      const res = await userAPI.bookmark(courseId);
+      // Refresh user to update bookmark states
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const storedUser = JSON.parse(userStr);
+        const profileRes = await userAPI.getProfile(storedUser.id || storedUser._id);
+        setUser(profileRes.data);
+      }
+    } catch (err) {
+      console.error('Bookmark error:', err);
+    }
+  };
+
 
   if (loading) {
     return (
@@ -203,9 +219,16 @@ export default function Home() {
               >
                 <View style={[styles.wideCardThumbnail, { backgroundColor: course.thumbnailColor || '#7C3AED' }]}>
                    <Ionicons name={course.thumbnail || 'sparkles'} size={40} color="#fff" />
-                   <View style={styles.cardBookmark}>
-                      <Ionicons name="bookmark-outline" size={12} color="#1a1a1a" />
-                   </View>
+                   <TouchableOpacity 
+                     style={styles.cardBookmark}
+                     onPress={() => handleToggleBookmark(course._id || course.id)}
+                   >
+                      <Ionicons 
+                        name={user?.savedCourses?.some(sc => (sc._id || sc) === (course._id || course.id)) ? "bookmark" : "bookmark-outline"} 
+                        size={12} 
+                        color={user?.savedCourses?.some(sc => (sc._id || sc) === (course._id || course.id)) ? "#7C3AED" : "#1a1a1a"} 
+                      />
+                   </TouchableOpacity>
                 </View>
                 <View style={styles.wideCardContent}>
                    <Text style={styles.wideCardCategory}>{course.category || 'Career Growth'}</Text>
@@ -236,9 +259,16 @@ export default function Home() {
               >
                 <View style={[styles.verticalThumbnail, { backgroundColor: course.thumbnailColor || '#7C3AED' }]}>
                    <Ionicons name={course.thumbnail || 'book'} size={32} color="#fff" />
-                   <View style={styles.cardBookmark}>
-                      <Ionicons name="bookmark-outline" size={12} color="#1a1a1a" />
-                   </View>
+                   <TouchableOpacity 
+                     style={styles.cardBookmark}
+                     onPress={() => handleToggleBookmark(course._id || course.id)}
+                   >
+                      <Ionicons 
+                        name={user?.savedCourses?.some(sc => (sc._id || sc) === (course._id || course.id)) ? "bookmark" : "bookmark-outline"} 
+                        size={12} 
+                        color={user?.savedCourses?.some(sc => (sc._id || sc) === (course._id || course.id)) ? "#7C3AED" : "#1a1a1a"} 
+                      />
+                   </TouchableOpacity>
                 </View>
                 <View style={styles.verticalContent}>
                    <Text style={styles.verticalTitle} numberOfLines={2}>{course.title}</Text>

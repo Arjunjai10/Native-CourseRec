@@ -59,8 +59,8 @@ export default function Recommendations() {
           }
         }
 
-        const results = await Promise.all([courseAPI.getAll(), userAPI.getProfile(userId)]);
-        const coursesData = results[0].data;
+        const results = await Promise.all([courseAPI.getAll({ limit: 1000 }), userAPI.getProfile(userId)]);
+        const coursesData = results[0].data.courses || [];
         setAllCourses(coursesData);
         setUser(results[1].data);
 

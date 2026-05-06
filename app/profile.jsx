@@ -46,22 +46,24 @@ export default function Profile() {
         
         userAPI.getProfile(u.id || u._id).then(res => {
            const data = res.data;
-           const enrolled = data.enrolledCourses || [];
-           const skillPerc = enrolled.length > 0 ? Math.min(65 + (enrolled.length * 5), 98) : 42;
+            const enrolled = data.enrolledCourses || [];
+            const saved = data.savedCourses || [];
+            const skillPerc = enrolled.length > 0 ? Math.min(65 + (enrolled.length * 5), 98) : 42;
 
-           setUserProfile({
-              name: data.fullName || u.fullName || u.username || 'User',
-              studentId: data.id ? `#EDU-${data.id.substring(data.id.length - 5)}` : (data._id ? `#EDU-${data._id.substring(data._id.length - 5)}` : ''),
-              bio: data.bio || '',
-              courses: enrolled.length,
-              coursesChange: 'Active Learner',
-              learningHours: data.learningHours || 0,
-              skillMatch: `${skillPerc}%`,
-              learningRank: 'Top 10% of learners',
-              certificates: (data.certificates || []).length + enrolled.length,
-              interests: (data.interests && data.interests.length > 0) ? data.interests : ['Data Science', 'Development', 'Business', 'Design'],
-              recentCertificates: enrolled,
-           });
+            setUserProfile({
+               name: data.fullName || u.fullName || u.username || 'User',
+               studentId: data.id ? `#EDU-${data.id.substring(data.id.length - 5)}` : (data._id ? `#EDU-${data._id.substring(data._id.length - 5)}` : ''),
+               bio: data.bio || '',
+               courses: enrolled.length,
+               coursesChange: 'Active Learner',
+               learningHours: data.learningHours || 0,
+               skillMatch: `${skillPerc}%`,
+               learningRank: 'Top 10% of learners',
+               certificates: (data.certificates || []).length,
+               interests: (data.interests && data.interests.length > 0) ? data.interests : ['Data Science', 'Development', 'Business', 'Design'],
+               recentCertificates: enrolled,
+               savedRecommendations: saved,
+            });
         }).catch(err => {
            setUserProfile(prev => ({
                ...prev,
@@ -166,8 +168,8 @@ export default function Profile() {
                  </TouchableOpacity>
               </View>
              
-             {userProfile.recentCertificates.length > 0 ? (
-                userProfile.recentCertificates.map((course, index) => (
+             {userProfile.savedRecommendations && userProfile.savedRecommendations.length > 0 ? (
+                userProfile.savedRecommendations.map((course, index) => (
                    <TouchableOpacity key={index} style={styles.certificateCard} onPress={() => router.push(`/course/${course._id || course.id}`)}>
                       <View style={styles.certIcon}>
                          <Ionicons name="book" size={24} color="#7C3AED" />
