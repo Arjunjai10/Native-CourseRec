@@ -114,7 +114,9 @@ export default function AdminDashboard() {
     { id: 'dashboard', label: 'Dashboard', icon: 'grid-outline' },
     { id: 'users', label: 'User Management', icon: 'people-outline' },
     { id: 'courses', label: 'Course Management', icon: 'book-outline' },
-    { id: 'settings', label: 'System Settings', icon: 'settings-outline' }
+    { id: 'settings', label: 'System Settings', icon: 'settings-outline' },
+    { id: 'payment', label: 'Connections', icon: 'link-outline' },
+    { id: 'dev', label: 'Developer', icon: 'code-working-outline' }
   ];
 
   return (
@@ -317,6 +319,59 @@ export default function AdminDashboard() {
                   ))}
                 </View>
               )}
+            </View>
+          )}
+          {/* CONNECTIONS TAB */}
+          {activeTab === 'payment' && (
+            <View>
+              <View style={styles.header}>
+                <Text style={styles.title}>External Ecosphere</Text>
+                <Text style={styles.subtitle}>Connect global learning platforms to enable cross-platform discovery.</Text>
+              </View>
+
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 20 }}>
+                {[
+                  { name: 'Coursera', color: '#0056D2', icon: 'logo-google' },
+                  { name: 'Udemy', color: '#A435F0', icon: 'play-circle' },
+                  { name: 'YouTube Learning', color: '#FF0000', icon: 'logo-youtube' },
+                  { name: 'LinkedIn Learning', color: '#0077B5', icon: 'logo-linkedin' },
+                ].map(plat => (
+                  <View key={plat.name} style={{ flex: 1, minWidth: 200, backgroundColor: '#fff', borderRadius: 20, padding: 24, alignItems: 'center', borderWidth: 1, borderColor: '#e2e8f0' }}>
+                    <View style={{ width: 60, height: 60, borderRadius: 30, backgroundColor: plat.color, justifyContent: 'center', alignItems: 'center', marginBottom: 15 }}>
+                      <Ionicons name={plat.icon} size={30} color="#fff" />
+                    </View>
+                    <Text style={{ fontSize: 16, fontWeight: '800', color: '#1e293b', marginBottom: 15 }}>{plat.name}</Text>
+                    <TouchableOpacity style={styles.btnSecondary}>
+                      <Text style={styles.btnSecondaryText}>Connect API</Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {/* DEVELOPER TAB */}
+          {activeTab === 'dev' && (
+            <View>
+              <View style={styles.header}>
+                <Text style={styles.title}>Server Orchestration</Text>
+                <Text style={styles.subtitle}>Switch between backend instances for scaling tests.</Text>
+              </View>
+
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 20, marginBottom: 20 }}>
+                <TouchableOpacity style={[styles.statCard, { backgroundColor: '#7C3AED' }]}>
+                  <Ionicons name="logo-nodejs" size={24} color="#fff" />
+                  <Text style={[styles.statLabel, { marginTop: 15 }]}>Node.js Backend</Text>
+                  <Text style={styles.statSub}>Port 5000 • Express</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={[styles.statCard, { backgroundColor: '#fff', borderWidth: 1, borderColor: '#e2e8f0' }]}>
+                  <Ionicons name="cafe" size={24} color="#64748b" />
+                  <Text style={[styles.statLabel, { marginTop: 15, color: '#1e293b' }]}>Java Backend</Text>
+                  <Text style={[styles.statSub, { color: '#64748b' }]}>Port 8080 • Spring Boot</Text>
+                </TouchableOpacity>
+              </View>
+              <Text style={{ fontSize: 13, color: '#94a3b8', fontStyle: 'italic' }}>* Switching triggers a platform reload.</Text>
             </View>
           )}
 

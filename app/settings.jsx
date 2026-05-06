@@ -358,34 +358,6 @@ export default function Settings() {
                   </View>
                )}
 
-               {activeTab === 'payment' && (
-                  <View style={styles.tabSection}>
-                     <View style={styles.formHeader}>
-                        <Text style={styles.formTitle}>External Ecosphere</Text>
-                        <Text style={styles.formSubtitle}>Connect your favorite learning platforms to enable cross-platform discovery.</Text>
-                     </View>
-
-                     <View style={styles.connectionsGrid}>
-                        {[
-                           { name: 'Coursera', color: '#0056D2', icon: 'logo-google' },
-                           { name: 'Udemy', color: '#A435F0', icon: 'play-circle' },
-                           { name: 'YouTube Learning', color: '#FF0000', icon: 'logo-youtube' },
-                           { name: 'LinkedIn Learning', color: '#0077B5', icon: 'logo-linkedin' },
-                        ].map(plat => (
-                           <View key={plat.name} style={styles.connCard}>
-                              <View style={[styles.connLogo, { backgroundColor: plat.color }]}>
-                                 <Ionicons name={plat.icon} size={24} color="#fff" />
-                              </View>
-                              <Text style={styles.connName}>{plat.name}</Text>
-                              <TouchableOpacity style={styles.connBtn}>
-                                 <Text style={styles.connBtnText}>Connect API</Text>
-                              </TouchableOpacity>
-                           </View>
-                        ))}
-                     </View>
-                  </View>
-               )}
-
                {activeTab === 'help' && (
                   <View style={styles.tabSection}>
                      <View style={styles.formHeader}>
@@ -425,44 +397,6 @@ export default function Settings() {
                   </View>
                )}
 
-               {activeTab === 'dev' && (
-                  <View style={styles.devSection}>
-                     <View style={styles.formHeader}>
-                        <Text style={styles.formTitle}>Server Orchestration</Text>
-                        <Text style={styles.formSubtitle}>Switch between the hybrid Node.js and Java backends for development and scaling tests.</Text>
-                     </View>
-
-                     <View style={styles.activeInfoCard}>
-                        <Ionicons name="server" size={24} color="#7C3AED" />
-                        <View>
-                           <Text style={styles.activeLabel}>CURRENTLY ACTIVE BACKEND</Text>
-                           <Text style={styles.activeValue}>{currentBackend}</Text>
-                        </View>
-                     </View>
-
-                     <Text style={styles.label}>SWITCH SERVER INSTANCE</Text>
-                     <View style={styles.switchGrid}>
-                        <TouchableOpacity
-                           style={[styles.switchOption, currentBackend.includes('Node') && styles.switchOptionActive]}
-                           onPress={() => switchBackend('node')}
-                        >
-                           <Ionicons name="logo-nodejs" size={24} color={currentBackend.includes('Node') ? '#fff' : '#666'} />
-                           <Text style={[styles.switchOptionText, currentBackend.includes('Node') && styles.switchOptionActiveText]}>Node.js Backend</Text>
-                           <Text style={styles.switchOptionSub}>Port 5000 • Express</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                           style={[styles.switchOption, currentBackend.includes('Java') && styles.switchOptionActive]}
-                           onPress={() => switchBackend('java')}
-                        >
-                           <Ionicons name="cafe" size={24} color={currentBackend.includes('Java') ? '#fff' : '#666'} />
-                           <Text style={[styles.switchOptionText, currentBackend.includes('Java') && styles.switchOptionActiveText]}>Java Backend</Text>
-                           <Text style={styles.switchOptionSub}>Port 8080 • Spring Boot</Text>
-                        </TouchableOpacity>
-                     </View>
-                     <Text style={styles.warningText}>Switching will trigger a platform reload to re-initialize dependencies.</Text>
-                  </View>
-               )}
             </ScrollView>
          </View>
       </View>
