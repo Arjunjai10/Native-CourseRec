@@ -120,9 +120,7 @@ export default function Settings() {
          setTimeout(() => setShowSuccess(false), 3000);
       } catch (error) {
          console.error('Save failed:', error);
-         alert('Update simulated successfully!');
-         setShowSuccess(true);
-         setTimeout(() => setShowSuccess(false), 3000);
+         alert(error.response?.data?.message || 'Failed to update profile');
       }
    };
 
@@ -140,13 +138,13 @@ export default function Settings() {
             setCurrentPass('');
             setTimeout(() => setShowSuccess(false), 3000);
          })
-         .catch(() => alert('Security update simulated.'));
+         .catch((err) => alert(err.response?.data?.message || 'Failed to update password'));
    };
 
    const handleNotifyToggle = (type, val) => {
       const userId = userContext?.id || userContext?._id;
       userAPI.updateNotifications(userId, { [type]: val })
-         .catch(() => console.log("Notify preference saved locally."));
+         .catch((err) => console.error("Failed to save notify preference", err));
    };
 
    const handleSupportChat = async () => {
@@ -180,9 +178,9 @@ export default function Settings() {
       { id: 'profile', label: 'My Profile', icon: 'person-outline' },
       { id: 'notify', label: 'Notifications', icon: 'notifications-outline' },
       { id: 'shield', label: 'Security', icon: 'shield-checkmark-outline' },
-      // { id: 'payment', label: 'Connections', icon: 'link-outline' },
+      { id: 'payment', label: 'Connections', icon: 'link-outline' },
       { id: 'help', label: 'AI Support', icon: 'help-circle-outline' },
-      //  { id: 'dev', label: 'Developer', icon: 'code-working-outline' },
+      { id: 'dev', label: 'Developer', icon: 'code-working-outline' },
    ];
 
    const currentBackend = getActiveBackend();
