@@ -178,9 +178,7 @@ export default function Settings() {
       { id: 'profile', label: 'My Profile', icon: 'person-outline' },
       { id: 'notify', label: 'Notifications', icon: 'notifications-outline' },
       { id: 'shield', label: 'Security', icon: 'shield-checkmark-outline' },
-      { id: 'payment', label: 'Connections', icon: 'link-outline' },
       { id: 'help', label: 'AI Support', icon: 'help-circle-outline' },
-      { id: 'dev', label: 'Developer', icon: 'code-working-outline' },
    ];
 
    const currentBackend = getActiveBackend();
