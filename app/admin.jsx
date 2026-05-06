@@ -60,7 +60,7 @@ export default function AdminDashboard() {
       setSettings(settingsRes.data);
     } catch (error) {
       console.error('Failed to load admin data:', error);
-      alert(error.response?.data?.message || 'Failed to connect to Admin API');
+      alert(`⚠️ Connection Error: Failed to reach the ${getActiveBackend()}. \n\nPlease ensure your server is running or switch instances in the Developer tab.`);
     } finally {
       setLoading(false);
       setRefreshing(false);
