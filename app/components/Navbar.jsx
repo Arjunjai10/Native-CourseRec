@@ -37,6 +37,16 @@ export default function Navbar({ showBackButton = false }) {
     { name: 'Profile',   path: '/profile',          icon: 'person-outline' },
   ];
 
+  if (Platform.OS === 'web') {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      if (user.role === 'admin') {
+        navItems.push({ name: 'Admin Panel', path: '/admin', icon: 'shield-checkmark-outline' });
+      }
+    }
+  }
+
   return (
     <View style={styles.outerContainer}>
       <View style={styles.header}>

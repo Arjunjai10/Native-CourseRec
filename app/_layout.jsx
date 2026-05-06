@@ -12,6 +12,7 @@ export default function RootLayout() {
       <Stack.Screen name="recommendations" />
       <Stack.Screen name="course/[id]" />
       <Stack.Screen name="settings" />
+      <Stack.Screen name="admin" />
     </Stack>
   );
 }

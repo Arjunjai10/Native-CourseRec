@@ -12,10 +12,15 @@ router.post('/signup', async (req, res) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
+    // If this is the very first user to register on the platform, make them the super admin
+    const userCount = await User.countDocuments();
+    const role = userCount === 0 ? 'admin' : 'student';
+
     const user = new User({
       fullName,
       email,
       password,
+      role,
       interests: interests || [],
     });
 
@@ -69,6 +74,7 @@ router.post('/login', async (req, res) => {
         id: user._id,
         fullName: user.fullName,
         email: user.email,
+        role: user.role,
         interests: user.interests,
       },
     });

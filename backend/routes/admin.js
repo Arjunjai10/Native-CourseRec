@@ -36,6 +36,15 @@ router.get('/users', async (req, res) => {
 router.put('/users/:id', async (req, res) => {
   try {
     const { role, status, fullName, email } = req.body;
+
+    // Enforce "Only One Admin" rule
+    if (role === 'admin') {
+      const existingAdmin = await User.findOne({ role: 'admin', _id: { $ne: req.params.id } });
+      if (existingAdmin) {
+        return res.status(403).json({ message: 'System restricted: Only one Super Admin is allowed.' });
+      }
+    }
+
     const user = await User.findByIdAndUpdate(
       req.params.id,
       { role, status, fullName, email },
