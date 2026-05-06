@@ -30,7 +30,11 @@ export default function AdminDashboard() {
   const [courseSearch, setCourseSearch] = useState('');
   
   useEffect(() => {
-    checkAdminAccess();
+    // Add a slight delay to ensure layout is mounted before any potential redirects
+    const timer = setTimeout(() => {
+      checkAdminAccess();
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const checkAdminAccess = () => {

@@ -11,15 +11,58 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/courses")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:8081", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
 public class CourseController {
 
     @Autowired
     private CourseRepository courseRepository;
 
     @GetMapping
-    public List<Course> getAllCourses() {
-        return courseRepository.findAll();
+    public ResponseEntity<?> getAllCourses(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "12") int limit,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String category) {
+        
+        List<Course> allCourses = courseRepository.findAll();
+        
+        // Manual filtering for simplicity in this dev environment
+        List<Course> filtered = allCourses.stream()
+            .filter(c -> {
+                if (search == null || search.isEmpty()) return true;
+                return (c.getTitle() != null && c.getTitle().toLowerCase().contains(search.toLowerCase())) ||
+                       (c.getDescription() != null && c.getDescription().toLowerCase().contains(search.toLowerCase()));
+            })
+            .filter(c -> {
+                if (category == null || category.isEmpty() || "All".equals(category)) return true;
+                return category.equals(c.getCategory());
+            })
+            .collect(java.util.stream.Collectors.toList());
+
+        int totalCourses = filtered.size();
+        int totalPages = (int) Math.ceil((double) totalCourses / limit);
+        int start = (page - 1) * limit;
+        int end = Math.min(start + limit, totalCourses);
+        
+        List<Course> paginated = (start < totalCourses) ? filtered.subList(start, end) : new java.util.ArrayList<>();
+
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        response.put("courses", paginated);
+        response.put("totalPages", totalPages);
+        response.put("totalCourses", totalCourses);
+        response.put("currentPage", page);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/categories")
+    public ResponseEntity<?> getCategories() {
+        List<String> categories = courseRepository.findAll().stream()
+            .map(Course::getCategory)
+            .filter(java.util.Objects::nonNull)
+            .distinct()
+            .collect(java.util.stream.Collectors.toList());
+        return ResponseEntity.ok(categories);
     }
 
     @GetMapping("/{id}")

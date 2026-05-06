@@ -21,27 +21,40 @@ export default function Courses() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
-
-  const categories = ['All', 'Programming', 'Design', 'Business', 'Marketing', 'Data Science', 'Personal Growth'];
+  const [categories, setCategories] = useState(['All']);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    courseAPI.getAll()
-      .then(res => {
-        setCourses(res.data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error(err);
-        setLoading(false);
-      });
+    courseAPI.getCategories()
+      .then(res => setCategories(['All', ...res.data]))
+      .catch(err => console.error('Failed to load categories:', err));
   }, []);
 
-  const filteredCourses = courses.filter(course => {
-    const matchesSearch = (course.title?.toLowerCase() || '').includes(searchQuery.toLowerCase()) || 
-                         (course.description?.toLowerCase() || '').includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'All' || course.category === selectedCategory || (selectedCategory === 'Programming' && course.category?.includes('Web'));
-    return matchesSearch && matchesCategory;
-  });
+  useEffect(() => {
+    fetchCourses();
+  }, [searchQuery, selectedCategory, page]);
+
+  const fetchCourses = async () => {
+    try {
+      setLoading(true);
+      const res = await courseAPI.getAll({
+        search: searchQuery,
+        category: selectedCategory,
+        page: page,
+        limit: 12
+      });
+      setCourses(res.data.courses || []);
+      setTotalPages(res.data.totalPages || 1);
+    } catch (err) {
+      console.error('Fetch error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredCourses = courses; // Now handled server-side
+
 
   if (loading) {
     return (

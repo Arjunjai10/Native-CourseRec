@@ -15,9 +15,12 @@ public class User {
     private String fullName;
     private String email;
     private String password;
+    private String role = "student";
+    private String status = "active";
     private List<String> interests;
     private List<String> enrolledCourses;
     private List<String> completedCourses;
+    private List<String> savedCourses;
     private List<Certificate> certificates;
     private int learningHours;
     private String bio;
