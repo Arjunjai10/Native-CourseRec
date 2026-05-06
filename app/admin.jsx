@@ -24,7 +24,10 @@ export default function AdminDashboard() {
 
   // Modal/Edit states
   const [editingUser, setEditingUser] = useState(null);
+  const [editingCourse, setEditingCourse] = useState(null);
   const [editingSetting, setEditingSetting] = useState(null);
+  const [connectingPlatform, setConnectingPlatform] = useState(null);
+  const [courseSearch, setCourseSearch] = useState('');
   
   useEffect(() => {
     checkAdminAccess();
@@ -91,6 +94,40 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleSaveCourse = async () => {
+    try {
+      if (editingCourse._id) {
+        await adminAPI.updateCourse(editingCourse._id, editingCourse);
+        alert('Course updated successfully');
+      } else {
+        await adminAPI.createCourse(editingCourse);
+        alert('Course created successfully');
+      }
+      setEditingCourse(null);
+      loadData();
+    } catch (err) {
+      alert('Failed to save course');
+    }
+  };
+
+  const handleDeleteCourse = async (id) => {
+    if (window.confirm('Are you sure you want to delete this course?')) {
+      try {
+        await adminAPI.deleteCourse(id);
+        alert('Course deleted');
+        loadData();
+      } catch (err) {
+        alert('Failed to delete course');
+      }
+    }
+  };
+
+  const filteredCourses = courses.filter(c => 
+    c.title?.toLowerCase().includes(courseSearch.toLowerCase()) || 
+    c.category?.toLowerCase().includes(courseSearch.toLowerCase())
+  );
+
+
   // Settings Management
   const handleSaveSetting = async () => {
     try {
@@ -100,6 +137,18 @@ export default function AdminDashboard() {
       loadData();
     } catch (err) {
       alert('Failed to save setting');
+    }
+  };
+
+  const handleDeleteSetting = async (id) => {
+    if (window.confirm('Are you sure you want to delete this configuration?')) {
+      try {
+        await adminAPI.deleteSetting(id);
+        alert('Setting deleted');
+        loadData();
+      } catch (err) {
+        alert('Failed to delete setting');
+      }
     }
   };
 
@@ -274,17 +323,103 @@ export default function AdminDashboard() {
             <View>
               <View style={styles.header}>
                 <Text style={styles.title}>Course Content Management</Text>
-                <Text style={styles.subtitle}>Super Admin direct content override system.</Text>
+                <Text style={styles.subtitle}>Direct system override for the platform's course library.</Text>
               </View>
-              
-              <View style={styles.emptyState}>
-                <Ionicons name="construct" size={48} color="#94a3b8" />
-                <Text style={styles.emptyText}>Course Editor Interface</Text>
-                <Text style={styles.emptySub}>Full course CMS is being migrated to the new schema.</Text>
-                <TouchableOpacity style={[styles.btnPrimary, { marginTop: 20 }]}>
-                  <Text style={styles.btnPrimaryText}>Add New Course</Text>
+
+              <View style={[styles.actionRow, { marginBottom: 20 }]}>
+                <TextInput 
+                  style={[styles.input, { flex: 1, marginBottom: 0 }]} 
+                  placeholder="Search courses by title or category..." 
+                  value={courseSearch}
+                  onChangeText={setCourseSearch}
+                />
+                <TouchableOpacity 
+                  style={styles.btnPrimary} 
+                  onPress={() => setEditingCourse({ title: '', category: '', description: '', level: 'Beginner', rating: 4.5, studentsEnrolled: 0 })}
+                >
+                  <Text style={styles.btnPrimaryText}>Add Course</Text>
                 </TouchableOpacity>
               </View>
+
+              {editingCourse ? (
+                <View style={styles.editBox}>
+                  <Text style={styles.editTitle}>{editingCourse._id ? 'Edit Course' : 'Create New Course'}</Text>
+                  
+                  <Text style={styles.label}>Course Title</Text>
+                  <TextInput 
+                    style={styles.input} 
+                    value={editingCourse.title} 
+                    onChangeText={t => setEditingCourse({...editingCourse, title: t})}
+                  />
+
+                  <View style={{ flexDirection: 'row', gap: 15 }}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.label}>Category</Text>
+                      <TextInput 
+                        style={styles.input} 
+                        value={editingCourse.category} 
+                        onChangeText={t => setEditingCourse({...editingCourse, category: t})}
+                      />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.label}>Level</Text>
+                      <TextInput 
+                        style={styles.input} 
+                        value={editingCourse.level} 
+                        onChangeText={t => setEditingCourse({...editingCourse, level: t})}
+                      />
+                    </View>
+                  </View>
+
+                  <Text style={styles.label}>Description</Text>
+                  <TextInput 
+                    style={[styles.input, { height: 100, textAlignVertical: 'top' }]} 
+                    multiline 
+                    value={editingCourse.description} 
+                    onChangeText={t => setEditingCourse({...editingCourse, description: t})}
+                  />
+
+                  <View style={styles.actionRow}>
+                    <TouchableOpacity style={styles.btnPrimary} onPress={handleSaveCourse}>
+                      <Text style={styles.btnPrimaryText}>Save Course</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.btnSecondary} onPress={() => setEditingCourse(null)}>
+                      <Text style={styles.btnSecondaryText}>Cancel</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ) : (
+                <View style={styles.table}>
+                  <View style={styles.tableHeader}>
+                    <Text style={[styles.th, { flex: 3 }]}>Title</Text>
+                    <Text style={[styles.th, { flex: 1 }]}>Category</Text>
+                    <Text style={[styles.th, { flex: 1 }]}>Level</Text>
+                    <Text style={[styles.th, { flex: 1 }]}>Rating</Text>
+                    <Text style={[styles.th, { flex: 1, textAlign: 'right' }]}>Actions</Text>
+                  </View>
+                  {filteredCourses.slice(0, 50).map(course => (
+                    <View key={course._id} style={styles.tr}>
+                      <Text style={[styles.td, { flex: 3 }]} numberOfLines={1}>{course.title}</Text>
+                      <Text style={[styles.td, { flex: 1 }]} numberOfLines={1}>{course.category}</Text>
+                      <Text style={[styles.td, { flex: 1 }]}>{course.level}</Text>
+                      <Text style={[styles.td, { flex: 1 }]}>⭐ {course.rating}</Text>
+                      <View style={[styles.td, { flex: 1, flexDirection: 'row', justifyContent: 'flex-end', gap: 10 }]}>
+                        <TouchableOpacity onPress={() => setEditingCourse(course)}>
+                          <Ionicons name="create-outline" size={20} color="#3B82F6" />
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => handleDeleteCourse(course._id)}>
+                          <Ionicons name="trash-outline" size={20} color="#EF4444" />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  ))}
+                  {filteredCourses.length > 50 && (
+                    <View style={{ padding: 15, alignItems: 'center' }}>
+                      <Text style={{ color: '#94a3b8', fontSize: 12 }}>Showing first 50 courses of {filteredCourses.length}</Text>
+                    </View>
+                  )}
+                </View>
+              )}
             </View>
           )}
 
@@ -304,6 +439,8 @@ export default function AdminDashboard() {
 
               {editingSetting ? (
                 <View style={[styles.editBox, { marginTop: 20 }]}>
+                  <Text style={styles.editTitle}>{editingSetting._id ? 'Edit Setting' : 'Create New Setting'}</Text>
+                  
                   <Text style={styles.label}>CONFIGURATION KEY</Text>
                   <TextInput style={styles.input} value={editingSetting.key} onChangeText={(t) => setEditingSetting({...editingSetting, key: t})} placeholder="e.g. HERO_BANNER_TEXT" />
                   
@@ -320,26 +457,52 @@ export default function AdminDashboard() {
                   </View>
                 </View>
               ) : (
-                <View style={[styles.table, { marginTop: 20 }]}>
-                  <View style={styles.tableHeader}>
-                    <Text style={[styles.th, { flex: 1 }]}>Key</Text>
-                    <Text style={[styles.th, { flex: 2 }]}>Value</Text>
-                    <Text style={[styles.th, { flex: 1, textAlign: 'right' }]}>Actions</Text>
+                <View>
+                  <View style={{ flexDirection: 'row', gap: 10, marginTop: 20, flexWrap: 'wrap' }}>
+                    <Text style={{ color: '#64748b', fontSize: 13, fontWeight: '700', width: '100%', marginBottom: 5 }}>QUICK PRESETS:</Text>
+                    {[
+                      { k: 'PLATFORM_NAME', v: 'EduLearn Pro' },
+                      { k: 'HERO_TITLE', v: 'Master Your Future' },
+                      { k: 'MAINTENANCE_MODE', v: 'false' },
+                      { k: 'THEME_COLOR', v: '#7C3AED' }
+                    ].map(preset => (
+                      <TouchableOpacity 
+                        key={preset.k} 
+                        style={{ backgroundColor: '#f1f5f9', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 }}
+                        onPress={() => setEditingSetting({ key: preset.k, value: preset.v })}
+                      >
+                        <Text style={{ color: '#475569', fontSize: 12, fontWeight: '800' }}>+ {preset.k}</Text>
+                      </TouchableOpacity>
+                    ))}
                   </View>
-                  {settings.length === 0 && (
-                     <View style={{ padding: 20, alignItems: 'center' }}><Text style={{color: '#94a3b8'}}>No custom settings configured yet.</Text></View>
-                  )}
-                  {settings.map(s => (
-                    <View key={s._id} style={styles.tr}>
-                      <Text style={[styles.td, { flex: 1, fontWeight: 'bold' }]}>{s.key}</Text>
-                      <Text style={[styles.td, { flex: 2 }]} numberOfLines={1}>{String(s.value)}</Text>
-                      <View style={[styles.td, { flex: 1, flexDirection: 'row', justifyContent: 'flex-end', gap: 10 }]}>
-                        <TouchableOpacity onPress={() => setEditingSetting(s)}>
-                          <Ionicons name="create-outline" size={20} color="#3B82F6" />
-                        </TouchableOpacity>
-                      </View>
+
+                  <View style={[styles.table, { marginTop: 20 }]}>
+                    <View style={styles.tableHeader}>
+                      <Text style={[styles.th, { flex: 1 }]}>Key</Text>
+                      <Text style={[styles.th, { flex: 2 }]}>Value</Text>
+                      <Text style={[styles.th, { flex: 1, textAlign: 'right' }]}>Actions</Text>
                     </View>
-                  ))}
+                    {settings.length === 0 && (
+                       <View style={{ padding: 40, alignItems: 'center' }}>
+                         <Ionicons name="settings-outline" size={40} color="#e2e8f0" />
+                         <Text style={{color: '#94a3b8', marginTop: 10}}>No custom settings configured yet.</Text>
+                       </View>
+                    )}
+                    {settings.map(s => (
+                      <View key={s._id} style={styles.tr}>
+                        <Text style={[styles.td, { flex: 1, fontWeight: 'bold' }]}>{s.key}</Text>
+                        <Text style={[styles.td, { flex: 2 }]} numberOfLines={1}>{String(s.value)}</Text>
+                        <View style={[styles.td, { flex: 1, flexDirection: 'row', justifyContent: 'flex-end', gap: 10 }]}>
+                          <TouchableOpacity onPress={() => setEditingSetting(s)}>
+                            <Ionicons name="create-outline" size={20} color="#3B82F6" />
+                          </TouchableOpacity>
+                          <TouchableOpacity onPress={() => handleDeleteSetting(s._id)}>
+                            <Ionicons name="trash-outline" size={20} color="#EF4444" />
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
                 </View>
               )}
             </View>

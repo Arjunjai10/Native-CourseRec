@@ -177,4 +177,13 @@ router.post('/settings', async (req, res) => {
   }
 });
 
+router.delete('/settings/:id', async (req, res) => {
+  try {
+    await SystemConfig.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Setting deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to delete setting', error: error.message });
+  }
+});
+
 module.exports = router;

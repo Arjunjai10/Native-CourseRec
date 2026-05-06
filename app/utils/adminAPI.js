@@ -16,5 +16,6 @@ export const adminAPI = {
 
   // Settings
   getSettings: () => api.get('/admin/settings'),
-  updateSetting: (key, value) => api.post('/admin/settings', { key, value })
+  updateSetting: (key, value) => api.post('/admin/settings', { key, value }),
+  deleteSetting: (id) => api.delete(`/admin/settings/${id}`)
 };
