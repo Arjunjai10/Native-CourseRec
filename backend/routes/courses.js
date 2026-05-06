@@ -3,11 +3,46 @@ const router = express.Router();
 const Course = require('../models/Course');
 const { authMiddleware } = require('../middleware/auth');
 
-// GET /api/courses - get all courses
+// GET /api/courses - get courses with pagination and search
 router.get('/', async (req, res) => {
   try {
-    const courses = await Course.find().sort({ createdAt: -1 });
-    res.json(courses);
+    const { page = 1, limit = 20, search = '', category = 'All' } = req.query;
+    const query = {};
+
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    if (category !== 'All') {
+      query.category = category;
+    }
+
+    const courses = await Course.find(query)
+      .sort({ createdAt: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
+
+    const total = await Course.countDocuments(query);
+
+    res.json({
+      courses,
+      totalPages: Math.ceil(total / limit),
+      currentPage: page,
+      totalCourses: total
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// GET /api/courses/categories - get all unique categories
+router.get('/categories', async (req, res) => {
+  try {
+    const categories = await Course.distinct('category');
+    res.json(categories.filter(c => c && c !== ''));
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

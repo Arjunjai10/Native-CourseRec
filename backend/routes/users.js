@@ -9,6 +9,7 @@ router.get('/profile/:id', authMiddleware, async (req, res) => {
     const user = await User.findById(req.params.id)
       .populate('enrolledCourses')
       .populate('completedCourses')
+      .populate('savedCourses')
       .select('-password');
 
     if (!user) {
@@ -158,6 +159,31 @@ router.post('/progress', authMiddleware, async (req, res) => {
     }
 
     res.json({ message: 'Progress updated', learningHours: user.learningHours });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// POST /api/users/bookmark/:courseId
+router.post('/bookmark/:courseId', authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    const courseId = req.params.courseId;
+
+    const isBookmarked = user.savedCourses.includes(courseId);
+    
+    if (isBookmarked) {
+      user.savedCourses = user.savedCourses.filter(cid => cid.toString() !== courseId);
+    } else {
+      user.savedCourses.push(courseId);
+    }
+
+    await user.save();
+    res.json({ 
+      message: isBookmarked ? 'Removed from bookmarks' : 'Added to bookmarks', 
+      savedCourses: user.savedCourses,
+      isBookmarked: !isBookmarked
+    });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

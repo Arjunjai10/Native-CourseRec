@@ -60,12 +60,14 @@ export const userAPI = {
     complete: (courseId) => api.post(`/users/complete/${courseId}`),
     updateProgress: (hours) => api.post('/users/progress', { hours }),
     submitSupport: (data) => api.post('/users/support', data),
+    bookmark: (courseId) => api.post(`/users/bookmark/${courseId}`),
 };
 
 export const courseAPI = {
-    getAll: () => api.get('/courses'),
+    getAll: (params = {}) => api.get('/courses', { params }),
     getById: (id) => api.get(`/courses/${id}`),
     getRecommendations: (userId) => api.get(`/courses/recommendations/${userId}`),
+    getCategories: () => api.get('/courses/categories'),
 };
 
 export default api;

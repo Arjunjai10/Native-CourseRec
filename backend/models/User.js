@@ -37,6 +37,10 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Course',
   }],
+  savedCourses: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Course',
+  }],
   certificates: [{
     courseId: {
       type: mongoose.Schema.Types.ObjectId,
