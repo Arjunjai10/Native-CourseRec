@@ -152,6 +152,21 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleSaveConnection = async (platform, keys) => {
+    try {
+      setLoading(true);
+      await adminAPI.updateSetting(`${platform.toUpperCase()}_API_CONFIG`, JSON.stringify(keys));
+      alert(`${platform} connection configuration saved successfully!`);
+      setConnectingPlatform(null);
+      loadData();
+    } catch (err) {
+      alert(`Failed to save ${platform} configuration`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
   if (loading && !refreshing) {
     return (
       <View style={styles.loadingContainer}>
@@ -165,7 +180,7 @@ export default function AdminDashboard() {
     { id: 'users', label: 'User Management', icon: 'people-outline' },
     { id: 'courses', label: 'Course Management', icon: 'book-outline' },
     { id: 'settings', label: 'System Settings', icon: 'settings-outline' },
-    { id: 'payment', label: 'Connections', icon: 'link-outline' },
+    { id: 'connections', label: 'Connections', icon: 'link-outline' },
     { id: 'dev', label: 'Developer', icon: 'code-working-outline' }
   ];
 
@@ -508,31 +523,61 @@ export default function AdminDashboard() {
             </View>
           )}
           {/* CONNECTIONS TAB */}
-          {activeTab === 'payment' && (
+          {activeTab === 'connections' && (
             <View>
               <View style={styles.header}>
                 <Text style={styles.title}>External Ecosphere</Text>
                 <Text style={styles.subtitle}>Connect global learning platforms to enable cross-platform discovery.</Text>
               </View>
 
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 20 }}>
-                {[
-                  { name: 'Coursera', color: '#0056D2', icon: 'logo-google' },
-                  { name: 'Udemy', color: '#A435F0', icon: 'play-circle' },
-                  { name: 'YouTube Learning', color: '#FF0000', icon: 'logo-youtube' },
-                  { name: 'LinkedIn Learning', color: '#0077B5', icon: 'logo-linkedin' },
-                ].map(plat => (
-                  <View key={plat.name} style={{ flex: 1, minWidth: 200, backgroundColor: '#fff', borderRadius: 20, padding: 24, alignItems: 'center', borderWidth: 1, borderColor: '#e2e8f0' }}>
-                    <View style={{ width: 60, height: 60, borderRadius: 30, backgroundColor: plat.color, justifyContent: 'center', alignItems: 'center', marginBottom: 15 }}>
-                      <Ionicons name={plat.icon} size={30} color="#fff" />
-                    </View>
-                    <Text style={{ fontSize: 16, fontWeight: '800', color: '#1e293b', marginBottom: 15 }}>{plat.name}</Text>
-                    <TouchableOpacity style={styles.btnSecondary}>
-                      <Text style={styles.btnSecondaryText}>Connect API</Text>
+              {connectingPlatform ? (
+                <View style={styles.editBox}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
+                     <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: connectingPlatform.color, justifyContent: 'center', alignItems: 'center', marginRight: 15 }}>
+                       <Ionicons name={connectingPlatform.icon} size={20} color="#fff" />
+                     </View>
+                     <Text style={styles.editTitle}>Configure {connectingPlatform.name}</Text>
+                  </View>
+
+                  <Text style={styles.label}>CLIENT ID / API KEY</Text>
+                  <TextInput style={styles.input} placeholder="Enter platform API key" />
+                  
+                  <Text style={styles.label}>CLIENT SECRET</Text>
+                  <TextInput style={styles.input} secureTextEntry placeholder="Enter platform secret" />
+
+                  <View style={styles.actionRow}>
+                    <TouchableOpacity style={[styles.btnPrimary, { backgroundColor: connectingPlatform.color }]} onPress={() => handleSaveConnection(connectingPlatform.name, { apiKey: '...', secret: '...' })}>
+                      <Text style={styles.btnPrimaryText}>Save Connection</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.btnSecondary} onPress={() => setConnectingPlatform(null)}>
+                      <Text style={styles.btnSecondaryText}>Cancel</Text>
                     </TouchableOpacity>
                   </View>
-                ))}
-              </View>
+                </View>
+              ) : (
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 20 }}>
+                  {[
+                    { name: 'Coursera', color: '#0056D2', icon: 'school' },
+                    { name: 'Udemy', color: '#A435F0', icon: 'play-circle' },
+                    { name: 'YouTube Learning', color: '#FF0000', icon: 'logo-youtube' },
+                    { name: 'LinkedIn Learning', color: '#0077B5', icon: 'logo-linkedin' },
+                  ].map(plat => {
+                    const isConnected = settings.some(s => s.key === `${plat.name.toUpperCase()}_API_CONFIG`);
+                    return (
+                      <View key={plat.name} style={{ flex: 1, minWidth: 220, backgroundColor: '#fff', borderRadius: 24, padding: 30, alignItems: 'center', borderWidth: 1, borderColor: isConnected ? plat.color : '#e2e8f0', shadowColor: isConnected ? plat.color : '#000', shadowOpacity: 0.05, shadowRadius: 10 }}>
+                        <View style={{ width: 70, height: 70, borderRadius: 35, backgroundColor: plat.color, justifyContent: 'center', alignItems: 'center', marginBottom: 20 }}>
+                          <Ionicons name={plat.icon} size={35} color="#fff" />
+                        </View>
+                        <Text style={{ fontSize: 18, fontWeight: '800', color: '#1e293b', marginBottom: 5 }}>{plat.name}</Text>
+                        <Text style={{ fontSize: 12, color: isConnected ? '#10B981' : '#94a3b8', fontWeight: '700', marginBottom: 20 }}>{isConnected ? '● CONNECTED' : '○ DISCONNECTED'}</Text>
+                        <TouchableOpacity style={[styles.btnSecondary, isConnected && { borderColor: plat.color }]} onPress={() => setConnectingPlatform(plat)}>
+                          <Text style={[styles.btnSecondaryText, isConnected && { color: plat.color }]}>{isConnected ? 'Update API' : 'Connect API'}</Text>
+                        </TouchableOpacity>
+                      </View>
+                    );
+                  })}
+                </View>
+              )}
             </View>
           )}
 
