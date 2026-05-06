@@ -7,6 +7,7 @@ export default function RootLayout() {
       <Stack.Screen name="signin" />
       <Stack.Screen name="signup" />
       <Stack.Screen name="home" />
+      <Stack.Screen name="courses" />
       <Stack.Screen name="profile" />
       <Stack.Screen name="recommendations" />
       <Stack.Screen name="course/[id]" />

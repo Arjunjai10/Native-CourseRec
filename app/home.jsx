@@ -248,7 +248,7 @@ export default function Home() {
                          <Ionicons name="star" size={14} color="#F59E0B" />
                          <Text style={styles.ratingText}>{course.rating || '4.8'}</Text>
                       </View>
-                      <Text style={styles.studentCount}>{(0.4).toFixed(1)}k+ learners</Text>
+                      <Text style={styles.studentCount}>{course.studentsEnrolled ? (course.studentsEnrolled / 1000).toFixed(1) : '1.5'}k+ learners</Text>
                    </View>
                 </View>
               </TouchableOpacity>

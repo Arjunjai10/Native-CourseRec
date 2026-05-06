@@ -37,8 +37,8 @@ export default function Courses() {
   }, []);
 
   const filteredCourses = courses.filter(course => {
-    const matchesSearch = course.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         course.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = (course.title?.toLowerCase() || '').includes(searchQuery.toLowerCase()) || 
+                         (course.description?.toLowerCase() || '').includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === 'All' || course.category === selectedCategory || (selectedCategory === 'Programming' && course.category?.includes('Web'));
     return matchesSearch && matchesCategory;
   });

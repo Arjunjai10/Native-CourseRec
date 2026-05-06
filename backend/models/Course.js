@@ -66,7 +66,12 @@ const courseSchema = new mongoose.Schema({
   thumbnail: String,
   videoUrl: String,
   externalLink: String,
+  thumbnailColor: {
+    type: String,
+    default: '#7C3AED',
+  },
   syllabus: [{
+    moduleName: String,
     module: String,
     lectures: Number,
     duration: String,

@@ -195,6 +195,7 @@ function generateCourses() {
                     externalLink: `https://www.youtube.com/results?search_query=${topic.name}+${courseType}`,
                     syllabus: [
                         {
+                            moduleName: 'Introduction',
                             module: 'Introduction',
                             lectures: 4,
                             duration: '1.5h',
@@ -206,6 +207,7 @@ function generateCourses() {
                             ]
                         },
                         {
+                            moduleName: 'Foundations',
                             module: 'Foundations',
                             lectures: 6,
                             duration: '3h',
@@ -213,6 +215,28 @@ function generateCourses() {
                                 { title: 'The Core Concepts', duration: '45m', contentType: 'video' },
                                 { title: 'Data Structures', duration: '50m', contentType: 'video' },
                                 { title: 'Best Practices', duration: '40m', contentType: 'article' },
+                            ]
+                        },
+                        {
+                            moduleName: 'Practical Projects',
+                            module: 'Practical Projects',
+                            lectures: 8,
+                            duration: '4h',
+                            topics: [
+                                { title: 'Building Your First App', duration: '60m', contentType: 'video' },
+                                { title: 'Project Architecture', duration: '45m', contentType: 'video' },
+                                { title: 'Testing & Debugging', duration: '35m', contentType: 'video' },
+                            ]
+                        },
+                        {
+                            moduleName: 'Advanced Concepts',
+                            module: 'Advanced Concepts',
+                            lectures: 5,
+                            duration: '3.5h',
+                            topics: [
+                                { title: 'Performance Optimization', duration: '50m', contentType: 'video' },
+                                { title: 'Industry Best Practices', duration: '40m', contentType: 'article' },
+                                { title: 'Final Assessment', duration: '45m', contentType: 'quiz' },
                             ]
                         }
                     ]
