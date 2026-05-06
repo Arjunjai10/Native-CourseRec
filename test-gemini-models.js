@@ -1,4 +1,4 @@
-const GEMINI_API_KEY = "AIzaSyClnSmm29WEXBXGtYiea9yZisakss7ZCtE";
+const GEMINI_API_KEY = "AIzaSyDzHNUyW3L8RF1Rj35gdSLHqTVHsXfgT2I";
 
 async function listModels() {
   try {
