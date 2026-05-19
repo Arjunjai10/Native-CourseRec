@@ -34,13 +34,11 @@ export default function Home() {
         let storedUser = null;
         if (Platform.OS === 'web') {
           const userStr = localStorage.getItem('user');
-          if (!userStr) {
-            router.replace('/signin');
-            return;
+          if (userStr) {
+            storedUser = JSON.parse(userStr);
+            userId = storedUser.id || storedUser._id;
+            setUser(storedUser);
           }
-          storedUser = JSON.parse(userStr);
-          userId = storedUser.id || storedUser._id;
-          setUser(storedUser);
         }
 
         const [coursesRes, recommendationsRes] = await Promise.all([

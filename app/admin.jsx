@@ -28,31 +28,20 @@ export default function AdminDashboard() {
   const [editingSetting, setEditingSetting] = useState(null);
   const [connectingPlatform, setConnectingPlatform] = useState(null);
   const [courseSearch, setCourseSearch] = useState('');
-  
+
   useEffect(() => {
-    // Add a slight delay to ensure layout is mounted before any potential redirects
-    const timer = setTimeout(() => {
-      checkAdminAccess();
-    }, 0);
-    return () => clearTimeout(timer);
+    // Rely on global layout guard for basic auth, but still check role here
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      if (user.role === 'admin') {
+        loadData();
+      } else {
+        router.replace('/home');
+      }
+    }
   }, []);
 
-  const checkAdminAccess = () => {
-    if (Platform.OS === 'web') {
-      const userStr = localStorage.getItem('user');
-      if (!userStr) {
-        router.replace('/signin');
-        return;
-      }
-      const user = JSON.parse(userStr);
-      if (user.role !== 'admin') {
-        alert('Access Denied. Super Admin privileges required.');
-        router.replace('/home');
-        return;
-      }
-      loadData();
-    }
-  };
 
   const loadData = async () => {
     try {
@@ -126,8 +115,8 @@ export default function AdminDashboard() {
     }
   };
 
-  const filteredCourses = courses.filter(c => 
-    c.title?.toLowerCase().includes(courseSearch.toLowerCase()) || 
+  const filteredCourses = courses.filter(c =>
+    c.title?.toLowerCase().includes(courseSearch.toLowerCase()) ||
     c.category?.toLowerCase().includes(courseSearch.toLowerCase())
   );
 
@@ -191,7 +180,7 @@ export default function AdminDashboard() {
   return (
     <View style={styles.container}>
       <Navbar />
-      
+
       <View style={[styles.main, isMobile && styles.mainMobile]}>
         {/* Sidebar */}
         <View style={[styles.sidebar, isMobile && styles.sidebarMobile]}>
@@ -214,7 +203,7 @@ export default function AdminDashboard() {
 
         {/* Content Area */}
         <ScrollView style={styles.content} contentContainerStyle={{ padding: isMobile ? 20 : 40 }}>
-          
+
           {/* DASHBOARD TAB */}
           {activeTab === 'dashboard' && analytics && (
             <View>
@@ -230,7 +219,7 @@ export default function AdminDashboard() {
                   <Text style={styles.statValue}>{analytics.totalUsers}</Text>
                   <Text style={styles.statSub}>{analytics.activeUsers} Active</Text>
                 </LinearGradient>
-                
+
                 <LinearGradient colors={['#3B82F6', '#2563EB']} style={styles.statCard}>
                   <Ionicons name="book" size={32} color="#fff" style={styles.statIcon} />
                   <Text style={styles.statLabel}>Total Courses</Text>
@@ -260,18 +249,18 @@ export default function AdminDashboard() {
 
                 {/* Category Distribution */}
                 <View style={{ flex: 1, minWidth: 250, backgroundColor: '#fff', borderRadius: 24, padding: 25, borderWidth: 1, borderColor: '#e2e8f0' }}>
-                   <Text style={{ fontSize: 18, fontWeight: '800', color: '#1e293b', marginBottom: 25 }}>Top Categories</Text>
-                   {analytics.categoryDistribution?.map((cat, i) => (
-                     <View key={i} style={{ marginBottom: 15 }}>
-                       <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
-                         <Text style={{ fontSize: 13, fontWeight: '700', color: '#64748b' }}>{cat.name}</Text>
-                         <Text style={{ fontSize: 13, fontWeight: '800', color: '#1e293b' }}>{cat.value}</Text>
-                       </View>
-                       <View style={{ height: 6, backgroundColor: '#f1f5f9', borderRadius: 3, overflow: 'hidden' }}>
-                         <View style={{ width: `${(cat.value / analytics.totalCourses) * 100}%`, height: '100%', backgroundColor: '#3B82F6' }} />
-                       </View>
-                     </View>
-                   ))}
+                  <Text style={{ fontSize: 18, fontWeight: '800', color: '#1e293b', marginBottom: 25 }}>Top Categories</Text>
+                  {analytics.categoryDistribution?.map((cat, i) => (
+                    <View key={i} style={{ marginBottom: 15 }}>
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
+                        <Text style={{ fontSize: 13, fontWeight: '700', color: '#64748b' }}>{cat.name}</Text>
+                        <Text style={{ fontSize: 13, fontWeight: '800', color: '#1e293b' }}>{cat.value}</Text>
+                      </View>
+                      <View style={{ height: 6, backgroundColor: '#f1f5f9', borderRadius: 3, overflow: 'hidden' }}>
+                        <View style={{ width: `${(cat.value / analytics.totalCourses) * 100}%`, height: '100%', backgroundColor: '#3B82F6' }} />
+                      </View>
+                    </View>
+                  ))}
                 </View>
               </View>
             </View>
@@ -288,15 +277,15 @@ export default function AdminDashboard() {
               {editingUser ? (
                 <View style={styles.editBox}>
                   <Text style={styles.editTitle}>Edit User: {editingUser.email}</Text>
-                  
+
                   <Text style={styles.label}>FULL NAME</Text>
-                  <TextInput style={styles.input} value={editingUser.fullName} onChangeText={(t) => setEditingUser({...editingUser, fullName: t})} />
-                  
+                  <TextInput style={styles.input} value={editingUser.fullName} onChangeText={(t) => setEditingUser({ ...editingUser, fullName: t })} />
+
                   <Text style={styles.label}>ROLE (student | instructor | admin)</Text>
-                  <TextInput style={styles.input} value={editingUser.role} onChangeText={(t) => setEditingUser({...editingUser, role: t})} />
-                  
+                  <TextInput style={styles.input} value={editingUser.role} onChangeText={(t) => setEditingUser({ ...editingUser, role: t })} />
+
                   <Text style={styles.label}>STATUS (active | blocked)</Text>
-                  <TextInput style={styles.input} value={editingUser.status} onChangeText={(t) => setEditingUser({...editingUser, status: t})} />
+                  <TextInput style={styles.input} value={editingUser.status} onChangeText={(t) => setEditingUser({ ...editingUser, status: t })} />
 
                   <View style={styles.actionRow}>
                     <TouchableOpacity style={styles.btnPrimary} onPress={handleUpdateUser}>
@@ -346,14 +335,14 @@ export default function AdminDashboard() {
               </View>
 
               <View style={[styles.actionRow, { marginBottom: 20 }]}>
-                <TextInput 
-                  style={[styles.input, { flex: 1, marginBottom: 0 }]} 
-                  placeholder="Search courses by title or category..." 
+                <TextInput
+                  style={[styles.input, { flex: 1, marginBottom: 0 }]}
+                  placeholder="Search courses by title or category..."
                   value={courseSearch}
                   onChangeText={setCourseSearch}
                 />
-                <TouchableOpacity 
-                  style={styles.btnPrimary} 
+                <TouchableOpacity
+                  style={styles.btnPrimary}
                   onPress={() => setEditingCourse({ title: '', category: '', description: '', level: 'Beginner', rating: 4.5, studentsEnrolled: 0 })}
                 >
                   <Text style={styles.btnPrimaryText}>Add Course</Text>
@@ -363,39 +352,39 @@ export default function AdminDashboard() {
               {editingCourse ? (
                 <View style={styles.editBox}>
                   <Text style={styles.editTitle}>{editingCourse._id ? 'Edit Course' : 'Create New Course'}</Text>
-                  
+
                   <Text style={styles.label}>Course Title</Text>
-                  <TextInput 
-                    style={styles.input} 
-                    value={editingCourse.title} 
-                    onChangeText={t => setEditingCourse({...editingCourse, title: t})}
+                  <TextInput
+                    style={styles.input}
+                    value={editingCourse.title}
+                    onChangeText={t => setEditingCourse({ ...editingCourse, title: t })}
                   />
 
                   <View style={{ flexDirection: 'row', gap: 15 }}>
                     <View style={{ flex: 1 }}>
                       <Text style={styles.label}>Category</Text>
-                      <TextInput 
-                        style={styles.input} 
-                        value={editingCourse.category} 
-                        onChangeText={t => setEditingCourse({...editingCourse, category: t})}
+                      <TextInput
+                        style={styles.input}
+                        value={editingCourse.category}
+                        onChangeText={t => setEditingCourse({ ...editingCourse, category: t })}
                       />
                     </View>
                     <View style={{ flex: 1 }}>
                       <Text style={styles.label}>Level</Text>
-                      <TextInput 
-                        style={styles.input} 
-                        value={editingCourse.level} 
-                        onChangeText={t => setEditingCourse({...editingCourse, level: t})}
+                      <TextInput
+                        style={styles.input}
+                        value={editingCourse.level}
+                        onChangeText={t => setEditingCourse({ ...editingCourse, level: t })}
                       />
                     </View>
                   </View>
 
                   <Text style={styles.label}>Description</Text>
-                  <TextInput 
-                    style={[styles.input, { height: 100, textAlignVertical: 'top' }]} 
-                    multiline 
-                    value={editingCourse.description} 
-                    onChangeText={t => setEditingCourse({...editingCourse, description: t})}
+                  <TextInput
+                    style={[styles.input, { height: 100, textAlignVertical: 'top' }]}
+                    multiline
+                    value={editingCourse.description}
+                    onChangeText={t => setEditingCourse({ ...editingCourse, description: t })}
                   />
 
                   <View style={styles.actionRow}>
@@ -459,13 +448,13 @@ export default function AdminDashboard() {
               {editingSetting ? (
                 <View style={[styles.editBox, { marginTop: 20 }]}>
                   <Text style={styles.editTitle}>{editingSetting._id ? 'Edit Setting' : 'Create New Setting'}</Text>
-                  
+
                   <Text style={styles.label}>CONFIGURATION KEY</Text>
-                  <TextInput style={styles.input} value={editingSetting.key} onChangeText={(t) => setEditingSetting({...editingSetting, key: t})} placeholder="e.g. HERO_BANNER_TEXT" />
-                  
+                  <TextInput style={styles.input} value={editingSetting.key} onChangeText={(t) => setEditingSetting({ ...editingSetting, key: t })} placeholder="e.g. HERO_BANNER_TEXT" />
+
                   <Text style={styles.label}>CONFIGURATION VALUE</Text>
-                  <TextInput style={styles.input} value={editingSetting.value} onChangeText={(t) => setEditingSetting({...editingSetting, value: t})} placeholder="Value string or JSON" />
-                  
+                  <TextInput style={styles.input} value={editingSetting.value} onChangeText={(t) => setEditingSetting({ ...editingSetting, value: t })} placeholder="Value string or JSON" />
+
                   <View style={styles.actionRow}>
                     <TouchableOpacity style={styles.btnPrimary} onPress={handleSaveSetting}>
                       <Text style={styles.btnPrimaryText}>Save Setting</Text>
@@ -485,8 +474,8 @@ export default function AdminDashboard() {
                       { k: 'MAINTENANCE_MODE', v: 'false' },
                       { k: 'THEME_COLOR', v: '#7C3AED' }
                     ].map(preset => (
-                      <TouchableOpacity 
-                        key={preset.k} 
+                      <TouchableOpacity
+                        key={preset.k}
                         style={{ backgroundColor: '#f1f5f9', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 }}
                         onPress={() => setEditingSetting({ key: preset.k, value: preset.v })}
                       >
@@ -502,10 +491,10 @@ export default function AdminDashboard() {
                       <Text style={[styles.th, { flex: 1, textAlign: 'right' }]}>Actions</Text>
                     </View>
                     {settings.length === 0 && (
-                       <View style={{ padding: 40, alignItems: 'center' }}>
-                         <Ionicons name="settings-outline" size={40} color="#e2e8f0" />
-                         <Text style={{color: '#94a3b8', marginTop: 10}}>No custom settings configured yet.</Text>
-                       </View>
+                      <View style={{ padding: 40, alignItems: 'center' }}>
+                        <Ionicons name="settings-outline" size={40} color="#e2e8f0" />
+                        <Text style={{ color: '#94a3b8', marginTop: 10 }}>No custom settings configured yet.</Text>
+                      </View>
                     )}
                     {settings.map(s => (
                       <View key={s._id} style={styles.tr}>
@@ -537,15 +526,15 @@ export default function AdminDashboard() {
               {connectingPlatform ? (
                 <View style={styles.editBox}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
-                     <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: connectingPlatform.color, justifyContent: 'center', alignItems: 'center', marginRight: 15 }}>
-                       <Ionicons name={connectingPlatform.icon} size={20} color="#fff" />
-                     </View>
-                     <Text style={styles.editTitle}>Configure {connectingPlatform.name}</Text>
+                    <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: connectingPlatform.color, justifyContent: 'center', alignItems: 'center', marginRight: 15 }}>
+                      <Ionicons name={connectingPlatform.icon} size={20} color="#fff" />
+                    </View>
+                    <Text style={styles.editTitle}>Configure {connectingPlatform.name}</Text>
                   </View>
 
                   <Text style={styles.label}>CLIENT ID / API KEY</Text>
                   <TextInput style={styles.input} placeholder="Enter platform API key" />
-                  
+
                   <Text style={styles.label}>CLIENT SECRET</Text>
                   <TextInput style={styles.input} secureTextEntry placeholder="Enter platform secret" />
 
@@ -594,7 +583,7 @@ export default function AdminDashboard() {
               </View>
 
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 20, marginBottom: 20 }}>
-                <TouchableOpacity 
+                <TouchableOpacity
                   onPress={() => switchBackend('node')}
                   style={[styles.statCard, { backgroundColor: getActiveBackend().includes('Node') ? '#7C3AED' : '#fff', borderWidth: 1, borderColor: '#e2e8f0' }]}
                 >
@@ -604,7 +593,7 @@ export default function AdminDashboard() {
                   {getActiveBackend().includes('Node') && <View style={{ position: 'absolute', top: 15, right: 15, backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10 }}><Text style={{ color: '#fff', fontSize: 10, fontWeight: '800' }}>ACTIVE</Text></View>}
                 </TouchableOpacity>
 
-                <TouchableOpacity 
+                <TouchableOpacity
                   onPress={() => switchBackend('java')}
                   style={[styles.statCard, { backgroundColor: getActiveBackend().includes('Java') ? '#7C3AED' : '#fff', borderWidth: 1, borderColor: '#e2e8f0' }]}
                 >

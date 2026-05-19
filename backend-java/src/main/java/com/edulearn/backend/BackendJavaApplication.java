@@ -13,13 +13,16 @@ public class BackendJavaApplication {
 		SpringApplication.run(BackendJavaApplication.class, args);
 	}
 
+	@org.springframework.beans.factory.annotation.Value("${app.cors.allowed-origins:http://localhost:8081}")
+	private String corsAllowedOrigins;
+
 	@Bean
 	public WebMvcConfigurer corsConfigurer() {
 		return new WebMvcConfigurer() {
 			@Override
 			public void addCorsMappings(CorsRegistry registry) {
 				registry.addMapping("/**")
-						.allowedOrigins("http://localhost:8081")
+						.allowedOrigins(corsAllowedOrigins.split(","))
 						.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
 						.allowedHeaders("*")
 						.allowCredentials(true);

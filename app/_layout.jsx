@@ -1,6 +1,30 @@
-import { Stack } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
+import { useEffect } from 'react';
+import { Platform } from 'react-native';
 
 export default function RootLayout() {
+  const segments = useSegments();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      const token = localStorage.getItem('token');
+      const rootPath = segments[0];
+      
+      // Define public routes
+      const publicRoutes = ['signin', 'signup', 'index', undefined];
+      const isPublicRoute = publicRoutes.includes(rootPath);
+
+      if (!token && !isPublicRoute) {
+        // Not logged in and trying to access a protected route
+        router.replace('/signin');
+      } else if (token && (rootPath === 'signin' || rootPath === 'signup')) {
+        // Logged in and trying to access signin/signup
+        router.replace('/home');
+      }
+    }
+  }, [segments]);
+
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />

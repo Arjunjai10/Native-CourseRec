@@ -1,9 +1,9 @@
 import axios from 'axios';
 import { Platform } from 'react-native';
 
-// Default URLs
-const NODE_API_URL = 'http://localhost:5000/api';
-const JAVA_API_URL = 'http://localhost:8080/api';
+// Default URLs (Use environment variables for production, fallback to localhost for dev)
+const NODE_API_URL = process.env.EXPO_PUBLIC_NODE_API_URL || 'http://localhost:5000/api';
+const JAVA_API_URL = process.env.EXPO_PUBLIC_JAVA_API_URL || 'http://localhost:8080/api';
 
 // Dynamic selection
 let activeUrl = NODE_API_URL;

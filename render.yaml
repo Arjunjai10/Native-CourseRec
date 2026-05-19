@@ -1,0 +1,34 @@
+services:
+  # Node.js Backend Service
+  - type: web
+    name: courserec-node-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: PORT
+        value: 5000
+      - key: MONGODB_URI
+        sync: false # You must set this in the Render Dashboard
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGIN
+        sync: false # Set this to your frontend URL
+
+  # Java Backend Service
+  - type: web
+    name: courserec-java-backend
+    env: docker
+    rootDir: backend-java
+    # Render supports Java via Docker, so we will need a simple Dockerfile
+    # Let's provide the build steps via Dockerfile
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: MONGODB_URI
+        sync: false # You must set this in the Render Dashboard
+      - key: CORS_ORIGIN
+        sync: false # Set this to your frontend URL

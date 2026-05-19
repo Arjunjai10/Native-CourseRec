@@ -9,6 +9,22 @@ npm-debug.*
 *.mobileprovision
 *.orig.*
 web-build/
+
+# Secrets & Environment
 .env
-backend/node_modules/
+.env.*
+!.env.example
 backend/.env
+backend/.env.*
+
+# Scratch & Test Scripts (Prevents API key leaks)
+test-gemini*.js
+fix_courses.js
+backend/test-api.js
+
+# Dependencies
+backend/node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db

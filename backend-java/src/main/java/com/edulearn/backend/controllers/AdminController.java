@@ -1,6 +1,6 @@
 package com.edulearn.backend.controllers;
 
-import com.edulearn.backend.models.Course;
+
 import com.edulearn.backend.repositories.CourseRepository;
 import com.edulearn.backend.models.User;
 import com.edulearn.backend.repositories.UserRepository;
@@ -18,7 +18,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/admin")
-@CrossOrigin(origins = "http://localhost:8081", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
+@CrossOrigin(origins = "${app.cors.allowed-origins:http://localhost:8081}", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
 public class AdminController {
 
     @Autowired

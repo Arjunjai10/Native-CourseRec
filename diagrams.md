@@ -157,3 +157,58 @@ stateDiagram-v2
     
     Saved --> [*]
 ```
+
+---
+
+## 5.6 Network Planning Model (SDLC Cycle)
+This diagram illustrates the software development lifecycle specifically tailored for the **EduLearn AI** project, mapping core phases to project-specific milestones.
+
+```mermaid
+graph TD
+    %% Common Phases (Blue)
+    RA["Requirement Analysis"]
+    SD["System Design"]
+    IMP["Implementation"]
+    TST["Testing"]
+    DEP["Deployment"]
+    MNT["Maintenance"]
+
+    %% Project Specifics (Yellow)
+    RA_Y["Understand what to build:<br/>Analyze learner needs for career roadmaps<br/>and Gemini AI integration specs."]
+    SD_Y["Decide how to build it:<br/>Architect Hybrid Stack (Node/Java) with<br/>MongoDB Atlas for institutional scale."]
+    IMP_Y["Build the system:<br/>Develop React Native 'Obsidian' UI and<br/>implement cross-backend BCrypt sync."]
+    TST_Y["Ensure quality and correctness:<br/>Verify AI prompt precision (Strict-JSON)<br/>and mobile responsive consistency."]
+    DEP_Y["Make the system live:<br/>Deploy Expo Mobile App and<br/>Heroku/AWS backend micro-services."]
+    MNT_Y["Keep the system running smoothly:<br/>Monitor Gemini API health and update<br/>course discovery catalog weekly."]
+
+    %% Connections
+    RA --> SD
+    SD --> IMP
+    IMP --> TST
+    TST --> DEP
+    DEP --> MNT
+    MNT -- "Continuous Feedback" --> RA
+
+    %% Link Phases to Specifics
+    RA -.-> RA_Y
+    SD -.-> SD_Y
+    IMP -.-> IMP_Y
+    TST -.-> TST_Y
+    DEP -.-> DEP_Y
+    MNT -.-> MNT_Y
+
+    %% Styling
+    style RA fill:#3B82F6,stroke:#1D4ED8,color:#fff
+    style SD fill:#3B82F6,stroke:#1D4ED8,color:#fff
+    style IMP fill:#3B82F6,stroke:#1D4ED8,color:#fff
+    style TST fill:#3B82F6,stroke:#1D4ED8,color:#fff
+    style DEP fill:#3B82F6,stroke:#1D4ED8,color:#fff
+    style MNT fill:#3B82F6,stroke:#1D4ED8,color:#fff
+    
+    style RA_Y fill:#facc15,stroke:#EAB308,color:#1e293b
+    style SD_Y fill:#facc15,stroke:#EAB308,color:#1e293b
+    style IMP_Y fill:#facc15,stroke:#EAB308,color:#1e293b
+    style TST_Y fill:#facc15,stroke:#EAB308,color:#1e293b
+    style DEP_Y fill:#facc15,stroke:#EAB308,color:#1e293b
+    style MNT_Y fill:#facc15,stroke:#EAB308,color:#1e293b
+```
