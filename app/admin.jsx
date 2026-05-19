@@ -173,8 +173,7 @@ export default function AdminDashboard() {
     { id: 'users', label: 'User Management', icon: 'people-outline' },
     { id: 'courses', label: 'Course Management', icon: 'book-outline' },
     { id: 'settings', label: 'System Settings', icon: 'settings-outline' },
-    { id: 'connections', label: 'Connections', icon: 'link-outline' },
-    { id: 'dev', label: 'Developer', icon: 'code-working-outline' }
+    { id: 'connections', label: 'Connections', icon: 'link-outline' }
   ];
 
   return (
@@ -571,39 +570,6 @@ export default function AdminDashboard() {
                   })}
                 </View>
               )}
-            </View>
-          )}
-
-          {/* DEVELOPER TAB */}
-          {activeTab === 'dev' && (
-            <View>
-              <View style={styles.header}>
-                <Text style={styles.title}>Server Orchestration</Text>
-                <Text style={styles.subtitle}>Switch between backend instances for scaling tests.</Text>
-              </View>
-
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 20, marginBottom: 20 }}>
-                <TouchableOpacity
-                  onPress={() => switchBackend('node')}
-                  style={[styles.statCard, { backgroundColor: getActiveBackend().includes('Node') ? '#7C3AED' : '#fff', borderWidth: 1, borderColor: '#e2e8f0' }]}
-                >
-                  <Ionicons name="logo-nodejs" size={24} color={getActiveBackend().includes('Node') ? '#fff' : '#7C3AED'} />
-                  <Text style={[styles.statLabel, { marginTop: 15, color: getActiveBackend().includes('Node') ? '#fff' : '#1e293b' }]}>Node.js Backend</Text>
-                  <Text style={[styles.statSub, { color: getActiveBackend().includes('Node') ? 'rgba(255,255,255,0.8)' : '#64748b' }]}>Port 5000 • Express</Text>
-                  {getActiveBackend().includes('Node') && <View style={{ position: 'absolute', top: 15, right: 15, backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10 }}><Text style={{ color: '#fff', fontSize: 10, fontWeight: '800' }}>ACTIVE</Text></View>}
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  onPress={() => switchBackend('java')}
-                  style={[styles.statCard, { backgroundColor: getActiveBackend().includes('Java') ? '#7C3AED' : '#fff', borderWidth: 1, borderColor: '#e2e8f0' }]}
-                >
-                  <Ionicons name="cafe" size={24} color={getActiveBackend().includes('Java') ? '#fff' : '#7C3AED'} />
-                  <Text style={[styles.statLabel, { marginTop: 15, color: getActiveBackend().includes('Java') ? '#fff' : '#1e293b' }]}>Java Backend</Text>
-                  <Text style={[styles.statSub, { color: getActiveBackend().includes('Java') ? 'rgba(255,255,255,0.8)' : '#64748b' }]}>Port 8080 • Spring Boot</Text>
-                  {getActiveBackend().includes('Java') && <View style={{ position: 'absolute', top: 15, right: 15, backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10 }}><Text style={{ color: '#fff', fontSize: 10, fontWeight: '800' }}>ACTIVE</Text></View>}
-                </TouchableOpacity>
-              </View>
-              <Text style={{ fontSize: 13, color: '#94a3b8', fontStyle: 'italic' }}>* Switching triggers a platform reload.</Text>
             </View>
           )}
 

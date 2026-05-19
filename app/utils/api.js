@@ -1,33 +1,18 @@
 import axios from 'axios';
 import { Platform } from 'react-native';
 
-// Default URLs (Use environment variables for production, fallback to localhost for dev)
-const NODE_API_URL = process.env.EXPO_PUBLIC_NODE_API_URL || 'http://localhost:5000/api';
-const JAVA_API_URL = process.env.EXPO_PUBLIC_JAVA_API_URL || 'http://localhost:8080/api';
-
-// Dynamic selection
-let activeUrl = NODE_API_URL;
-if (Platform.OS === 'web') {
-    const savedBackend = localStorage.getItem('backend_choice');
-    if (savedBackend === 'java') {
-        activeUrl = JAVA_API_URL;
-    }
-}
+const API_URL = process.env.EXPO_PUBLIC_NODE_API_URL || 'http://localhost:5000/api';
 
 const api = axios.create({
-    baseURL: activeUrl,
+    baseURL: API_URL,
 });
 
-// Helper to switch backend at runtime (requires reload usually)
 export const switchBackend = (choice) => {
-    if (Platform.OS === 'web') {
-        localStorage.setItem('backend_choice', choice);
-        window.location.reload();
-    }
+    // Disabled - Java backend removed
 };
 
 export const getActiveBackend = () => {
-    return activeUrl === JAVA_API_URL ? 'Java (Spring Boot)' : 'Node.js (Express)';
+    return 'Node.js (Express)';
 };
 
 api.interceptors.request.use(
