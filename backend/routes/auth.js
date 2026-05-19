@@ -12,9 +12,8 @@ router.post('/signup', async (req, res) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // If this is the very first user to register on the platform, make them the super admin
-    const userCount = await User.countDocuments();
-    const role = userCount === 0 ? 'admin' : 'student';
+    // All new signups are strictly students. Admins must be manually promoted.
+    const role = 'student';
 
     const user = new User({
       fullName,
