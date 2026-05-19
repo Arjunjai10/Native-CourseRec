@@ -56,7 +56,7 @@ export default function AdminDashboard() {
       setSettings(settingsRes.data);
     } catch (error) {
       console.error('Failed to load admin data:', error);
-      alert(`⚠️ Connection Error: Failed to reach the ${getActiveBackend()}. \n\nPlease ensure your server is running or switch instances in the Developer tab.`);
+      alert(`⚠️ Connection Error: Failed to reach the API server. Please check your internet connection or server status.`);
     } finally {
       setLoading(false);
       setRefreshing(false);
