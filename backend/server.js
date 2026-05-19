@@ -31,25 +31,7 @@ app.get('/', (req, res) => {
   res.json({ message: 'EduLearn API Server' });
 });
 
-// TEMPORARY SEED ENDPOINT
-app.get('/api/seed-db', async (req, res) => {
-  try {
-    const mongoose = require('mongoose');
-    const Course = require('./models/Course');
-    const { generateCourses } = require('./seed');
-    
-    // Clear existing
-    await Course.deleteMany({});
-    
-    // Generate new courses using the exact seed logic
-    const courses = generateCourses();
-    
-    await Course.insertMany(courses);
-    res.json({ message: 'Success! Seeded ' + courses.length + ' official courses to MongoDB Atlas.' });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
